@@ -1,8 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "../css/dashboard.css";
 import logo from "../assets/logo.png";
 
 export default function AllTasks() {
+  const navigate = useNavigate();
+
   const tasks = [
     { name: "Task 1", tags: "Tags", deadline: "Deadline" },
     { name: "Task 2", tags: "Tags", deadline: "Deadline" },
@@ -25,7 +28,7 @@ export default function AllTasks() {
         <div className="dashboard-title-actions">
           <h2>Tasks</h2>
           <div className="dashboard-buttons">
-            <button>Create</button>
+            <button onClick={() => navigate("/tasks/new")}>Create</button>
             <button>Sort</button>
           </div>
         </div>
