@@ -10,6 +10,10 @@ import AddProject from "./pages/AddProject";
 import Home from "./pages/Home";
 import Stats from "./pages/Stats";
 import Settings from "./pages/Settings";
+import EditTask from "./pages/EditTask";
+import EditProject from "./pages/EditProject";
+
+
 
 function App() {
   return (
@@ -23,9 +27,12 @@ function App() {
         <Route path="/tasks" element={<AllTasks />} />
         <Route path="/tasks/new" element={<AddTask />} />
         <Route path="/task/:id" element={<TaskView />} />
+        <Route path="/tasks/edit/:id" element={<EditTask />} />
         <Route path="/projects" element={<AllProjects />} />
         <Route path="/projects/new" element={<AddProject />} />
         <Route path="*" element={<Home />} /> {/* default fallback */}
+        <Route path="/projects/edit/:id" element={<EditProject />} />
+        <Route path="*" element={<Login />} /> {/* default fallback */}
       </Routes>
     </Router>
   );
