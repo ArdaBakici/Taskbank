@@ -1,0 +1,85 @@
+.task-view {
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+  background-color: #f9fafb;
+  min-height: 100vh;
+}
+
+/* Scope h1 to the component to avoid global styles */
+.task-view h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.taskview-subtitle {
+  font-size: 2rem;
+  font-weight: 7000;
+  color: #0e1013;
+  margin-bottom: 1rem;
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+}
+
+.task-item {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.task-title {
+  font-weight: 500;
+}
+
+.task-status {
+  font-size: 0.9rem;
+  font-weight: bold;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+}
+
+/* Fix the status selectors */
+.task-status.completed {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.task-status.in-progress {
+  background-color: #fef9c3;
+  color: #854d0e;
+}
+
+.task-status.pending {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.taskview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: white;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.taskview-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.taskview-logo {
+  width: 40px;
+  height: 40px;
+}
