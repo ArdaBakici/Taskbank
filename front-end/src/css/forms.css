@@ -1,0 +1,104 @@
+/* src/css/forms.css */
+
+.page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f3f4f6;
+}
+
+.form-wrapper {
+  background: #fff;
+  padding: 3rem 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 360px;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-wrapper:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1rem;
+  background-color: #2563eb; /* optional background for contrast */
+  padding: 10px;
+  border-radius: 50%; /* makes it circular */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.logo img, .logo {
+  object-fit: contain;
+}
+
+.form-wrapper h1 {
+  margin-bottom: 1.5rem;
+  color: #000000;
+  font-size: 1.8rem;
+}
+
+.form-wrapper input {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-wrapper input:focus {
+  border-color: #2563eb;
+  outline: none;
+  box-shadow: 0 0 5px rgba(37, 99, 235, 0.5);
+}
+
+.form-wrapper button {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: none;
+  border-radius: 10px;
+  background-color: #2563eb;
+  color: white;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.form-wrapper button:hover {
+  background-color: #1e40af;
+  transform: translateY(-2px);
+}
+
+.form-wrapper p {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.form-wrapper p a {
+  color: #2563eb;
+  font-weight: 500;
+}
+
+.form-wrapper p a:hover {
+  text-decoration: underline;
+}
+
+.form-wrapper {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeIn 0.4s forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
