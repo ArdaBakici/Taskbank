@@ -198,6 +198,138 @@
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
 }
 
+/* HOME */
+.home-section {
+  margin-bottom: 2.5rem;
+}
+
+.section-footer-button {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background-color: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  margin-top: 1rem;
+}
+
+.section-footer-button:hover {
+  background-color: #0b1220;
+  transform: translateY(-2px);
+}
+
+.home-bottom-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+
+.home-bottom-buttons button {
+  flex: 1 1 160px;
+  max-width: 200px;
+  padding: 0.85rem 1.5rem;
+  background-color: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.home-bottom-buttons button:hover {
+  background-color: #0b1220;
+  transform: translateY(-2px);
+}
+
+/* STATS */
+.stats-main {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.stats-main h2 {
+  margin-bottom: 1.5rem;
+}
+
+.stats-metric {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.stats-metric strong {
+  color: #111827;
+}
+
+.stats-main h3 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  color: #1f2937;
+}
+
+.stats-graph {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  min-height: 200px;
+  background: linear-gradient(
+    to top,
+    rgba(37, 99, 235, 0.05),
+    rgba(37, 99, 235, 0.12)
+  );
+}
+
+.stats-bar {
+  flex: 1;
+  background: rgba(37, 99, 235, 0.65);
+  border-radius: 8px 8px 0 0;
+}
+
+.stats-return {
+  margin-top: 2rem;
+}
+
+/* SETTINGS */
+.settings-main {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.settings-main h2 {
+  margin-bottom: 1.5rem;
+}
+
+.settings-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+}
+
+.settings-list li {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 1rem;
+}
+
+.settings-return {
+  margin-top: 1rem;
+}
+
 .error-message {
   color: #dc2626;
   font-size: 0.875rem;
