@@ -1,9 +1,12 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "../css/dashboard.css";
 import logo from "../assets/logo.png"; // adjust the path to your logo
 
 
 export default function AllProjects() {
+  const navigate = useNavigate();
+
   const projects = [
     { name: "Project 1", tags: "Tags", deadline: "Deadline" },
     { name: "Project 2", tags: "Tags", deadline: "Deadline" },
@@ -26,7 +29,7 @@ export default function AllProjects() {
         <div className="dashboard-title-actions">
           <h2>Projects</h2>
           <div className="dashboard-buttons">
-            <button>Create</button>
+            <button onClick={() => navigate("/projects/new")}>Create</button>
             <button>Sort</button>
           </div>
         </div>
