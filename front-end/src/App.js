@@ -5,6 +5,8 @@ import Register from "./pages/Register";
 import AllTasks from "./pages/AllTasks";
 import AllProjects from "./pages/AllProjects";
 import TaskView from "./pages/TaskView";
+import AddTask from "./pages/AddTask";
+import AddProject from "./pages/AddProject";
 
 function App() {
   return (
@@ -13,8 +15,10 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/tasks" element={<AllTasks />} />
+        <Route path="/tasks/new" element={<AddTask />} />
         <Route path="/task/:id" element={<TaskView />} />
         <Route path="/projects" element={<AllProjects />} />
+        <Route path="/projects/new" element={<AddProject />} />
         <Route path="*" element={<Login />} /> {/* default fallback */}
       </Routes>
     </Router>
