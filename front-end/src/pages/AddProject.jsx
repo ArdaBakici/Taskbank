@@ -116,7 +116,7 @@ export default function AddProject() {
   };
 
   const handleCancel = () => {
-    navigate("/projects");
+    navigate(-1);
   };
 
   return (
@@ -131,10 +131,6 @@ export default function AddProject() {
       <main>
         <div className="dashboard-title-actions">
           <h2>Create New Project</h2>
-          <div className="dashboard-buttons">
-            <button onClick={handleCancel}>Cancel</button>
-            <button onClick={handleSubmit}>Save Project</button>
-          </div>
         </div>
 
         <div className="form-card">
@@ -236,6 +232,11 @@ export default function AddProject() {
                   </span>
                 )}
               </div>
+            </div>
+
+            <div className="dashboard-buttons">
+              <button onClick={handleCancel}>Cancel</button>
+              <button onClick={handleSubmit}>Save Project</button>
             </div>
           </form>
         </div>
