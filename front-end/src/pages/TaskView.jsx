@@ -4,7 +4,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import "../css/dashboard.css";
 import "../css/forms.css";
 import DashboardHeader from "../components/DashboardHeader";
-import { getTaskById, getProjectById } from "../mockData";
+import {
+  fetchTaskById,
+  fetchProjectById,
+} from "../utils/mockDataLoader";
 
 export default function TaskView() {
   const navigate = useNavigate();
@@ -14,15 +17,41 @@ export default function TaskView() {
   const [project, setProject] = useState(null);
 
   useEffect(() => {
-    setLoading(true);
-    const fetchedTask = getTaskById(id);
-    setTask(fetchedTask || null);
-    setProject(
-      fetchedTask && fetchedTask.projectId
-        ? getProjectById(fetchedTask.projectId)
-        : null
-    );
-    setLoading(false);
+    let isMounted = true;
+
+    async function loadTask() {
+      setLoading(true);
+      try {
+        const fetchedTask = await fetchTaskById(id);
+        if (!isMounted) return;
+        setTask(fetchedTask || null);
+        if (fetchedTask && fetchedTask.projectId) {
+          const relatedProject = await fetchProjectById(
+            fetchedTask.projectId
+          );
+          if (isMounted) {
+            setProject(relatedProject || null);
+          }
+        } else if (isMounted) {
+          setProject(null);
+        }
+      } catch (error) {
+        console.error("Failed to load task", error);
+        if (isMounted) {
+          setTask(null);
+          setProject(null);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadTask();
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   const handleEdit = () => {
