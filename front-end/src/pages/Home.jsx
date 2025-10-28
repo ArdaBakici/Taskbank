@@ -1,29 +1,18 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/dashboard.css";
-import logo from "../assets/logo.png";
+import DashboardHeader from "../components/DashboardHeader";
+import { tasks, projects } from "../mockData";
 
 export default function Home() {
   const navigate = useNavigate();
 
-  const tasks = [
-    { name: "Task 1", tags: "Tags", deadline: "Deadline" },
-    { name: "Task 2", tags: "Tags", deadline: "Deadline" },
-  ];
-
-  const projects = [
-    { name: "Project 1", tags: "Tags", deadline: "Deadline" },
-    { name: "Project 2", tags: "Tags", deadline: "Deadline" },
-  ];
+  const featuredTasks = tasks.slice(0, 2);
+  const featuredProjects = projects.slice(0, 2);
 
   return (
     <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>Taskbank</h1>
-        <div className="logo-box">
-          <img src={logo} alt="Logo" className="logo-image" />
-        </div>
-      </header>
+      <DashboardHeader />
 
       <main>
         <section className="home-section">
@@ -36,12 +25,17 @@ export default function Home() {
           </div>
 
           <div className="task-list">
-            {tasks.map((task, idx) => (
-              <div key={idx} className="task-row">
+            {featuredTasks.map((task) => (
+              <button
+                key={task.id}
+                type="button"
+                className="task-row task-row-button"
+                onClick={() => navigate(`/task/${task.id}`)}
+              >
                 <div>{task.name}</div>
                 <div>{task.tags}</div>
                 <div>{task.deadline}</div>
-              </div>
+              </button>
             ))}
           </div>
 
@@ -63,12 +57,17 @@ export default function Home() {
           </div>
 
           <div className="project-list">
-            {projects.map((project, idx) => (
-              <div key={idx} className="project-row">
+            {featuredProjects.map((project) => (
+              <button
+                key={project.id}
+                type="button"
+                className="project-row project-row-button"
+                onClick={() => navigate(`/project/${project.id}`)}
+              >
                 <div>{project.name}</div>
                 <div>{project.tags}</div>
                 <div>{project.deadline}</div>
-              </div>
+              </button>
             ))}
           </div>
 

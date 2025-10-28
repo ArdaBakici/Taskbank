@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/dashboard.css";
-import logo from "../assets/logo.png";
+import DashboardHeader from "../components/DashboardHeader";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -15,12 +15,7 @@ export default function Settings() {
 
   return (
     <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>Taskbank</h1>
-        <div className="logo-box">
-          <img src={logo} alt="Logo" className="logo-image" />
-        </div>
-      </header>
+      <DashboardHeader />
 
       <main className="settings-main">
         <h2>User Profile</h2>

@@ -1,28 +1,15 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/dashboard.css";
-import logo from "../assets/logo.png";
+import DashboardHeader from "../components/DashboardHeader";
+import { tasks } from "../mockData";
 
 export default function AllTasks() {
   const navigate = useNavigate();
 
-  const tasks = [
-    { name: "Task 1", tags: "Tags", deadline: "Deadline" },
-    { name: "Task 2", tags: "Tags", deadline: "Deadline" },
-    { name: "Task 3", tags: "Tags", deadline: "Deadline" },
-    { name: "Task 4", tags: "Tags", deadline: "Deadline" },
-    { name: "Task 5", tags: "Tags", deadline: "Deadline" },
-    { name: "Task 6", tags: "Tags", deadline: "Deadline" },
-  ];
-
   return (
     <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>Taskbank</h1>
-        <div className="logo-box">
-            <img src={logo} alt="Logo" className="logo-image" />
-        </div>
-      </header>
+      <DashboardHeader />
 
       <main>
         <div className="dashboard-title-actions">
@@ -34,14 +21,26 @@ export default function AllTasks() {
         </div>
 
         <div className="task-list">
-          {tasks.map((t, idx) => (
-            <div key={idx} className="task-row">
+          {tasks.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className="task-row task-row-button"
+              onClick={() => navigate(`/task/${t.id}`)}
+            >
               <div>{t.name}</div>
               <div>{t.tags}</div>
               <div>{t.deadline}</div>
-            </div>
+            </button>
           ))}
         </div>
+
+        <button
+          className="section-footer-button tasks-return"
+          onClick={() => navigate("/home")}
+        >
+          Return
+        </button>
       </main>
     </div>
   );

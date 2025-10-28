@@ -1,29 +1,14 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/dashboard.css";
-import logo from "../assets/logo.png"; // adjust the path to your logo
-
-
+import DashboardHeader from "../components/DashboardHeader";
+import { projects } from "../mockData";
 export default function AllProjects() {
   const navigate = useNavigate();
 
-  const projects = [
-    { name: "Project 1", tags: "Tags", deadline: "Deadline" },
-    { name: "Project 2", tags: "Tags", deadline: "Deadline" },
-    { name: "Project 3", tags: "Tags", deadline: "Deadline" },
-    { name: "Project 4", tags: "Tags", deadline: "Deadline" },
-    { name: "Project 5", tags: "Tags", deadline: "Deadline" },
-    { name: "Project 6", tags: "Tags", deadline: "Deadline" },
-  ];
-
   return (
     <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>Taskbank</h1>
-        <div className="logo-box">
-            <img src={logo} alt="Logo" className="logo-image" />
-        </div>
-      </header>
+      <DashboardHeader />
 
       <main>
         <div className="dashboard-title-actions">
@@ -35,14 +20,26 @@ export default function AllProjects() {
         </div>
 
         <div className="project-list">
-          {projects.map((p, idx) => (
-            <div key={idx} className="project-row">
+          {projects.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              className="project-row project-row-button"
+              onClick={() => navigate(`/project/${p.id}`)}
+            >
               <div>{p.name}</div>
               <div>{p.tags}</div>
               <div>{p.deadline}</div>
-            </div>
+            </button>
           ))}
         </div>
+
+        <button
+          className="section-footer-button projects-return"
+          onClick={() => navigate("/home")}
+        >
+          Return
+        </button>
       </main>
     </div>
   );

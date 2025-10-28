@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../css/dashboard.css";
 import "../css/forms.css";
-import logo from "../assets/logo.png";
+import DashboardHeader from "../components/DashboardHeader";
 
 export default function EditProject() {
   const navigate = useNavigate();
@@ -140,12 +140,7 @@ export default function EditProject() {
   if (loading) {
     return (
       <div className="dashboard-container">
-        <header className="dashboard-header">
-          <h1>Taskbank</h1>
-          <div className="logo-box">
-            <img src={logo} alt="Logo" className="logo-image" />
-          </div>
-        </header>
+        <DashboardHeader />
         <main>
           <p>Loading project...</p>
         </main>
@@ -155,12 +150,7 @@ export default function EditProject() {
 
   return (
     <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>Taskbank</h1>
-        <div className="logo-box">
-          <img src={logo} alt="Logo" className="logo-image" />
-        </div>
-      </header>
+      <DashboardHeader />
 
       <main>
         <div className="dashboard-title-actions">

@@ -1,69 +1,70 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "../css/dashboard.css";
 import "../css/ProjectView.css";
-import logo from "../assets/logo.png";
+import DashboardHeader from "../components/DashboardHeader";
+import { getProjectById, getTasksByProject } from "../mockData";
 
 export default function ProjectView() {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const project = getProjectById(id);
+  const projectTasks = getTasksByProject(id);
 
-  // Example project data
-  const project = {
-    name: "Website Revamp",
-    description: "Revamp the company website with new design and features.",
-    deadline: "30 Nov 2025",
-    urgency: "High",
-    tasks: [
-      { id: 1, name: "Design homepage", tags: "UI, Frontend", deadline: "25 Oct 2025" },
-      { id: 2, name: "Implement login", tags: "Backend, Auth", deadline: "28 Oct 2025" },
-      { id: 3, name: "Set up database", tags: "DB, Backend", deadline: "30 Oct 2025" },
-    ],
-  };
+  const handleReturn = () => navigate("/projects");
 
   return (
     <div className="dashboard-container">
-      {/* Header */}
-      <header className="dashboard-header">
-        <h1>Taskbank</h1>
-        <div className="logo-box">
-          <img src={logo} alt="Logo" className="logo-image" />
-        </div>
-      </header>
+      <DashboardHeader />
 
       <main>
         {/* Project title and buttons */}
         <div className="dashboard-title-actions">
-          <h2>{project.name}</h2>
+          <h2>{project ? project.name : "Project not found"}</h2>
           <div className="dashboard-buttons">
             <button className="btn-edit">Edit Project</button>
-            <button className="btn-return" onClick={() => navigate("/projects")}>Return</button>
+            <button className="btn-return" onClick={handleReturn}>Return</button>
           </div>
         </div>
 
-        {/* Project description and details */}
-        <div className="project-details">
-          <p>{project.description}</p>
-          <p><strong>Deadline:</strong> {project.deadline}</p>
-          <p><strong>Urgency:</strong> {project.urgency}</p>
-        </div>
-
-        {/* Tasks section */}
-        <div className="dashboard-title-actions">
-          <h3>Tasks of Project</h3>
-          <div className="dashboard-buttons">
-            <button>Sort</button>
-          </div>
-        </div>
-
-        <div className="task-list">
-          {project.tasks.map((task) => (
-            <div key={task.id} className="task-row">
-              <div>{task.name}</div>
-              <div>{task.tags}</div>
-              <div>{task.deadline}</div>
+        {project ? (
+          <>
+            {/* Project description and details */}
+            <div className="project-details">
+              <p>{project.description}</p>
+              <p><strong>Deadline:</strong> {project.deadline}</p>
+              <p><strong>Urgency:</strong> {project.urgency}</p>
             </div>
-          ))}
-        </div>
+
+            {/* Tasks section */}
+            <div className="dashboard-title-actions">
+              <h3>Tasks of Project</h3>
+              <div className="dashboard-buttons">
+                <button>Sort</button>
+              </div>
+            </div>
+
+            <div className="task-list">
+              {projectTasks.map((task) => (
+                <div key={task.id} className="task-row">
+                  <div>{task.name}</div>
+                  <div>{task.tags}</div>
+                  <div>{task.deadline}</div>
+                </div>
+              ))}
+            </div>
+            <button
+              className="section-footer-button"
+              onClick={handleReturn}
+            >
+              Return
+            </button>
+          </>
+        ) : (
+          <div className="project-details">
+            <p>We could not find this project.</p>
+          </div>
+        )}
       </main>
     </div>
   );

@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../css/common.css";
 import "../css/forms.css";
 import logo from "../assets/logo.png"; // import logo
 
 export default function Register() {
   const [form, setForm] = useState({ username: "", email: "", password: "" });
+  const navigate = useNavigate();
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -13,6 +14,7 @@ export default function Register() {
   const handleSubmit = (e) => {
     e.preventDefault();
     alert(`Registered: ${form.username}`);
+    navigate("/home");
   };
 
   return (
