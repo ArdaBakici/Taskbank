@@ -6,7 +6,7 @@ import DashboardHeader from "../components/DashboardHeader";
 import {
   fetchProjectById,
   fetchTasksByProject,
-  fetchTasks, // For all available tasks
+  fetchTasks,
 } from "../utils/mockDataLoader";
 
 export default function EditProject() {
@@ -19,12 +19,14 @@ export default function EditProject() {
     status: "Planning",
     deadline: "",
     tags: "",
-    selectedTasks: [],
+    selectedTasks: [], // This will now maintain order
   });
 
   const [errors, setErrors] = useState({});
   const [availableTasks, setAvailableTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [draggedTaskId, setDraggedTaskId] = useState(null);
+  const [draggedOverTaskId, setDraggedOverTaskId] = useState(null);
 
   // Load existing project data and available tasks
   useEffect(() => {
@@ -48,12 +50,11 @@ export default function EditProject() {
           ]);
 
           if (isMounted && projectData) {
-            // Get IDs of tasks already in this project
+            // Get IDs of tasks already in this project, maintaining their order
             const selectedTaskIds = projectTasks.map(task => task.id);
 
-            // Map project properties to form data
             setFormData({
-              projectName: projectData.name || "", // ProjectView uses 'name'
+              projectName: projectData.name || "",
               description: projectData.description || "",
               status: projectData.status || "Planning",
               deadline: projectData.deadline || "",
@@ -89,7 +90,6 @@ export default function EditProject() {
       [name]: value,
     }));
 
-    // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -105,32 +105,82 @@ export default function EditProject() {
         ...prev,
         selectedTasks: isSelected
           ? prev.selectedTasks.filter((id) => id !== taskId)
-          : [...prev.selectedTasks, taskId],
+          : [...prev.selectedTasks, taskId], // Add to end of list
       };
     });
+  };
+
+  // Drag and Drop Handlers
+  const handleDragStart = (e, taskId) => {
+    setDraggedTaskId(taskId);
+    e.dataTransfer.effectAllowed = "move";
+    // Add a semi-transparent effect
+    e.currentTarget.style.opacity = "0.5";
+  };
+
+  const handleDragEnd = (e) => {
+    e.currentTarget.style.opacity = "1";
+    setDraggedTaskId(null);
+    setDraggedOverTaskId(null);
+  };
+
+  const handleDragOver = (e, taskId) => {
+    e.preventDefault(); // Necessary to allow drop
+    e.dataTransfer.dropEffect = "move";
+    
+    if (taskId !== draggedTaskId) {
+      setDraggedOverTaskId(taskId);
+    }
+  };
+
+  const handleDragLeave = (e) => {
+    setDraggedOverTaskId(null);
+  };
+
+  const handleDrop = (e, dropTaskId) => {
+    e.preventDefault();
+    
+    if (draggedTaskId === dropTaskId) {
+      return;
+    }
+
+    setFormData((prev) => {
+      const newSelectedTasks = [...prev.selectedTasks];
+      const draggedIndex = newSelectedTasks.indexOf(draggedTaskId);
+      const dropIndex = newSelectedTasks.indexOf(dropTaskId);
+
+      // Remove dragged item
+      newSelectedTasks.splice(draggedIndex, 1);
+      // Insert at new position
+      newSelectedTasks.splice(dropIndex, 0, draggedTaskId);
+
+      return {
+        ...prev,
+        selectedTasks: newSelectedTasks,
+      };
+    });
+
+    setDraggedOverTaskId(null);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validate required fields
     const newErrors = {};
 
     if (!formData.projectName.trim()) {
       newErrors.projectName = "Project name is required";
     }
 
-    // If there are errors, set them and don't submit
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    // Clear any previous errors
     setErrors({});
 
-    // TODO: When backend is ready, PUT/PATCH data to backend instead
-    console.log("Updating project:", { id, ...formData });
+    // The selectedTasks array now contains the ordered task IDs
+    console.log("Updating project with ordered tasks:", { id, ...formData });
     alert("Project updated successfully!");
     navigate("/projects");
   };
@@ -140,8 +190,19 @@ export default function EditProject() {
   };
 
   const handleEditTask = (taskId) => {
-    // Navigate to edit task page and pass the current project ID so we can return here
     navigate(`/tasks/edit/${taskId}`, { state: { returnToProject: id } });
+  };
+
+  // Get selected tasks in order
+  const getOrderedSelectedTasks = () => {
+    return formData.selectedTasks
+      .map(taskId => availableTasks.find(task => task.id === taskId))
+      .filter(task => task !== undefined);
+  };
+
+  // Get unselected tasks
+  const getUnselectedTasks = () => {
+    return availableTasks.filter(task => !formData.selectedTasks.includes(task.id));
   };
 
   if (loading) {
@@ -154,6 +215,9 @@ export default function EditProject() {
       </div>
     );
   }
+
+  const orderedSelectedTasks = getOrderedSelectedTasks();
+  const unselectedTasks = getUnselectedTasks();
 
   return (
     <div className="dashboard-container">
@@ -241,42 +305,104 @@ export default function EditProject() {
               </div>
             </div>
 
-            <div className="form-row">
-              <div className="form-group full-width">
-                <label>Manage Project Tasks</label>
-                <div className="task-selection-list">
-                  {availableTasks.map((task) => (
-                    <div key={task.id} className="task-checkbox-item" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.5rem 0" }}>
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <input
-                          type="checkbox"
-                          id={`task-${task.id}`}
-                          checked={formData.selectedTasks.includes(task.id)}
-                          onChange={() => handleTaskSelection(task.id)}
-                          style={{ marginRight: "0.5rem" }}
-                        />
-                        <label htmlFor={`task-${task.id}`} style={{ margin: 0, cursor: "pointer" }}>
-                          {task.title || task.name}
-                        </label>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleEditTask(task.id)}
-                        className="inline-edit-btn"
-                        style={{ fontSize: "0.85em", padding: "0.25rem 0.75rem" }}
+            {/* Selected Tasks - Reorderable */}
+            {orderedSelectedTasks.length > 0 && (
+              <div className="form-row">
+                <div className="form-group full-width">
+                  <label>Project Tasks (Drag to Reorder)</label>
+                  <p className="field-hint">
+                    Tasks are executed in this order. Drag to change priority.
+                  </p>
+                  <div className="task-reorder-list">
+                    {orderedSelectedTasks.map((task, index) => (
+                      <div
+                        key={task.id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, task.id)}
+                        onDragEnd={handleDragEnd}
+                        onDragOver={(e) => handleDragOver(e, task.id)}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, task.id)}
+                        className={`task-reorder-item ${
+                          draggedTaskId === task.id ? "dragging" : ""
+                        } ${draggedOverTaskId === task.id ? "drag-over" : ""}`}
                       >
-                        Edit
-                      </button>
-                    </div>
-                  ))}
+                        <div className="task-reorder-content">
+                          <span className="drag-handle">☰</span>
+                          <span className="task-order-number">{index + 1}.</span>
+                          <span className="task-name">{task.title || task.name}</span>
+                        </div>
+                        <div className="task-actions">
+                          <button
+                            type="button"
+                            onClick={() => handleEditTask(task.id)}
+                            className="inline-edit-btn"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleTaskSelection(task.id)}
+                            className="inline-remove-btn"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                {formData.selectedTasks.length > 0 && (
-                  <span className="selection-count">
-                    {formData.selectedTasks.length} task(s) selected
-                  </span>
-                )}
               </div>
-            </div>
+            )}
+
+            {/* Available Tasks to Add */}
+            {unselectedTasks.length > 0 && (
+              <div className="form-row">
+                <div className="form-group full-width">
+                  <label>Available Tasks</label>
+                  <p className="field-hint">Click to add tasks to this project</p>
+                  <div className="task-selection-list">
+                    {unselectedTasks.map((task) => (
+                      <div key={task.id} className="task-checkbox-item">
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                          <input
+                            type="checkbox"
+                            id={`task-${task.id}`}
+                            checked={false}
+                            onChange={() => handleTaskSelection(task.id)}
+                            style={{ marginRight: "0.5rem" }}
+                          />
+                          <label 
+                            htmlFor={`task-${task.id}`} 
+                            style={{ margin: 0, cursor: "pointer" }}
+                          >
+                            {task.title || task.name}
+                          </label>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleEditTask(task.id)}
+                          className="inline-edit-btn"
+                          style={{ fontSize: "0.85em", padding: "0.25rem 0.75rem" }}
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {formData.selectedTasks.length === 0 && (
+              <div className="form-row">
+                <div className="form-group full-width">
+                  <p className="no-tasks-message">
+                    No tasks selected. Add tasks from the available tasks below.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div style={{ marginTop: "2rem", display: "flex", justifyContent: "center", width: "100%" }}>
