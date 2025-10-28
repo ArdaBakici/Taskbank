@@ -94,7 +94,7 @@ export default function AddTask() {
   };
 
   const handleCancel = () => {
-    navigate("/tasks");
+    navigate(-1);
   };
 
   return (
@@ -104,10 +104,6 @@ export default function AddTask() {
       <main>
         <div className="dashboard-title-actions">
           <h2>Create New Task</h2>
-          <div className="dashboard-buttons">
-            <button onClick={handleCancel}>Cancel</button>
-            <button onClick={handleSubmit}>Save Task</button>
-          </div>
         </div>
 
         <div className="form-card">
@@ -224,6 +220,11 @@ export default function AddTask() {
               </div>
             </div>
           </form>
+        </div>
+
+        <div className="dashboard-buttons">
+          <button onClick={handleCancel}>Cancel</button>
+          <button onClick={handleSubmit}>Save Task</button>
         </div>
       </main>
     </div>
