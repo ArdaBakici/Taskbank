@@ -3,13 +3,13 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import "../css/dashboard.css";
 import "../css/forms.css";
 import DashboardHeader from "../components/DashboardHeader";
+import { fetchTaskById, fetchProjects } from "../utils/mockDataLoader"; // Import the same functions
 
 export default function EditTask() {
   const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
   
-  // Check if we came from an EditProject page
   const returnToProject = location.state?.returnToProject;
 
   const [formData, setFormData] = useState({
@@ -28,58 +28,49 @@ export default function EditTask() {
 
   // Load existing task data and available projects
   useEffect(() => {
-    // Fallback projects data
-    const fallbackProjects = [
-      { id: 1, name: "Website Redesign" },
-      { id: 2, name: "Mobile App Development" },
-      { id: 3, name: "Marketing Campaign" },
-      { id: 4, name: "Database Migration" },
-      { id: 5, name: "Customer Portal" },
-    ];
+    let isMounted = true;
 
-    setProjects(fallbackProjects);
+    async function loadData() {
+      setLoading(true);
+      
+      try {
+        // Load projects first
+        const projectsList = await fetchProjects();
+        if (isMounted) {
+          setProjects(projectsList || []);
+        }
 
-    // Load existing task data (mock data for now)
-    if (id) {
-      // TODO: Replace with actual API call when backend is ready
-      const mockTask = {
-        id: id,
-        taskName: "Complete Sprint 1",
-        description: "Finish frontend components for Taskbank",
-        project: "2",
-        priority: "High",
-        status: "In Progress",
-        deadline: "2025-10-30",
-        tags: "frontend, urgent",
-      };
-
-      setFormData({
-        taskName: mockTask.taskName,
-        description: mockTask.description,
-        project: mockTask.project,
-        priority: mockTask.priority,
-        status: mockTask.status,
-        deadline: mockTask.deadline,
-        tags: mockTask.tags,
-      });
-    }
-
-    setLoading(false);
-
-    // Try to fetch projects from Mockaroo if API key available
-    const apiKey = process.env.REACT_APP_MOCKAROO_API_KEY;
-    if (apiKey) {
-      fetch(`https://my.api.mockaroo.com/projects.json?key=${apiKey}`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (Array.isArray(data) && data.length > 0) {
-            setProjects(data);
+        // Load the specific task if ID exists
+        if (id) {
+          const task = await fetchTaskById(id);
+          
+          if (isMounted && task) {
+            // Map task properties to form data
+            setFormData({
+              taskName: task.title || "", // TaskView uses 'title'
+              description: task.description || "",
+              project: task.projectId || "", // TaskView uses 'projectId'
+              priority: task.urgency || "Medium", // TaskView uses 'urgency'
+              status: task.status || "Not Started",
+              deadline: task.deadline || "",
+              tags: task.tags || "", // Assuming tags exist in your data
+            });
           }
-        })
-        .catch((error) => {
-          console.log("Using fallback projects", error);
-        });
+        }
+      } catch (error) {
+        console.error("Failed to load task data", error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
     }
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   const handleChange = (e) => {
@@ -97,22 +88,21 @@ export default function EditTask() {
       }));
     }
   };
+  
 
   const handleDelete = () => {
-  // Confirm before deleting
-  if (window.confirm("Are you sure you want to delete this task?")) {
-    // TODO: When backend is ready, send DELETE request to backend
-    console.log("Deleting task:", id);
-    alert("Task deleted successfully!");
-    
-    // Navigate back to the project edit page if we came from there, otherwise go to tasks list
-    if (returnToProject) {
-      navigate(`/projects/edit/${returnToProject}`);
-    } else {
-      navigate("/tasks");
+    if (window.confirm("Are you sure you want to delete this task?")) {
+      // TODO: When backend is ready, send DELETE request
+      console.log("Deleting task:", id);
+      alert("Task deleted successfully!");
+      
+      if (returnToProject) {
+        navigate(`/projects/edit/${returnToProject}`);
+      } else {
+        navigate("/tasks");
+      }
     }
-  }
-};
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -141,7 +131,6 @@ export default function EditTask() {
     console.log("Updating task:", { id, ...formData });
     alert("Task updated successfully!");
     
-    // Navigate back to the project edit page if we came from there, otherwise go to tasks list
     if (returnToProject) {
       navigate(`/projects/edit/${returnToProject}`);
     } else {
@@ -150,7 +139,6 @@ export default function EditTask() {
   };
 
   const handleCancel = () => {
-    // Navigate back to the project edit page if we came from there, otherwise go to tasks list
     if (returnToProject) {
       navigate(`/projects/edit/${returnToProject}`);
     } else {
@@ -306,7 +294,6 @@ export default function EditTask() {
                 <button type="submit">Save Changes</button>
               </div>
             </div>
-
           </form>
         </div>
       </main>

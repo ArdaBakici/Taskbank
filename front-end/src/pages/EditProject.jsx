@@ -3,6 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import "../css/dashboard.css";
 import "../css/forms.css";
 import DashboardHeader from "../components/DashboardHeader";
+import {
+  fetchProjectById,
+  fetchTasksByProject,
+  fetchTasks, // For all available tasks
+} from "../utils/mockDataLoader";
 
 export default function EditProject() {
   const navigate = useNavigate();
@@ -23,56 +28,58 @@ export default function EditProject() {
 
   // Load existing project data and available tasks
   useEffect(() => {
-    // Load available tasks (fallback data)
-    const fallbackTasks = [
-      { id: 1, name: "Design homepage mockup", project: "Unassigned" },
-      { id: 2, name: "Setup database schema", project: "Unassigned" },
-      { id: 3, name: "Create API endpoints", project: "Unassigned" },
-      { id: 4, name: "Write unit tests", project: "Unassigned" },
-      { id: 5, name: "Deploy to staging", project: "Unassigned" },
-    ];
+    let isMounted = true;
 
-    setAvailableTasks(fallbackTasks);
+    async function loadData() {
+      setLoading(true);
 
-    // Load existing project data (mock data for now)
-    if (id) {
-      // TODO: Replace with actual API call when backend is ready
-      const mockProject = {
-        id: id,
-        projectName: "Sprint 1 Development",
-        description: "Complete all frontend components for Taskbank",
-        status: "In Progress",
-        deadline: "2025-11-15",
-        tags: "frontend, react, sprint1",
-        selectedTasks: [1, 2], // IDs of tasks already in this project
-      };
+      try {
+        // Load all available tasks first
+        const allTasks = await fetchTasks();
+        if (isMounted) {
+          setAvailableTasks(allTasks || []);
+        }
 
-      setFormData({
-        projectName: mockProject.projectName,
-        description: mockProject.description,
-        status: mockProject.status,
-        deadline: mockProject.deadline,
-        tags: mockProject.tags,
-        selectedTasks: mockProject.selectedTasks,
-      });
-    }
+        // Load the specific project if ID exists
+        if (id) {
+          const [projectData, projectTasks] = await Promise.all([
+            fetchProjectById(id),
+            fetchTasksByProject(id),
+          ]);
 
-    setLoading(false);
+          if (isMounted && projectData) {
+            // Get IDs of tasks already in this project
+            const selectedTaskIds = projectTasks.map(task => task.id);
 
-    // Try to fetch from Mockaroo if API key available
-    const apiKey = process.env.REACT_APP_MOCKAROO_API_KEY;
-    if (apiKey) {
-      fetch(`https://my.api.mockaroo.com/tasks.json?key=${apiKey}`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (Array.isArray(data) && data.length > 0) {
-            setAvailableTasks(data);
+            // Map project properties to form data
+            setFormData({
+              projectName: projectData.name || "", // ProjectView uses 'name'
+              description: projectData.description || "",
+              status: projectData.status || "Planning",
+              deadline: projectData.deadline || "",
+              tags: projectData.tags 
+                ? (Array.isArray(projectData.tags) 
+                    ? projectData.tags.join(", ") 
+                    : projectData.tags)
+                : "",
+              selectedTasks: selectedTaskIds,
+            });
           }
-        })
-        .catch((error) => {
-          console.log("Using fallback tasks", error);
-        });
+        }
+      } catch (error) {
+        console.error("Failed to load project data", error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
     }
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   const handleChange = (e) => {
@@ -249,7 +256,7 @@ export default function EditProject() {
                           style={{ marginRight: "0.5rem" }}
                         />
                         <label htmlFor={`task-${task.id}`} style={{ margin: 0, cursor: "pointer" }}>
-                          {task.name}
+                          {task.title || task.name}
                         </label>
                       </div>
                       <button
