@@ -96,6 +96,16 @@
   animation: fadeIn 0.4s forwards;
 }
 
+.form-actions {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: space-between; /* Space delete away from other buttons */
+  width: 100%;
+  align-items: center;
+}
+
+
+
 @keyframes fadeIn {
   to {
     opacity: 1;
