@@ -81,6 +81,17 @@
   transform: translateY(-2px);
 }
 
+
+
+.dashboard-buttons .delete-button {
+  background-color: #dc3545;
+}
+
+.dashboard-buttons .delete-button:hover {
+  background-color: #c82333;
+}
+
+
 /* ROWS */
 .project-row,
 .task-row {

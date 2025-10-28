@@ -98,6 +98,22 @@ export default function EditTask() {
     }
   };
 
+  const handleDelete = () => {
+  // Confirm before deleting
+  if (window.confirm("Are you sure you want to delete this task?")) {
+    // TODO: When backend is ready, send DELETE request to backend
+    console.log("Deleting task:", id);
+    alert("Task deleted successfully!");
+    
+    // Navigate back to the project edit page if we came from there, otherwise go to tasks list
+    if (returnToProject) {
+      navigate(`/projects/edit/${returnToProject}`);
+    } else {
+      navigate("/tasks");
+    }
+  }
+};
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -287,8 +303,12 @@ export default function EditTask() {
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div style={{ marginTop: "2rem", display: "flex", justifyContent: "center", width: "100%" }}>
+            <div className="form-actions">
+              <div className="dashboard-buttons">
+                <button type="button" onClick={handleDelete} className="delete-button">
+                  Delete Task
+                </button>
+              </div>
               <div className="dashboard-buttons">
                 <button type="button" onClick={handleCancel}>
                   Cancel
@@ -296,6 +316,7 @@ export default function EditTask() {
                 <button type="submit">Save Changes</button>
               </div>
             </div>
+
           </form>
         </div>
       </main>
