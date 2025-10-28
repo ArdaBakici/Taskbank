@@ -2,3 +2,6 @@ id,name,tags,deadline,description,urgency,status
 1,Website Revamp,"UI|Frontend",2025-11-30,"Revamp the public marketing site with a new layout and branding.",High,In Progress
 2,Mobile App Launch,"Mobile|Product",2025-12-15,"Prepare the MVP release of the Taskbank mobile experience.",Medium,Planning
 3,Database Migration,"Backend|DB",2026-01-05,"Migrate legacy customer data into the new cloud cluster.",High,Planning
+4,Analytics Dashboard,"Frontend|Data",2025-12-20,"Develop a real-time analytics dashboard for internal stakeholders.",Medium,In Progress
+5,Customer Support Chatbot,"AI|Backend",2026-01-10,"Integrate an NLP-powered chatbot to handle tier-1 customer queries.",High,Not Started
+6,Security Audit,"Compliance|DevOps",2025-12-28,"Conduct a full audit of API endpoints and infrastructure for vulnerabilities.",Medium,In Review
