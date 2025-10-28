@@ -224,12 +224,12 @@ export default function AddTask() {
                 />
               </div>
             </div>
-          </form>
-        </div>
 
-        <div className="dashboard-buttons">
-          <button onClick={handleCancel}>Cancel</button>
-          <button onClick={handleSubmit}>Save Task</button>
+            <div className="dashboard-buttons">
+              <button onClick={handleCancel}>Cancel</button>
+              <button onClick={handleSubmit}>Save Task</button>
+            </div>
+          </form>
         </div>
       </main>
     </div>
