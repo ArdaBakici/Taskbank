@@ -1,8 +1,12 @@
-const CSV_BASE_PATH = `${process.env.PUBLIC_URL || ""}/mock-data`;
+// const CSV_BASE_PATH = `${process.env.PUBLIC_URL || ""}/mock-data`;
+
+const MOCKAROO_TASKS_URL = "https://my.api.mockaroo.com/tasks.json?key=482f4d30";
+const MOCKAROO_PROJECTS_URL = "https://my.api.mockaroo.com/projects.json?key=482f4d30";
 
 let cachedTasks = null;
 let cachedProjects = null;
 
+/*
 function splitCsvLine(line) {
   const values = [];
   let current = "";
@@ -46,10 +50,15 @@ function parseCsv(text) {
       }, {});
     });
 }
+*/
 
 function normalizeTags(raw) {
   if (!raw) return [];
-  return raw.split("|").map((item) => item.trim()).filter(Boolean);
+  if (Array.isArray(raw)) return raw.map((item) => String(item).trim()).filter(Boolean);
+  return String(raw)
+    .split("|")
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function projectFromRow(row) {
@@ -79,6 +88,7 @@ function taskFromRow(row) {
   };
 }
 
+/*
 async function loadCsv(path) {
   const response = await fetch(`${CSV_BASE_PATH}/${path}`);
   if (!response.ok) {
@@ -87,10 +97,15 @@ async function loadCsv(path) {
   const text = await response.text();
   return parseCsv(text);
 }
+*/
 
 export async function fetchProjects() {
   if (!cachedProjects) {
-    const rows = await loadCsv("projects.csv");
+    const response = await fetch(MOCKAROO_PROJECTS_URL);
+    if (!response.ok) {
+      throw new Error("Failed to load projects from Mockaroo");
+    }
+    const rows = await response.json();
     cachedProjects = rows.map(projectFromRow);
   }
   return cachedProjects;
@@ -98,7 +113,11 @@ export async function fetchProjects() {
 
 export async function fetchTasks() {
   if (!cachedTasks) {
-    const rows = await loadCsv("tasks.csv");
+    const response = await fetch(MOCKAROO_TASKS_URL);
+    if (!response.ok) {
+      throw new Error("Failed to load tasks from Mockaroo");
+    }
+    const rows = await response.json();
     cachedTasks = rows.map(taskFromRow);
   }
   return cachedTasks;
