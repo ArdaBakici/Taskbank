@@ -51,6 +51,11 @@ export default function ProjectView() {
   }, [id]);
 
   const handleReturn = () => navigate("/projects");
+  const handleEdit = () => navigate(`/projects/edit/${id}`);
+
+
+
+
   const renderTags = (tagList) => {
     if (!tagList || tagList.length === 0) return "—";
     return Array.isArray(tagList) ? tagList.join(", ") : tagList;
@@ -65,7 +70,7 @@ export default function ProjectView() {
         <div className="dashboard-title-actions">
           <h2>{project ? project.name : loading ? "Loading..." : "Project not found"}</h2>
           <div className="dashboard-buttons">
-            <button className="btn-edit">Edit Project</button>
+            <button className="btn-edit" onClick={handleEdit}>Edit Project</button>
             <button className="btn-return" onClick={handleReturn}>Return</button>
           </div>
         </div>
