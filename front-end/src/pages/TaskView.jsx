@@ -3,37 +3,55 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../css/dashboard.css";
 import "../css/forms.css";
-import logo from "../assets/logo.png";
+import DashboardHeader from "../components/DashboardHeader";
+import {
+  fetchTaskById,
+  fetchProjectById,
+} from "../utils/mockDataLoader";
 
 export default function TaskView() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [project, setProject] = useState(null);
 
   useEffect(() => {
-    async function fetchTask() {
+    let isMounted = true;
+
+    async function loadTask() {
       setLoading(true);
       try {
-        // Replace with real API call using id
-        const mockData = {
-          id,
-          title: "Design homepage",
-          description: "Create a modern, responsive homepage for the web app.",
-          deadline: "2025-10-31",
-          urgency: "High",
-          project: "Website Revamp",
-          status: "In Progress",
-        };
-        setTask(mockData);
+        const fetchedTask = await fetchTaskById(id);
+        if (!isMounted) return;
+        setTask(fetchedTask || null);
+        if (fetchedTask && fetchedTask.projectId) {
+          const relatedProject = await fetchProjectById(
+            fetchedTask.projectId
+          );
+          if (isMounted) {
+            setProject(relatedProject || null);
+          }
+        } else if (isMounted) {
+          setProject(null);
+        }
       } catch (error) {
-        console.error("Error loading task:", error);
+        console.error("Failed to load task", error);
+        if (isMounted) {
+          setTask(null);
+          setProject(null);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
 
-    fetchTask();
+    loadTask();
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   const handleEdit = () => {
@@ -47,12 +65,7 @@ export default function TaskView() {
   if (loading) {
     return (
       <div className="dashboard-container">
-        <header className="dashboard-header">
-          <h1>Taskbank</h1>
-          <div className="logo-box">
-            <img src={logo} alt="Logo" className="logo-image" />
-          </div>
-        </header>
+        <DashboardHeader />
         <main>
           <p>Loading task...</p>
         </main>
@@ -63,12 +76,7 @@ export default function TaskView() {
   if (!task) {
     return (
       <div className="dashboard-container">
-        <header className="dashboard-header">
-          <h1>Taskbank</h1>
-          <div className="logo-box">
-            <img src={logo} alt="Logo" className="logo-image" />
-          </div>
-        </header>
+        <DashboardHeader />
         <main>
           <p>Task not found.</p>
           <button onClick={handleBack}>Back to Tasks</button>
@@ -79,12 +87,7 @@ export default function TaskView() {
 
   return (
     <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>Taskbank</h1>
-        <div className="logo-box">
-          <img src={logo} alt="Logo" className="logo-image" />
-        </div>
-      </header>
+      <DashboardHeader />
       <main>
         <div className="dashboard-title-actions">
           <h2>Task Details</h2>
@@ -127,10 +130,17 @@ export default function TaskView() {
           <div className="form-row">
             <div className="form-group full-width">
               <label>Project</label>
-              <p>{task.project}</p>
+              <p>{project ? project.name : "Unassigned"}</p>
             </div>
           </div>
         </div>
+
+        <button
+          className="section-footer-button"
+          onClick={handleBack}
+        >
+          Return
+        </button>
       </main>
     </div>
   );

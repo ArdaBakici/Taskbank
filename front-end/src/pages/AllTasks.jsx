@@ -1,28 +1,50 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/dashboard.css";
-import logo from "../assets/logo.png";
+import DashboardHeader from "../components/DashboardHeader";
+import { fetchTasks } from "../utils/mockDataLoader";
 
 export default function AllTasks() {
   const navigate = useNavigate();
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const tasks = [
-    { name: "Task 1", tags: "Tags", deadline: "Deadline" },
-    { name: "Task 2", tags: "Tags", deadline: "Deadline" },
-    { name: "Task 3", tags: "Tags", deadline: "Deadline" },
-    { name: "Task 4", tags: "Tags", deadline: "Deadline" },
-    { name: "Task 5", tags: "Tags", deadline: "Deadline" },
-    { name: "Task 6", tags: "Tags", deadline: "Deadline" },
-  ];
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadTasks() {
+      try {
+        const data = await fetchTasks();
+        if (isMounted) {
+          setTasks(data);
+        }
+      } catch (err) {
+        console.error("Failed to load tasks", err);
+        if (isMounted) {
+          setError("Unable to load tasks right now.");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadTasks();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const renderTags = (tagList) => {
+    if (!tagList || tagList.length === 0) return "—";
+    return Array.isArray(tagList) ? tagList.join(", ") : tagList;
+  };
 
   return (
     <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>Taskbank</h1>
-        <div className="logo-box">
-            <img src={logo} alt="Logo" className="logo-image" />
-        </div>
-      </header>
+      <DashboardHeader />
 
       <main>
         <div className="dashboard-title-actions">
@@ -34,14 +56,30 @@ export default function AllTasks() {
         </div>
 
         <div className="task-list">
-          {tasks.map((t, idx) => (
-            <div key={idx} className="task-row">
-              <div>{t.name}</div>
-              <div>{t.tags}</div>
-              <div>{t.deadline}</div>
-            </div>
-          ))}
+          {loading && <p>Loading tasks...</p>}
+          {error && <p>{error}</p>}
+          {!loading &&
+            !error &&
+            tasks.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className="task-row task-row-button"
+                onClick={() => navigate(`/task/${t.id}`)}
+              >
+                <div>{t.name}</div>
+                <div>{renderTags(t.tags)}</div>
+                <div>{t.deadline}</div>
+              </button>
+            ))}
         </div>
+
+        <button
+          className="section-footer-button tasks-return"
+          onClick={() => navigate("/home")}
+        >
+          Return
+        </button>
       </main>
     </div>
   );

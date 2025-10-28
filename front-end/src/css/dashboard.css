@@ -51,6 +51,29 @@
   border-radius: 50%;
 }
 
+.dashboard-brand {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: inherit;
+}
+
+.dashboard-brand:focus-visible,
+.logo-box-button:focus-visible {
+  outline: 2px solid #2563eb;
+}
+
+.logo-box-button {
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background-color: #2563eb;
+}
+
 /* TITLE + BUTTONS */
 .dashboard-title-actions {
   display: flex;
@@ -106,6 +129,21 @@
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
+.project-row-button,
+.task-row-button {
+  border: none;
+  background: #fff;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+
+.project-row-button:focus-visible,
+.task-row-button:focus-visible {
+  outline: 2px solid #2563eb;
+}
+
 .project-row:hover,
 .task-row:hover {
   transform: translateY(-2px);
@@ -124,6 +162,7 @@
 .task-row > div:first-child {
   text-align: left;
 }
+
 
 /* FORM CARD STYLES */
 .form-card {

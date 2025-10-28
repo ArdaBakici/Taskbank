@@ -1,0 +1,4 @@
+id,name,tags,deadline,description,urgency,status
+1,Website Revamp,"UI|Frontend",2025-11-30,"Revamp the public marketing site with a new layout and branding.",High,In Progress
+2,Mobile App Launch,"Mobile|Product",2025-12-15,"Prepare the MVP release of the Taskbank mobile experience.",Medium,Planning
+3,Database Migration,"Backend|DB",2026-01-05,"Migrate legacy customer data into the new cloud cluster.",High,Planning

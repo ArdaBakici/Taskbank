@@ -1,0 +1,4 @@
+id,projectId,title,tags,deadline,description,urgency,status,assignee
+101,1,Design homepage layout,"UI|Design",2025-10-31,"Produce desktop and mobile wireframes for the new homepage.",High,In Progress,Alice Nguyen
+102,1,Implement navigation,"Frontend|React",2025-11-06,"Build responsive header and sidebar components.",Medium,Not Started,Jordan Ellis
+201,2,Set up push notifications,"Mobile|Backend",2025-11-20,"Configure FCM and build notification preferences screen.",Medium,In Progress,Priya Shah

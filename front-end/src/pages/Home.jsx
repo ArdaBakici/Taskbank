@@ -1,29 +1,54 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/dashboard.css";
-import logo from "../assets/logo.png";
+import DashboardHeader from "../components/DashboardHeader";
+import { fetchProjects, fetchTasks } from "../utils/mockDataLoader";
 
 export default function Home() {
   const navigate = useNavigate();
+  const [tasks, setTasks] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const tasks = [
-    { name: "Task 1", tags: "Tags", deadline: "Deadline" },
-    { name: "Task 2", tags: "Tags", deadline: "Deadline" },
-  ];
+  useEffect(() => {
+    let isMounted = true;
 
-  const projects = [
-    { name: "Project 1", tags: "Tags", deadline: "Deadline" },
-    { name: "Project 2", tags: "Tags", deadline: "Deadline" },
-  ];
+    async function loadData() {
+      try {
+        const [taskData, projectData] = await Promise.all([
+          fetchTasks(),
+          fetchProjects(),
+        ]);
+        if (isMounted) {
+          setTasks(taskData);
+          setProjects(projectData);
+        }
+      } catch (error) {
+        console.error("Failed to load dashboard data", error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const featuredTasks = tasks.slice(0, 2);
+  const featuredProjects = projects.slice(0, 2);
+
+  const renderTags = (tagList) => {
+    if (!tagList || tagList.length === 0) return "—";
+    return Array.isArray(tagList) ? tagList.join(", ") : tagList;
+  };
 
   return (
     <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>Taskbank</h1>
-        <div className="logo-box">
-          <img src={logo} alt="Logo" className="logo-image" />
-        </div>
-      </header>
+      <DashboardHeader />
 
       <main>
         <section className="home-section">
@@ -36,13 +61,22 @@ export default function Home() {
           </div>
 
           <div className="task-list">
-            {tasks.map((task, idx) => (
-              <div key={idx} className="task-row">
-                <div>{task.name}</div>
-                <div>{task.tags}</div>
-                <div>{task.deadline}</div>
-              </div>
-            ))}
+            {loading ? (
+              <p>Loading tasks...</p>
+            ) : (
+              featuredTasks.map((task) => (
+                <button
+                  key={task.id}
+                  type="button"
+                  className="task-row task-row-button"
+                  onClick={() => navigate(`/task/${task.id}`)}
+                >
+                  <div>{task.name}</div>
+                  <div>{renderTags(task.tags)}</div>
+                  <div>{task.deadline}</div>
+                </button>
+              ))
+            )}
           </div>
 
           <button
@@ -63,13 +97,22 @@ export default function Home() {
           </div>
 
           <div className="project-list">
-            {projects.map((project, idx) => (
-              <div key={idx} className="project-row">
-                <div>{project.name}</div>
-                <div>{project.tags}</div>
-                <div>{project.deadline}</div>
-              </div>
-            ))}
+            {loading ? (
+              <p>Loading projects...</p>
+            ) : (
+              featuredProjects.map((project) => (
+                <button
+                  key={project.id}
+                  type="button"
+                  className="project-row project-row-button"
+                  onClick={() => navigate(`/project/${project.id}`)}
+                >
+                  <div>{project.name}</div>
+                  <div>{renderTags(project.tags)}</div>
+                  <div>{project.deadline}</div>
+                </button>
+              ))
+            )}
           </div>
 
           <button

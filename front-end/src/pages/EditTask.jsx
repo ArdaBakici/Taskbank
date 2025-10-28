@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import "../css/dashboard.css";
 import "../css/forms.css";
-import logo from "../assets/logo.png";
+import DashboardHeader from "../components/DashboardHeader";
 
 export default function EditTask() {
   const navigate = useNavigate();
@@ -161,12 +161,7 @@ export default function EditTask() {
   if (loading) {
     return (
       <div className="dashboard-container">
-        <header className="dashboard-header">
-          <h1>Taskbank</h1>
-          <div className="logo-box">
-            <img src={logo} alt="Logo" className="logo-image" />
-          </div>
-        </header>
+        <DashboardHeader />
         <main>
           <p>Loading task...</p>
         </main>
@@ -176,12 +171,7 @@ export default function EditTask() {
 
   return (
     <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>Taskbank</h1>
-        <div className="logo-box">
-          <img src={logo} alt="Logo" className="logo-image" />
-        </div>
-      </header>
+      <DashboardHeader />
 
       <main>
         <div className="dashboard-title-actions">
