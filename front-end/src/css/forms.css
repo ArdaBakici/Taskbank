@@ -27,7 +27,6 @@
   width: 80px;
   height: 80px;
   margin-bottom: 1rem;
-  background-color: #2563eb; /* optional background for contrast */
   padding: 10px;
   border-radius: 50%; /* makes it circular */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -51,6 +50,7 @@
   border: 1px solid #ccc;
   font-size: 1rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
 }
 
 .form-wrapper input:focus {
@@ -69,6 +69,8 @@
   cursor: pointer;
   font-size: 1rem;
   transition: background-color 0.2s ease, transform 0.1s ease;
+  box-sizing: border-box;
+  display: block;
 }
 
 .form-wrapper button:hover {
