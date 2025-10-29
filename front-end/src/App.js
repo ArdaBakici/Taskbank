@@ -20,7 +20,6 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/home" element={<Home />} />
         <Route path="/stats" element={<Stats />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/login" element={<Login />} />
@@ -34,9 +33,9 @@ function App() {
         <Route path="/tasks/edit/:id" element={<EditTask />} />
         <Route path="/projects" element={<AllProjects />} />
         <Route path="/projects/new" element={<AddProject />} />
-        <Route path="*" element={<Home />} /> {/* default fallback */}
         <Route path="/projects/edit/:id" element={<EditProject />} />
-        <Route path="*" element={<Login />} /> {/* default fallback */}
+        <Route path="/" element={<Login />} /> {/* default fallback */}
+        <Route path="*" element={<Home />} />
       </Routes>
     </Router>
   );
