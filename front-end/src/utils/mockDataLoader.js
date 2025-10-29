@@ -1,4 +1,4 @@
-// const CSV_BASE_PATH = `${process.env.PUBLIC_URL || ""}/mock-data`;
+const CSV_BASE_PATH = `${process.env.PUBLIC_URL || ""}/mock-data`;
 
 const MOCKAROO_TASKS_URL = "https://my.api.mockaroo.com/tasks.json?key=482f4d30";
 const MOCKAROO_PROJECTS_URL = "https://my.api.mockaroo.com/projects.json?key=482f4d30";
@@ -6,7 +6,6 @@ const MOCKAROO_PROJECTS_URL = "https://my.api.mockaroo.com/projects.json?key=482
 let cachedTasks = null;
 let cachedProjects = null;
 
-/*
 function splitCsvLine(line) {
   const values = [];
   let current = "";
@@ -50,7 +49,6 @@ function parseCsv(text) {
       }, {});
     });
 }
-*/
 
 function normalizeTags(raw) {
   if (!raw) return [];
@@ -88,7 +86,6 @@ function taskFromRow(row) {
   };
 }
 
-/*
 async function loadCsv(path) {
   const response = await fetch(`${CSV_BASE_PATH}/${path}`);
   if (!response.ok) {
@@ -97,28 +94,39 @@ async function loadCsv(path) {
   const text = await response.text();
   return parseCsv(text);
 }
-*/
 
 export async function fetchProjects() {
   if (!cachedProjects) {
-    const response = await fetch(MOCKAROO_PROJECTS_URL);
-    if (!response.ok) {
-      throw new Error("Failed to load projects from Mockaroo");
+    try {
+      const response = await fetch(MOCKAROO_PROJECTS_URL);
+      if (!response.ok) {
+        throw new Error("Failed to load projects from Mockaroo");
+      }
+      const rows = await response.json();
+      cachedProjects = rows.map(projectFromRow);
+    } catch (error) {
+      console.warn("Falling back to local projects CSV", error);
+      const rows = await loadCsv("projects.csv");
+      cachedProjects = rows.map(projectFromRow);
     }
-    const rows = await response.json();
-    cachedProjects = rows.map(projectFromRow);
   }
   return cachedProjects;
 }
 
 export async function fetchTasks() {
   if (!cachedTasks) {
-    const response = await fetch(MOCKAROO_TASKS_URL);
-    if (!response.ok) {
-      throw new Error("Failed to load tasks from Mockaroo");
+    try {
+      const response = await fetch(MOCKAROO_TASKS_URL);
+      if (!response.ok) {
+        throw new Error("Failed to load tasks from Mockaroo");
+      }
+      const rows = await response.json();
+      cachedTasks = rows.map(taskFromRow);
+    } catch (error) {
+      console.warn("Falling back to local tasks CSV", error);
+      const rows = await loadCsv("tasks.csv");
+      cachedTasks = rows.map(taskFromRow);
     }
-    const rows = await response.json();
-    cachedTasks = rows.map(taskFromRow);
   }
   return cachedTasks;
 }
