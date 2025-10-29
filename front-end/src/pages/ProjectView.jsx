@@ -52,6 +52,7 @@ export default function ProjectView() {
 
   const handleReturn = () => navigate(-1);
   const handleEdit = () => navigate(`/projects/edit/${id}`);
+  const handleTaskClick = (taskId) => navigate(`/task/${taskId}`);
 
 
 
@@ -96,7 +97,11 @@ export default function ProjectView() {
 
             <div className="task-list">
               {projectTasks.map((task) => (
-                <div key={task.id} className="task-row">
+                <div 
+                  key={task.id} 
+                  className="task-row clickable" 
+                  onClick={() => handleTaskClick(task.id)}
+                >
                   <div>{task.name}</div>
                   <div>{renderTags(task.tags)}</div>
                   <div>{task.deadline}</div>
