@@ -50,7 +50,7 @@ export default function ProjectView() {
     };
   }, [id]);
 
-  const handleReturn = () => navigate("/projects");
+  const handleReturn = () => navigate(-1);
   const handleEdit = () => navigate(`/projects/edit/${id}`);
 
 
@@ -71,7 +71,6 @@ export default function ProjectView() {
           <h2>{project ? project.name : loading ? "Loading..." : "Project not found"}</h2>
           <div className="dashboard-buttons">
             <button className="btn-edit" onClick={handleEdit}>Edit Project</button>
-            <button className="btn-return" onClick={handleReturn}>Return</button>
           </div>
         </div>
 

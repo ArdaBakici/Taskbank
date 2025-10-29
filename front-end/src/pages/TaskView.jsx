@@ -59,7 +59,7 @@ export default function TaskView() {
   };
 
   const handleBack = () => {
-    navigate("/tasks");
+    navigate(-1);
   };
 
   if (loading) {
@@ -92,7 +92,6 @@ export default function TaskView() {
         <div className="dashboard-title-actions">
           <h2>Task Details</h2>
           <div className="dashboard-buttons">
-            <button onClick={handleBack}>Back to Tasks</button>
             <button onClick={handleEdit}>Edit Task</button>
           </div>
         </div>
