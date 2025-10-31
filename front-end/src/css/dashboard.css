@@ -466,57 +466,74 @@
 
 
 /* Settings list */
+/* SETTINGS MAIN - make it like STATS card */
+.settings-main {
+  background: #fff; /* white card */
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); /* same shadow as stats */
+  max-width: 1000px;
+  margin: 0 auto 2rem auto; /* center and spacing at bottom */
+}
+
+/* Heading */
+.settings-main h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  color: #111827;
+}
+
+/* Settings list like stats metrics */
 .settings-list {
   list-style: none;
   padding: 0;
-  margin: 1rem 0;
+  margin: 0;
 }
 
-/* Individual setting item */
 .settings-item {
   display: flex;
+  justify-content: space-between; /* name left, value right */
   align-items: center;
-  justify-content: space-between; /* keeps Notifications on the right */
-  padding: 12px 20px; /* horizontal padding ensures value isn't at the edge */
-  margin-bottom: 10px;
-  background: #f9fafb;
-  border-radius: 8px;
-  cursor: pointer;
+  padding: 0.75rem 0; /* similar vertical spacing as stats */
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 1rem;
+  color: #374151;
   transition: background 0.2s, transform 0.1s;
 }
 
+.settings-item:last-child {
+  border-bottom: none; /* remove last border for clean look */
+}
+
 .settings-item:hover {
-  background: #e5e7eb;
-  transform: translateY(-2px);
+  background-color: #f3f4f6; /* subtle hover effect */
+  transform: translateY(-1px);
 }
 
 /* Left side: icon + name */
 .settings-left {
   display: flex;
   align-items: center;
-  gap: 12px; /* space between icon and name */
+  gap: 12px; /* spacing between icon and text */
 }
 
-/* Icon style */
 .settings-icon {
   font-size: 1.2rem;
   color: #4b5563;
 }
 
-/* Name style */
 .settings-name {
   font-weight: 500;
   color: #111827;
 }
 
+/* Right side: value / toggle */
 .settings-value {
   font-weight: bold;
-  color: #000000; /* green for On */
-  min-width: 40px; /* optional: prevents shrinking */
-  text-align: right; /* right-aligned */
-  margin-right: 10px; /* <-- adds space from the right edge */
+  color: #000; /* black for consistency with stats numbers */
+  min-width: 40px;
+  text-align: right;
 }
-
 
 
 
