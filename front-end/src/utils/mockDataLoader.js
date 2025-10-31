@@ -1,7 +1,7 @@
 const CSV_BASE_PATH = `${process.env.PUBLIC_URL || ""}/mock-data`;
 
-const MOCKAROO_TASKS_URL = "https://my.api.mockaroo.com/tasks.json?key=482f4d30";
-const MOCKAROO_PROJECTS_URL = "https://my.api.mockaroo.com/projects.json?key=482f4d30";
+const MOCKAROO_TASKS_URL = process.env.REACT_APP_MOCKAROO_TASKS_URL;
+const MOCKAROO_PROJECTS_URL = process.env.REACT_APP_MOCKAROO_PROJECTS_URL;
 
 let cachedTasks = null;
 let cachedProjects = null;
