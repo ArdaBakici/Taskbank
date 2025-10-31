@@ -323,6 +323,11 @@
   outline-color: #ef4444;
 }
 
+.task-reorder-list { touch-action: none; }
+.task-reorder-item.dragging { opacity: 0.6; }
+.drag-handle { -webkit-user-drag: none; user-select: none; }
+
+
 
 
 @keyframes fadeIn {
