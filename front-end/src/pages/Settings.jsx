@@ -20,7 +20,8 @@ export default function Settings() {
         setNotifications(!notifications);
         break;
       case "Log Out":
-        // do nothing for now; will implement in a different branch
+        alert("Logging out...");
+        navigate("/login"); // keep as is
         break;
       default:
         break;
