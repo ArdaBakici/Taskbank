@@ -13,8 +13,7 @@ import Stats from "./pages/Stats";
 import Settings from "./pages/Settings";
 import EditTask from "./pages/EditTask";
 import EditProject from "./pages/EditProject";
-
-
+import TaskSearch from "./pages/TaskSearch"; // ← import the new search page
 
 function App() {
   return (
@@ -26,10 +25,9 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/tasks" element={<AllTasks />} />
         <Route path="/tasks/new" element={<AddTask />} />
-        
+        <Route path="/tasks/search" element={<TaskSearch />} /> {/* ← new search route */}
         <Route path="/task/:id" element={<TaskView />} />
         <Route path="/project/:id" element={<ProjectView />} />
-
         <Route path="/tasks/edit/:id" element={<EditTask />} />
         <Route path="/projects" element={<AllProjects />} />
         <Route path="/projects/new" element={<AddProject />} />
@@ -42,8 +40,3 @@ function App() {
 }
 
 export default App;
-
-
-
-
-// {/* <Route path="/task/:id" element={<TaskView />} /> */}
