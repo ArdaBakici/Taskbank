@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FiSearch } from "react-icons/fi"; // Feather search icon
 import "../css/dashboard.css";
 import DashboardHeader from "../components/DashboardHeader";
 import { fetchProjects, fetchTasks } from "../utils/mockDataLoader";
@@ -51,12 +52,20 @@ export default function Home() {
       <DashboardHeader />
 
       <main>
+        {/* TASKS SECTION */}
         <section className="home-section">
           <div className="dashboard-title-actions">
             <h2>Tasks</h2>
             <div className="dashboard-buttons">
               <button onClick={() => navigate("/tasks/new")}>Create</button>
               <button>Sort</button>
+              <button
+                className="search-button"
+                title="Search Tasks"
+                onClick={() => navigate("/tasks/search")}
+              >
+                <FiSearch size={18} />
+              </button>
             </div>
           </div>
 
@@ -87,6 +96,7 @@ export default function Home() {
           </button>
         </section>
 
+        {/* PROJECTS SECTION */}
         <section className="home-section">
           <div className="dashboard-title-actions">
             <h2>Projects</h2>
@@ -123,6 +133,7 @@ export default function Home() {
           </button>
         </section>
 
+        {/* BOTTOM BUTTONS */}
         <div className="home-bottom-buttons">
           <button onClick={() => navigate("/stats")}>Stats</button>
           <button onClick={() => navigate("/settings")}>Settings</button>
