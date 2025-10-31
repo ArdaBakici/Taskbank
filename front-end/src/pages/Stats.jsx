@@ -33,6 +33,13 @@ export default function Stats() {
           <strong>{metrics.mostCommonTag}</strong>
         </div>
 
+        <div className="stats-metric">
+          <span>Performance Grade:</span>
+          <strong>
+            <span className="grade-circle" title="Excellent Performance">A+</span>
+          </strong>
+        </div>
+
         <h3>Tasks Completed Graph (Past Month)</h3>
         <div className="stats-graph">
           {graphBars.map((value, idx) => (

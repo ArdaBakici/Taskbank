@@ -308,15 +308,13 @@
 
 .stats-metric {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* keeps label on left, value on right */
+  align-items: center; /* vertically centers text and circle */
   font-size: 1rem;
   padding: 0.75rem 0;
   border-bottom: 1px solid #e5e7eb;
 }
 
-.stats-metric strong {
-  color: #111827;
-}
 
 .stats-main h3 {
   margin-top: 2rem;
@@ -445,3 +443,24 @@
   margin-top: 2rem;
   padding-bottom: 2rem;
 }
+
+.grade-circle {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #28a745;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: default;
+}
+
+.grade-circle:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
