@@ -464,3 +464,60 @@
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
 }
 
+
+/* Settings list */
+.settings-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+/* Individual setting item */
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* keeps Notifications on the right */
+  padding: 12px 20px; /* horizontal padding ensures value isn't at the edge */
+  margin-bottom: 10px;
+  background: #f9fafb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.settings-item:hover {
+  background: #e5e7eb;
+  transform: translateY(-2px);
+}
+
+/* Left side: icon + name */
+.settings-left {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* space between icon and name */
+}
+
+/* Icon style */
+.settings-icon {
+  font-size: 1.2rem;
+  color: #4b5563;
+}
+
+/* Name style */
+.settings-name {
+  font-weight: 500;
+  color: #111827;
+}
+
+.settings-value {
+  font-weight: bold;
+  color: #000000; /* green for On */
+  min-width: 40px; /* optional: prevents shrinking */
+  text-align: right; /* right-aligned */
+  margin-right: 10px; /* <-- adds space from the right edge */
+}
+
+
+
+
+
