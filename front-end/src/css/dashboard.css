@@ -555,5 +555,68 @@
   transform: translateY(-2px);
 }
 
+/* POPUP STYLES */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.popup-content {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+}
+
+.popup-content h3 {
+  color: #111827;
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.popup-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* Match dashboard button styles */
+.popup-btn {
+  padding: 0.7rem 1.5rem;
+  background-color: #1f2937;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.popup-btn:hover {
+  background-color: #111827;
+  transform: translateY(-2px);
+}
+
+/* Slight variation for "No" button (lighter) */
+.popup-btn.no {
+  background-color: #6b7280;
+}
+
+.popup-btn.no:hover {
+  background-color: #4b5563;
+}
+
 
 

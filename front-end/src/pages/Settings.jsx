@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/dashboard.css";
@@ -8,11 +7,12 @@ import { FiUser, FiLock, FiBell, FiLogOut } from "react-icons/fi";
 export default function Settings() {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState(true);
+  const [showPopup, setShowPopup] = useState(false); // state to control popup visibility
 
   const handleOptionClick = (option) => {
     switch (option) {
       case "Change Password":
-        alert("Open change password modal");
+        setShowPopup(true); // show popup instead of alert
         break;
       case "Notifications":
         setNotifications(!notifications);
@@ -70,6 +70,32 @@ export default function Settings() {
           Return
         </button>
       </main>
+
+      {/* 🔹 Popup Modal */}
+      {showPopup && (
+        <div className="popup-overlay">
+          <div className="popup-content">
+            <h3>Do you want to change your password?</h3>
+            <div className="popup-buttons">
+              <button
+                className="popup-btn no"
+                onClick={() => setShowPopup(false)}
+              >
+                No
+              </button>
+              <button
+                className="popup-btn yes"
+                onClick={() => {
+                  setShowPopup(false);
+                  //Next phase is to navigate("/change-password");
+                }}
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
