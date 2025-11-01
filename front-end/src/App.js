@@ -13,7 +13,8 @@ import Stats from "./pages/Stats";
 import Settings from "./pages/Settings";
 import EditTask from "./pages/EditTask";
 import EditProject from "./pages/EditProject";
-import TaskSearch from "./pages/TaskSearch"; // ← import the new search page
+import TaskSearch from "./pages/TaskSearch"; 
+import ChangePassword from "./pages/ChangePassword";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
       <Routes>
         <Route path="/stats" element={<Stats />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/tasks" element={<AllTasks />} />

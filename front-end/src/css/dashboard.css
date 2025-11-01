@@ -617,6 +617,106 @@
 .popup-btn.no:hover {
   background-color: #4b5563;
 }
+/* CHANGE PASSWORD PAGE */
+.change-password-page {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  max-width: 1000px;
+  margin: 0 auto 2rem auto;
+}
 
+.change-password-page h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  color: #111827;
+}
 
+.change-password-form label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
 
+.change-password-form input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-bottom: 1.25rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.change-password-form input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.change-password-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.change-password-buttons button {
+  padding: 0.7rem 1.5rem;
+  background-color: #1f2937;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.change-password-buttons button:hover {
+  background-color: #111827;
+  transform: translateY(-2px);
+}
+
+.change-password-buttons .cancel {
+  background-color: #6b7280;
+}
+
+.change-password-buttons .cancel:hover {
+  background-color: #4b5563;
+}
+
+.error-message {
+  color: #dc2626;
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.success-message {
+  color: #16a34a;
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.primary-button {
+  background-color: #3b82f6; /* nice blue */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin: 8px;
+}
+
+.primary-button:hover {
+  background-color: #2563eb;
+}

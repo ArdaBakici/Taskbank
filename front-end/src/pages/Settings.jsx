@@ -71,23 +71,23 @@ export default function Settings() {
         </button>
       </main>
 
-      {/* 🔹 Popup Modal */}
+      {/* Popup Modal */}
       {showPopup && (
         <div className="popup-overlay">
           <div className="popup-content">
             <h3>Do you want to change your password?</h3>
             <div className="popup-buttons">
               <button
-                className="popup-btn no"
+                className="popup-btn"
                 onClick={() => setShowPopup(false)}
               >
                 No
               </button>
               <button
-                className="popup-btn yes"
+                className="popup-btn"
                 onClick={() => {
                   setShowPopup(false);
-                  //Next phase is to navigate("/change-password");
+                  navigate("/change-password"); // navigate to Change Password page
                 }}
               >
                 Yes
