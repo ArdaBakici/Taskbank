@@ -9,6 +9,76 @@ import {
   fetchTasks,
 } from "../utils/mockDataLoader";
 
+// dnd-kit imports
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  arrayMove,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+function SortableTaskItem({ task, index, onEdit, onRemove }) {
+  // Let dnd-kit control the item
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+    touchAction: "none", // prevent scroll-while-drag on touch
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`task-reorder-item ${isDragging ? "dragging" : ""}`}
+      data-task-id={task.id}
+    >
+      <div className="task-reorder-content">
+        {/* Drag handle: spread draggable attributes/listeners here */}
+        <span
+          className="drag-handle"
+          style={{ cursor: "grab", marginRight: "0.5rem", userSelect: "none" }}
+          {...attributes}
+          {...listeners}
+        >
+          ☰
+        </span>
+        <span className="task-order-number">{index + 1}.</span>
+        <span className="task-name" style={{ marginLeft: "0.5rem" }}>
+          {task.title || task.name}
+        </span>
+      </div>
+      <div className="task-actions">
+        <button
+          type="button"
+          onClick={() => onEdit(task.id)}
+          className="inline-edit-btn"
+        >
+          Edit
+        </button>
+        <button
+          type="button"
+          onClick={() => onRemove(task.id)}
+          className="inline-remove-btn"
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function EditProject() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -19,14 +89,12 @@ export default function EditProject() {
     status: "Planning",
     deadline: "",
     tags: "",
-    selectedTasks: [], // This will now maintain order
+    selectedTasks: [], // ordered array of task IDs
   });
 
   const [errors, setErrors] = useState({});
   const [availableTasks, setAvailableTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [draggedTaskId, setDraggedTaskId] = useState(null);
-  const [draggedOverTaskId, setDraggedOverTaskId] = useState(null);
 
   // Load existing project data and available tasks
   useEffect(() => {
@@ -34,15 +102,10 @@ export default function EditProject() {
 
     async function loadData() {
       setLoading(true);
-
       try {
-        // Load all available tasks first
         const allTasks = await fetchTasks();
-        if (isMounted) {
-          setAvailableTasks(allTasks || []);
-        }
+        if (isMounted) setAvailableTasks(allTasks || []);
 
-        // Load the specific project if ID exists
         if (id) {
           const [projectData, projectTasks] = await Promise.all([
             fetchProjectById(id),
@@ -50,34 +113,29 @@ export default function EditProject() {
           ]);
 
           if (isMounted && projectData) {
-            // Get IDs of tasks already in this project, maintaining their order
-            const selectedTaskIds = projectTasks.map(task => task.id);
-
+            const selectedTaskIds = (projectTasks || []).map((t) => t.id);
             setFormData({
               projectName: projectData.name || "",
               description: projectData.description || "",
               status: projectData.status || "Planning",
               deadline: projectData.deadline || "",
-              tags: projectData.tags 
-                ? (Array.isArray(projectData.tags) 
-                    ? projectData.tags.join(", ") 
-                    : projectData.tags)
+              tags: projectData.tags
+                ? Array.isArray(projectData.tags)
+                  ? projectData.tags.join(", ")
+                  : projectData.tags
                 : "",
               selectedTasks: selectedTaskIds,
             });
           }
         }
-      } catch (error) {
-        console.error("Failed to load project data", error);
+      } catch (err) {
+        console.error("Failed to load project data", err);
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     }
 
     loadData();
-
     return () => {
       isMounted = false;
     };
@@ -85,17 +143,8 @@ export default function EditProject() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleTaskSelection = (taskId) => {
@@ -105,105 +154,39 @@ export default function EditProject() {
         ...prev,
         selectedTasks: isSelected
           ? prev.selectedTasks.filter((id) => id !== taskId)
-          : [...prev.selectedTasks, taskId], // Add to end of list
+          : [...prev.selectedTasks, taskId], // append to end
       };
     });
-  };
-
-  // Drag and Drop Handlers
-  const handleDragStart = (e, taskId) => {
-    setDraggedTaskId(taskId);
-    e.dataTransfer.effectAllowed = "move";
-    // Add a semi-transparent effect
-    e.currentTarget.style.opacity = "0.5";
-  };
-
-  const handleDragEnd = (e) => {
-    e.currentTarget.style.opacity = "1";
-    setDraggedTaskId(null);
-    setDraggedOverTaskId(null);
-  };
-
-  const handleDragOver = (e, taskId) => {
-    e.preventDefault(); // Necessary to allow drop
-    e.dataTransfer.dropEffect = "move";
-    
-    if (taskId !== draggedTaskId) {
-      setDraggedOverTaskId(taskId);
-    }
-  };
-
-  const handleDragLeave = (e) => {
-    setDraggedOverTaskId(null);
-  };
-
-  const handleDrop = (e, dropTaskId) => {
-    e.preventDefault();
-    
-    if (draggedTaskId === dropTaskId) {
-      return;
-    }
-
-    setFormData((prev) => {
-      const newSelectedTasks = [...prev.selectedTasks];
-      const draggedIndex = newSelectedTasks.indexOf(draggedTaskId);
-      const dropIndex = newSelectedTasks.indexOf(dropTaskId);
-
-      // Remove dragged item
-      newSelectedTasks.splice(draggedIndex, 1);
-      // Insert at new position
-      newSelectedTasks.splice(dropIndex, 0, draggedTaskId);
-
-      return {
-        ...prev,
-        selectedTasks: newSelectedTasks,
-      };
-    });
-
-    setDraggedOverTaskId(null);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const newErrors = {};
-
     if (!formData.projectName.trim()) {
       newErrors.projectName = "Project name is required";
     }
-
-    if (Object.keys(newErrors).length > 0) {
+    if (Object.keys(newErrors).length) {
       setErrors(newErrors);
       return;
     }
-
     setErrors({});
-
-    // The selectedTasks array now contains the ordered task IDs
     console.log("Updating project with ordered tasks:", { id, ...formData });
     alert("Project updated successfully!");
     navigate("/projects");
   };
 
-  const handleCancel = () => {
-    navigate("/projects");
-  };
-
-  const handleEditTask = (taskId) => {
+  const handleCancel = () => navigate("/projects");
+  const handleEditTask = (taskId) =>
     navigate(`/tasks/edit/${taskId}`, { state: { returnToProject: id } });
-  };
 
-  // Get selected tasks in order
-  const getOrderedSelectedTasks = () => {
-    return formData.selectedTasks
-      .map(taskId => availableTasks.find(task => task.id === taskId))
-      .filter(task => task !== undefined);
-  };
+  // Helpers to map IDs <-> task objects
+  const getOrderedSelectedTasks = () =>
+    formData.selectedTasks
+      .map((taskId) => availableTasks.find((t) => t.id === taskId))
+      .filter(Boolean);
 
-  // Get unselected tasks
-  const getUnselectedTasks = () => {
-    return availableTasks.filter(task => !formData.selectedTasks.includes(task.id));
-  };
+  const getUnselectedTasks = () =>
+    availableTasks.filter((t) => !formData.selectedTasks.includes(t.id));
 
   if (loading) {
     return (
@@ -219,10 +202,25 @@ export default function EditProject() {
   const orderedSelectedTasks = getOrderedSelectedTasks();
   const unselectedTasks = getUnselectedTasks();
 
+  // dnd-kit: when a drag ends, reorder the selectedTasks array
+  const onDragEnd = (event) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setFormData((prev) => {
+      const current = prev.selectedTasks;
+      const oldIndex = current.indexOf(active.id);
+      const newIndex = current.indexOf(over.id);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+
+      const reordered = arrayMove(current, oldIndex, newIndex);
+      return { ...prev, selectedTasks: reordered };
+    });
+  };
+
   return (
     <div className="dashboard-container">
       <DashboardHeader />
-
       <main>
         <div className="dashboard-title-actions">
           <h2>Edit Project</h2>
@@ -305,7 +303,7 @@ export default function EditProject() {
               </div>
             </div>
 
-            {/* Selected Tasks - Reorderable */}
+            {/* Selected Tasks - Reorderable (touch + mouse) */}
             {orderedSelectedTasks.length > 0 && (
               <div className="form-row">
                 <div className="form-group full-width">
@@ -313,44 +311,29 @@ export default function EditProject() {
                   <p className="field-hint">
                     Tasks are executed in this order. Drag to change priority.
                   </p>
-                  <div className="task-reorder-list">
-                    {orderedSelectedTasks.map((task, index) => (
+
+                  <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+                    <SortableContext
+                      // the list of item ids in order
+                      items={formData.selectedTasks}
+                      strategy={verticalListSortingStrategy}
+                    >
                       <div
-                        key={task.id}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, task.id)}
-                        onDragEnd={handleDragEnd}
-                        onDragOver={(e) => handleDragOver(e, task.id)}
-                        onDragLeave={handleDragLeave}
-                        onDrop={(e) => handleDrop(e, task.id)}
-                        className={`task-reorder-item ${
-                          draggedTaskId === task.id ? "dragging" : ""
-                        } ${draggedOverTaskId === task.id ? "drag-over" : ""}`}
+                        className="task-reorder-list"
+                        style={{ touchAction: "none" }}
                       >
-                        <div className="task-reorder-content">
-                          <span className="drag-handle">☰</span>
-                          <span className="task-order-number">{index + 1}.</span>
-                          <span className="task-name">{task.title || task.name}</span>
-                        </div>
-                        <div className="task-actions">
-                          <button
-                            type="button"
-                            onClick={() => handleEditTask(task.id)}
-                            className="inline-edit-btn"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleTaskSelection(task.id)}
-                            className="inline-remove-btn"
-                          >
-                            Remove
-                          </button>
-                        </div>
+                        {orderedSelectedTasks.map((task, index) => (
+                          <SortableTaskItem
+                            key={task.id}
+                            task={task}
+                            index={index}
+                            onEdit={handleEditTask}
+                            onRemove={handleTaskSelection}
+                          />
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </SortableContext>
+                  </DndContext>
                 </div>
               </div>
             )}
@@ -362,33 +345,39 @@ export default function EditProject() {
                   <label>Available Tasks</label>
                   <p className="field-hint">Click to add tasks to this project</p>
                   <div className="task-selection-list">
-                    {unselectedTasks.map((task) => (
-                      <div key={task.id} className="task-checkbox-item">
-                        <div style={{ display: "flex", alignItems: "center" }}>
-                          <input
-                            type="checkbox"
-                            id={`task-${task.id}`}
-                            checked={false}
-                            onChange={() => handleTaskSelection(task.id)}
-                            style={{ marginRight: "0.5rem" }}
-                          />
-                          <label 
-                            htmlFor={`task-${task.id}`} 
-                            style={{ margin: 0, cursor: "pointer" }}
+                    {unselectedTasks.map((task) => {
+                      const isChecked = formData.selectedTasks.includes(task.id);
+                      return (
+                        <div key={task.id} className="task-checkbox-item">
+                          <div style={{ display: "flex", alignItems: "center" }}>
+                            <input
+                              type="checkbox"
+                              id={`task-${task.id}`}
+                              checked={isChecked}
+                              onChange={() => handleTaskSelection(task.id)}
+                              style={{ marginRight: "0.5rem" }}
+                            />
+                            <label
+                              htmlFor={`task-${task.id}`}
+                              style={{ margin: 0, cursor: "pointer" }}
+                            >
+                              {task.title || task.name}
+                            </label>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleEditTask(task.id)}
+                            className="inline-edit-btn"
+                            style={{
+                              fontSize: "0.85em",
+                              padding: "0.25rem 0.75rem",
+                            }}
                           >
-                            {task.title || task.name}
-                          </label>
+                            Edit
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => handleEditTask(task.id)}
-                          className="inline-edit-btn"
-                          style={{ fontSize: "0.85em", padding: "0.25rem 0.75rem" }}
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -405,7 +394,14 @@ export default function EditProject() {
             )}
 
             {/* Action Buttons */}
-            <div style={{ marginTop: "2rem", display: "flex", justifyContent: "center", width: "100%" }}>
+            <div
+              style={{
+                marginTop: "2rem",
+                display: "flex",
+                justifyContent: "center",
+                width: "100%",
+              }}
+            >
               <div className="dashboard-buttons">
                 <button type="button" onClick={handleCancel}>
                   Cancel
