@@ -9,16 +9,15 @@ Before you begin, ensure you have the following installed on your local machine:
 ## Installation
 
 1. **Clone the repository**
-* Clone this repository to your local machine and navigate into the project directory
+   * Clone this repository to your local machine and navigate into the project directory
 ```bash
    git clone https://github.com/agile-students-fall2025/4-final-taskbank.git
    cd 4-final-taskbank
 ```
 
 2. **Install dependencies**
-* Navigate into the front-end directory
-* Run `npm install`  to install all dependencies listed in the package.json file.
-
+   * Navigate into the front-end directory
+   * Run `npm install` to install all dependencies listed in the package.json file.
 ```bash
    cd front-end
    npm install
@@ -31,14 +30,14 @@ Before you begin, ensure you have the following installed on your local machine:
 2. **Add the following variables** to your `.env` file:
 ```env
    REACT_APP_MOCKAROO_TASKS_URL=<your_mockaroo_tasks_url>
-    REACT_APP_MOCKAROO_PROJECTS_URL=<your_mockaroo_projects_url>
+   REACT_APP_MOCKAROO_PROJECTS_URL=<your_mockaroo_projects_url>
 ```
    > **Note:** We shared the .env files and the API keys needed in the Discord. Please check the Discord if necessary!
 
 ## Running the Application
 
 1. **Start the development server**
-* Run `npm start` in the front-end directory to launch the React.js server
+   * Run `npm start` in the front-end directory to launch the React.js server
 ```bash
    npm start
 ```
@@ -64,7 +63,6 @@ Launches the test runner in interactive watch mode
 
 ### `npm run build`
 Builds the app for production to the `build` folder
-
 
 ## Troubleshooting
 
@@ -96,9 +94,8 @@ Clear your browser cache or try hard refresh:
 
 - Open an issue on GitHub
 - Contact the team on Discord
-```
 
-## Important Notes:
+## Important Notes
 
 1. **Update the repository URL** in the clone command with your actual GitHub repository URL
 
@@ -120,3 +117,4 @@ Clear your browser cache or try hard refresh:
    # misc
    .DS_Store
    npm-debug.log*
+```
