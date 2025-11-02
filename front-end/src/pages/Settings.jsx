@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/dashboard.css";
@@ -10,18 +11,15 @@ export default function Settings() {
 
   const handleOptionClick = (option) => {
     switch (option) {
-      case "Name":
-        alert("Open edit name modal"); // keep as is
-        break;
       case "Change Password":
-        alert("Open change password modal"); // keep as is
+        alert("Open change password modal");
         break;
       case "Notifications":
         setNotifications(!notifications);
         break;
       case "Log Out":
         alert("Logging out...");
-        navigate("/login"); // keep as is
+        navigate("/login");
         break;
       default:
         break;
@@ -29,7 +27,7 @@ export default function Settings() {
   };
 
   const profileOptions = [
-    { name: "Name", icon: <FiUser /> },
+    { name: "Name", icon: <FiUser />, disabled: true },
     { name: "Change Password", icon: <FiLock /> },
     { name: "Notifications", icon: <FiBell /> },
     { name: "Log Out", icon: <FiLogOut /> },
@@ -46,15 +44,16 @@ export default function Settings() {
           {profileOptions.map((option) => (
             <li
               key={option.name}
-              className="settings-item"
-              onClick={() => handleOptionClick(option.name)}
+              className={`settings-item ${option.disabled ? "disabled" : ""}`}
+              onClick={
+                option.disabled ? undefined : () => handleOptionClick(option.name)
+              }
             >
               <div className="settings-left">
                 <span className="settings-icon">{option.icon}</span>
                 <span className="settings-name">{option.name}</span>
               </div>
 
-              {/* Notifications value is outside left group for right alignment */}
               {option.name === "Notifications" && (
                 <span className="settings-value">
                   {notifications ? "On" : "Off"}
