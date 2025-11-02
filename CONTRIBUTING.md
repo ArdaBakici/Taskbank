@@ -46,6 +46,10 @@
 - Focus on the problem, not the person
 - Assume positive intent
 
+### Estimation of Effort
+
+To estimate the amount of effort that is needed for a user story, we use the planning poker with values 0,1,2,3,5,8,13,20,40 and 100. Higher value indicated higher complexity out of 100.
+
 ## Git Workflow
 
 We follow the **Feature Branch Workflow** with the following practices:
