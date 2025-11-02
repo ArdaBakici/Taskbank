@@ -1,70 +1,122 @@
-# Getting Started with Create React App
+## Prerequisites
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Before you begin, ensure you have the following installed on your local machine:
+
+- **Node.js** (v16 or higher) - [Download here](https://nodejs.org/)
+- **npm** (comes with Node.js)
+- **Git** - [Download here](https://git-scm.com/)
+
+## Installation
+
+1. **Clone the repository**
+* Clone this repository to your local machine and navigate into the project directory
+```bash
+   git clone https://github.com/agile-students-fall2025/4-final-taskbank.git
+   cd 4-final-taskbank
+```
+
+2. **Install dependencies**
+* Navigate into the front-end directory
+* Run `npm install`  to install all dependencies listed in the package.json file.
+
+```bash
+   cd front-end
+   npm install
+```
+
+## Environment Setup
+
+1. **Create a `.env` file** in the front-end directory (this file should NOT be committed to version control)
+
+2. **Add the following variables** to your `.env` file:
+```env
+   REACT_APP_MOCKAROO_TASKS_URL=<your_mockaroo_tasks_url>
+    REACT_APP_MOCKAROO_PROJECTS_URL=<your_mockaroo_projects_url>
+```
+   > **Note:** We shared the .env files and the API keys needed in the Discord. Please check the Discord if necessary!
+
+## Running the Application
+
+1. **Start the development server**
+* Run `npm start` in the front-end directory to launch the React.js server
+```bash
+   npm start
+```
+
+2. **Open your browser** and navigate to:
+```
+   http://localhost:3000
+```
+
+   The application should automatically open in your default browser. If not, manually navigate to the URL above.
+
+3. **The page will automatically reload** when you make changes to the code.
 
 ## Available Scripts
 
 In the project directory, you can run:
 
 ### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Runs the app in development mode at [http://localhost:3000](http://localhost:3000)
 
 ### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Launches the test runner in interactive watch mode
 
 ### `npm run build`
+Builds the app for production to the `build` folder
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Troubleshooting
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Port 3000 is already in use
+If you see an error that port 3000 is already in use:
+```bash
+# Kill the process using port 3000
+# On Mac/Linux:
+lsof -ti:3000 | xargs kill -9
 
-### `npm run eject`
+# On Windows:
+netstat -ano | findstr :3000
+taskkill /PID <PID_NUMBER> /F
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### npm install fails
+Try clearing npm cache:
+```bash
+npm cache clean --force
+npm install
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Changes not reflecting
+Clear your browser cache or try hard refresh:
+- **Mac:** Cmd + Shift + R
+- **Windows/Linux:** Ctrl + Shift + R
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Need Help?
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- Open an issue on GitHub
+- Contact the team on Discord
+```
 
-## Learn More
+## Important Notes:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+1. **Update the repository URL** in the clone command with your actual GitHub repository URL
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+2. **Ensure `.env` is in `.gitignore`** - Create/update your `.gitignore` file:
+```
+   # dependencies
+   /node_modules
 
-### Code Splitting
+   # environment variables
+   .env
+   .env.local
+   .env.development.local
+   .env.test.local
+   .env.production.local
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+   # production
+   /build
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+   # misc
+   .DS_Store
+   npm-debug.log*
