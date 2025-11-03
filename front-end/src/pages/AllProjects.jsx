@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/dashboard.css";
 import DashboardHeader from "../components/DashboardHeader";
 import { fetchProjects } from "../utils/mockDataLoader";
-export default function AllProjects() {
+export default function AllProjects({
+  embedded = false,
+  limit,
+  showFooter = true,
+}) {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,49 +40,68 @@ export default function AllProjects() {
     };
   }, []);
 
+  const displayedProjects = useMemo(() => {
+    if (typeof limit === "number") {
+      return projects.slice(0, limit);
+    }
+    return projects;
+  }, [projects, limit]);
+
   const renderTags = (tagList) => {
     if (!tagList || tagList.length === 0) return "—";
     return Array.isArray(tagList) ? tagList.join(", ") : tagList;
   };
+
+  const listContent = (
+    <>
+      <div className="dashboard-title-actions">
+        <h2>Projects</h2>
+        <div className="dashboard-buttons">
+          <button onClick={() => navigate("/projects/new")}>Create</button>
+          <button>Sort</button>
+        </div>
+      </div>
+
+      <div className="project-list">
+        {loading && <p>Loading projects...</p>}
+        {error && <p>{error}</p>}
+        {!loading &&
+          !error &&
+          displayedProjects.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              className="project-row project-row-button"
+              onClick={() => navigate(`/project/${p.id}`)}
+            >
+              <div>{p.name}</div>
+              <div>{renderTags(p.tags)}</div>
+              <div>{p.deadline}</div>
+            </button>
+          ))}
+      </div>
+    </>
+  );
+
+  if (embedded) {
+    return listContent;
+  }
 
   return (
     <div className="dashboard-container">
       <DashboardHeader />
 
       <main>
-        <div className="dashboard-title-actions">
-          <h2>Projects</h2>
-          <div className="dashboard-buttons">
-            <button onClick={() => navigate("/projects/new")}>Create</button>
-            <button>Sort</button>
-          </div>
-        </div>
+        {listContent}
 
-        <div className="project-list">
-          {loading && <p>Loading projects...</p>}
-          {error && <p>{error}</p>}
-          {!loading &&
-            !error &&
-            projects.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                className="project-row project-row-button"
-                onClick={() => navigate(`/project/${p.id}`)}
-              >
-                <div>{p.name}</div>
-                <div>{renderTags(p.tags)}</div>
-                <div>{p.deadline}</div>
-              </button>
-            ))}
-        </div>
-
-        <button
-          className="section-footer-button projects-return"
-          onClick={() => navigate("/home")}
-        >
-          Return
-        </button>
+        {showFooter && (
+          <button
+            className="section-footer-button projects-return"
+            onClick={() => navigate("/home")}
+          >
+            Return
+          </button>
+        )}
       </main>
     </div>
   );
