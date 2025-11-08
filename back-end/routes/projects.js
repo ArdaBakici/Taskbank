@@ -50,13 +50,15 @@ router.post("/", (req, res) => {
 
 
 // TODO (Sihyun): implement edit_project
-router.patch("/:id", (_req, res) => {
-  res.status(501).json({
-    message: "PATCH /api/projects/:id is reserved for Sihyun to implement.",
-  });
+
+router.patch("/:id", (req, res) => {
+  const projectId = Number(req.params.id);
+  const updated = updateProject(projectId, req.body || {});
+  if (!updated) {
+    return res.status(404).json({ message: "Project not found" });
+  }
+  return res.json(updated);
 });
-
-
 
 
 // TODO (Srijan): implement delete_project
