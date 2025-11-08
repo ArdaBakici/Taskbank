@@ -33,40 +33,21 @@ router.post("/", (req, res) => {
     return res.status(400).json({ message: "name is required to create a project" });
   }
   
-  // NEW: Validate deadline (Task 128)
+  // Validate deadline (Task 128)
   if (!payload.deadline) {
     return res.status(400).json({ message: "deadline is required to create a project" });
-  }
-  
-  // NEW: Validate priority if provided (Task 128)
-  if (payload.priority) {
-    const validPriorities = ['low', 'medium', 'high', 'urgent'];
-    if (!validPriorities.includes(payload.priority)) {
-      return res.status(400).json({ 
-        message: `Invalid priority. Must be one of: ${validPriorities.join(', ')}` 
-      });
-    }
-  }
-  
-  // NEW: Validate status if provided (Task 128)
-  if (payload.status) {
-    const validStatuses = ['planning', 'active', 'on-hold', 'completed', 'archived'];
-    if (!validStatuses.includes(payload.status)) {
-      return res.status(400).json({ 
-        message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` 
-      });
-    }
   }
   
   // Create project with defaults
   const newProject = addProject({
     ...payload,
-    priority: payload.priority || "medium",  // default priority
-    status: payload.status || "planning"      // default status
+    urgency: payload.priority || "Medium",  // default priority
+    status: payload.status || "Planning"      // default status
   });
   
   return res.status(201).json(newProject);
 });
+
 
 // TODO (Sihyun): implement edit_project
 router.patch("/:id", (_req, res) => {
@@ -74,6 +55,9 @@ router.patch("/:id", (_req, res) => {
     message: "PATCH /api/projects/:id is reserved for Sihyun to implement.",
   });
 });
+
+
+
 
 // TODO (Srijan): implement delete_project
 router.delete("/:id", (_req, res) => {
