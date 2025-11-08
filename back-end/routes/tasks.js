@@ -1,4 +1,12 @@
 const express = require("express");
+const {
+  getTasks,
+  findTaskById,
+  addTask,
+  updateTask,
+  deleteTask,
+} = require("../data/tasks");
+
 const router = express.Router();
 
 // TODO (Arda): implement list_tasks with limit & sorting support
@@ -19,81 +27,55 @@ router.get("/:id", (_req, res) => {
 // POST /api/tasks - Create a new task with properties
 
 router.post("/", (req, res) => {
-  // 1. Extract all task data from request body
-  const { 
-    title, 
-    description, 
-    deadline, 
-    priority, 
-    context, 
-    estimatedTime, 
-    tags,
-    project 
-  } = req.body;
+  const payload = req.body || {};
   
-  // 2. Validate required fields
-  if (!title) {
-    return res.status(400).json({
-      success: false,
-      message: "Please provide a task title"
-    });
+  // Validate required fields (Task 126)
+  if (!payload.projectId || !payload.title) {
+    return res
+      .status(400)
+      .json({ message: "projectId and title are required to create a task" });
   }
   
-  if (!deadline) {
-    return res.status(400).json({
-      success: false,
-      message: "Please provide a task deadline"
-    });
+  // NEW: Validate deadline (Task 127)
+  if (!payload.deadline) {
+    return res
+      .status(400)
+      .json({ message: "deadline is required to create a task" });
   }
   
-  if (!context) {
-    return res.status(400).json({
-      success: false,
-      message: "Please provide a task context (office, school, home, daily-life, other)"
-    });
+  // NEW: Validate context (Task 127)
+  if (!payload.context) {
+    return res
+      .status(400)
+      .json({ message: "context is required (office, school, home, daily-life, other)" });
   }
   
-  // 3. Validate context value
+  // NEW: Validate context value (Task 127)
   const validContexts = ['office', 'school', 'home', 'daily-life', 'other'];
-  if (!validContexts.includes(context)) {
-    return res.status(400).json({
-      success: false,
-      message: `Invalid context. Must be one of: ${validContexts.join(', ')}`
-    });
+  if (!validContexts.includes(payload.context)) {
+    return res
+      .status(400)
+      .json({ message: `Invalid context. Must be one of: ${validContexts.join(', ')}` });
   }
   
-  // 4. Validate priority if provided
-  if (priority) {
+  // NEW: Validate priority if provided (Task 127)
+  if (payload.priority) {
     const validPriorities = ['low', 'medium', 'high', 'urgent'];
-    if (!validPriorities.includes(priority)) {
-      return res.status(400).json({
-        success: false,
-        message: `Invalid priority. Must be one of: ${validPriorities.join(', ')}`
-      });
+    if (!validPriorities.includes(payload.priority)) {
+      return res
+        .status(400)
+        .json({ message: `Invalid priority. Must be one of: ${validPriorities.join(', ')}` });
     }
   }
   
-  // 5. Create enhanced task object
-  const newTask = {
-    id: Date.now(), // temporary ID using timestamp
-    title: title,
-    description: description || "", // optional, default to empty string
-    deadline: deadline,
-    priority: priority || "medium", // default to medium
-    context: context,
-    estimatedTime: estimatedTime || null, // optional
-    tags: tags || [], // optional, default to empty array
-    project: project || null, // optional
-    status: "todo",
-    createdAt: new Date().toISOString()
-  };
-  
-  // 6. Return success response
-  res.status(201).json({
-    success: true,
-    message: "Task created successfully",
-    data: newTask
+  // Create task with validated data
+  const newTask = addTask({
+    ...payload,
+    projectId: Number(payload.projectId),
+    priority: payload.priority || "medium", // default priority
   });
+  
+  return res.status(201).json(newTask);
 });
 
 
