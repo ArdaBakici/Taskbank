@@ -16,10 +16,37 @@ router.get("/:id", (_req, res) => {
 });
 
 // TODO (Sihyun): implement add_task
-router.post("/", (_req, res) => {
-  res
-    .status(501)
-    .json({ message: "POST /api/tasks is reserved for Sihyun to implement." });
+router.post("/", (req, res) => {
+
+  // extract basic task data from request body
+  
+  const {title}=req.body 
+
+  //validate required field
+    if (!title) {
+    return res.status(400).json({
+      success: false,
+      message: "Please provide a task title"
+    });
+  }
+//create mock task obj (no db yet )
+    const newTask = {
+    id: Date.now(), // temporary ID using timestamp
+    title: title,
+    status: "todo",
+    createdAt: new Date().toISOString()
+  };
+
+  //return success
+    res.status(201).json({
+    success: true,
+    message: "Task created successfully",
+    data: newTask
+  });
+
+
+  
+
 });
 
 // TODO (Sid): implement edit_task
