@@ -97,10 +97,6 @@ router.post("/", (req, res) => {
 });
 
 
-
-  
-
-
 // TODO (Sid): implement edit_task
 router.patch("/:id", (_req, res) => {
   res
