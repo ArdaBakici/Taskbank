@@ -86,7 +86,6 @@
 }
 
 .dashboard-buttons button {
-  margin-left: 0.75rem;
   padding: 0.7rem 1.5rem;
   background-color: #1f2937;
   color: #fff;
@@ -442,6 +441,56 @@
   gap: 1rem;
   margin-top: 2rem;
   padding-bottom: 2rem;
+}
+
+/* Sort dropdown styles */
+.sort-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.sort-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 200px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.sort-option {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+.sort-option:last-child {
+  border-bottom: none;
+}
+
+.sort-option:hover {
+  background-color: #f3f4f6;
+}
+
+.sort-option.active {
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-weight: 600;
 }
 
 .grade-circle {
