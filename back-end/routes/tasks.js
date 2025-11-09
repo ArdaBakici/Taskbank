@@ -94,10 +94,24 @@ router.get("/", (req, res) => {
 });
 
 // TODO (Sid): implement get_task(task_id)
-router.get("/:id", (_req, res) => {
-  res
-    .status(501)
-    .json({ message: "GET /api/tasks/:id is reserved for Sid to implement." });
+router.get("/:id", (req, res) => {
+
+
+  const id = Number(req.params.id); // extract and convert id from URL
+  const task = findTaskById(id); // find the task
+
+  if (!task) {
+    return res.status(404).json({ 
+      success: false, 
+      message: `Task with id ${id} not found.` 
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    task,
+  });
+
 });
 
 // TODO (Sihyun): implement add_task
