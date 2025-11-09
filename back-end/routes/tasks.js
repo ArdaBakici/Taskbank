@@ -171,11 +171,54 @@ router.post("/", (req, res) => {
 
 
 // TODO (Sid): implement edit_task
-router.patch("/:id", (_req, res) => {
-  res
-    .status(501)
-    .json({ message: "PATCH /api/tasks/:id is reserved for Sid to implement." });
+// router.patch("/:id", (_req, res) => {
+//   res
+//     .status(501)
+//     .json({ message: "PATCH /api/tasks/:id is reserved for Sid to implement." });
+// });
+
+// Edit task
+router.patch("/:id", (req, res) => {
+  try {
+    const id = Number(req.params.id); // get id from URL
+    const updates = req.body || {}; // get updates from request body
+
+    // Validate priority if provided
+    if (updates.priority) {
+      const validPriorities = ['low', 'medium', 'high', 'urgent'];
+      if (!validPriorities.includes(updates.priority)) {
+        return res
+          .status(400)
+          .json({ message: `Invalid priority. Must be one of: ${validPriorities.join(', ')}` });
+      }
+    }
+
+    const updatedTask = updateTask(id, updates);
+
+    if (!updatedTask) {
+      return res.status(404).json({
+        success: false,
+        message: `Task with id ${id} not found.`,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      task: updatedTask,
+    });
+
+  } catch (error) {
+    console.error("Error updating task:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update task",
+      error: error.message,
+    });
+  }
 });
+
+
+
 
 // TODO (Srijan): implement delete_task
 router.delete("/:id", (_req, res) => {
