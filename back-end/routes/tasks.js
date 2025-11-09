@@ -8,7 +8,7 @@ const {
 } = require("../data/tasks");
 
 const router = express.Router();
-const { getTasks } = require("../data/tasks");
+// const { getTasks } = require("../data/tasks");
 
 // GET /api/tasks - List tasks with optional limit and sorting
 router.get("/", (req, res) => {

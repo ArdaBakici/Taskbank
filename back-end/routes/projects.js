@@ -12,7 +12,7 @@ const {
 
 
 const router = express.Router();
-const { getProjects } = require("../data/projects");
+// const { getProjects } = require("../data/projects");
 
 // GET /api/projects - List projects with optional limit and sorting
 router.get("/", (req, res) => {
