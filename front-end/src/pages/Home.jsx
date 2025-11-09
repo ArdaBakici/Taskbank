@@ -17,7 +17,7 @@ export default function Home() {
         <section className="home-section">
           <AllTasks
             embedded
-            limit={2}
+            limit={10}
             renderActions={(navigateFn) => (
               <button
                 className="search-button"
@@ -38,7 +38,7 @@ export default function Home() {
         </section>
 
         <section className="home-section">
-          <AllProjects embedded limit={2} />
+          <AllProjects embedded limit={10} />
 
           <button
             className="section-footer-button"
