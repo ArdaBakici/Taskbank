@@ -6,7 +6,10 @@ const {
   updateProject,
   deleteProject,
 } = require("../data/projects");
-const { getTasks } = require("../data/tasks");
+const {
+  getTasks, findTaskById, addTask, updateTask, deleteTask
+} = require("../data/tasks");
+
 
 const router = express.Router();
 
@@ -59,6 +62,33 @@ router.patch("/:id", (req, res) => {
   }
   return res.json(updated);
 });
+
+// Detach a task from a project
+router.delete("/:projectId/tasks/:taskId", (req, res) => {
+  const projectId = Number(req.params.projectId);
+  const taskId = Number(req.params.taskId);
+
+  const project = findProjectById(projectId);
+  if (!project) {
+    return res.status(404).json({ message: "Project not found" });
+  }
+
+  const task = findTaskById(taskId);
+  if (!task) {
+    return res.status(404).json({ message: "Task not found" });
+  }
+
+  // Check if the task actually belongs to this project
+  if (task.projectId !== projectId) {
+    return res.status(409).json({ message: "Task does not belong to this project" });
+  }
+
+  // Detach the task (keep the task, just remove link)
+  updateTask(taskId, { projectId: null });
+
+  return res.json({ message: "Task detached successfully" });
+});
+
 
 
 // TODO (Srijan): implement delete_project
