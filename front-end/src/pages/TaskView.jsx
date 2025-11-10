@@ -4,17 +4,15 @@ import { useNavigate, useParams } from "react-router-dom";
 import "../css/dashboard.css";
 import "../css/forms.css";
 import DashboardHeader from "../components/DashboardHeader";
-import {
-  fetchTaskById,
-  fetchProjectById,
-} from "../utils/mockDataLoader";
 
 export default function TaskView() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [task, setTask] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
 
   useEffect(() => {
     let isMounted = true;
@@ -22,19 +20,25 @@ export default function TaskView() {
     async function loadTask() {
       setLoading(true);
       try {
-        const fetchedTask = await fetchTaskById(id);
+        // Fetch task from backend
+        const resTask = await fetch(`${API_BASE}/tasks/${id}`);
+        if (!resTask.ok) throw new Error("Failed to fetch task");
+        const dataTask = await resTask.json();
+        const fetchedTask = dataTask.task;
+
         if (!isMounted) return;
         setTask(fetchedTask || null);
+
+        // Fetch project from backend if task has a projectId
+        let relatedProject = null;
         if (fetchedTask && fetchedTask.projectId) {
-          const relatedProject = await fetchProjectById(
-            fetchedTask.projectId
-          );
-          if (isMounted) {
-            setProject(relatedProject || null);
+          const resProject = await fetch(`${API_BASE}/projects/${fetchedTask.projectId}`);
+          if (resProject.ok) {
+            const dataProject = await resProject.json();
+            relatedProject = dataProject.project || null;
           }
-        } else if (isMounted) {
-          setProject(null);
         }
+        if (isMounted) setProject(relatedProject);
       } catch (error) {
         console.error("Failed to load task", error);
         if (isMounted) {
@@ -42,25 +46,19 @@ export default function TaskView() {
           setProject(null);
         }
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     }
 
     loadTask();
+
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, API_BASE]);
 
-  const handleEdit = () => {
-    navigate(`/tasks/edit/${id}`);
-  };
-
-  const handleBack = () => {
-    navigate(-1);
-  };
+  const handleEdit = () => navigate(`/tasks/edit/${id}`);
+  const handleBack = () => navigate(-1);
 
   if (loading) {
     return (
@@ -134,10 +132,7 @@ export default function TaskView() {
           </div>
         </div>
 
-        <button
-          className="section-footer-button"
-          onClick={handleBack}
-        >
+        <button className="section-footer-button" onClick={handleBack}>
           Return
         </button>
       </main>
