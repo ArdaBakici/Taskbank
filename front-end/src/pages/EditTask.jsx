@@ -164,7 +164,7 @@ export default function EditTask() {
   };
 
   const handleCancel = () => {
-    navigate(returnToProject ? `/projects/edit/${returnToProject}` : "/tasks");
+    navigate(`/task/${id}`); // go back to the TaskView page for this task // always go back to all tasks
   };
 
   if (loading) {
