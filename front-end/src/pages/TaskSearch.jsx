@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/dashboard.css";
 import DashboardHeader from "../components/DashboardHeader";
-import { fetchTasks } from "../utils/mockDataLoader";
 
 export default function SearchTasks() {
   const navigate = useNavigate();
@@ -16,8 +15,19 @@ export default function SearchTasks() {
 
     async function loadTasks() {
       try {
-        const data = await fetchTasks();
-        if (isMounted) setTasks(data);
+        setLoading(true);
+
+        // Call backend search endpoint
+        const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
+        const url = `${apiUrl}/search?q=${encodeURIComponent(query)}`;
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (isMounted) setTasks(data.results || []);
       } catch (err) {
         console.error("Failed to load tasks", err);
         if (isMounted) setError("Unable to load tasks right now.");
@@ -27,24 +37,16 @@ export default function SearchTasks() {
     }
 
     loadTasks();
+
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [query]); // ✅ Re-run whenever query changes
 
   const renderTags = (tagList) => {
     if (!tagList || tagList.length === 0) return "—";
     return Array.isArray(tagList) ? tagList.join(", ") : tagList;
   };
-
-  const filteredTasks = tasks.filter((task) => {
-    const q = query.toLowerCase();
-    const nameMatch = task.name.toLowerCase().includes(q);
-    const tagsMatch =
-      task.tags &&
-      task.tags.some((tag) => tag.toLowerCase().includes(q));
-    return nameMatch || tagsMatch;
-  });
 
   return (
     <div className="dashboard-container">
@@ -70,7 +72,7 @@ export default function SearchTasks() {
           {error && <p>{error}</p>}
           {!loading &&
             !error &&
-            filteredTasks.map((task) => (
+            tasks.map((task) => (
               <button
                 key={task.id}
                 type="button"
@@ -82,9 +84,7 @@ export default function SearchTasks() {
                 <div>{task.deadline}</div>
               </button>
             ))}
-          {!loading && !error && filteredTasks.length === 0 && (
-            <p>No tasks found.</p>
-          )}
+          {!loading && !error && tasks.length === 0 && <p>No tasks found.</p>}
         </div>
 
         <button
