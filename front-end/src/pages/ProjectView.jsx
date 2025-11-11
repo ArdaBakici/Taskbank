@@ -3,10 +3,19 @@ import { useNavigate, useParams } from "react-router-dom";
 import "../css/dashboard.css";
 import "../css/ProjectView.css";
 import DashboardHeader from "../components/DashboardHeader";
-import {
-  fetchProjectById,
-  fetchTasksByProject,
-} from "../utils/mockDataLoader";
+const API_BASE = "http://localhost:4000/api";
+
+async function fetchProjectById(id) {
+  const res = await fetch(`${API_BASE}/projects/${id}`);
+  if (!res.ok) throw new Error("Failed to fetch project");
+  return res.json();
+}
+
+async function fetchTasksByProject(projectId) {
+  const res = await fetch(`${API_BASE}/projects/${projectId}/tasks`);
+  if (!res.ok) throw new Error("Failed to fetch tasks");
+  return res.json();
+}
 
 export default function ProjectView() {
   const navigate = useNavigate();

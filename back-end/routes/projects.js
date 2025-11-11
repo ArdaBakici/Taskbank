@@ -87,12 +87,31 @@ router.get("/", (req, res) => {
   }
 });
 
-// TODO (Sid): implement get_project
-router.get("/:id", (_req, res) => {
-  res.status(501).json({
-    message: "GET /api/projects/:id is reserved for Sid to implement.",
-  });
+router.get("/:id", (req, res) => {
+  const projectId = Number(req.params.id);
+  const project = findProjectById(projectId);
+
+  if (!project) {
+    return res.status(404).json({ message: "Project not found" });
+  }
+
+  res.json(project);
 });
+
+router.get("/:projectId/tasks", (req, res) => {
+  const projectId = Number(req.params.projectId);
+  const project = findProjectById(projectId);
+
+  if (!project) {
+    return res.status(404).json({ message: "Project not found" });
+  }
+
+  // Return tasks that belong to this project
+  const projectTasks = getTasks().filter(task => task.projectId === projectId);
+  res.json(projectTasks);
+});
+
+
 
 // TODO (Sihyun): implement add_project
 router.post("/", (req, res) => {
