@@ -152,12 +152,59 @@
 .task-row > div {
   flex: 1;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* First column (name) left aligned */
 .project-row > div:first-child,
 .task-row > div:first-child {
   text-align: left;
+  justify-content: flex-start;
+}
+
+/* Overdue task styling */
+.task-overdue {
+  background-color: #fee2e2 !important; /* light red background */
+  border-left: 4px solid #ef4444; /* red left border for emphasis */
+}
+
+.task-overdue:hover {
+  background-color: #fecaca !important; /* slightly darker red on hover */
+}
+
+/* Status icon styling */
+.task-status-icon {
+  font-size: 1.2rem;
+  margin-right: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.status-icon-inprogress {
+  color: #3b82f6; /* blue for in progress */
+}
+
+.status-icon-notstarted {
+  color: #9ca3af; /* gray for not started */
+}
+
+.status-icon-completed {
+  color: #10b981; /* green for completed */
+}
+
+.status-icon-onhold {
+  color: #f59e0b; /* amber for on hold */
+}
+
+.status-icon-blocked {
+  color: #ef4444; /* red for blocked */
+}
+
+.status-icon-default {
+  color: #6b7280; /* gray for default */
 }
 
 
@@ -449,6 +496,11 @@
   display: inline-block;
 }
 
+.filter-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
 .sort-dropdown-menu {
   position: absolute;
   top: 100%;
@@ -461,6 +513,8 @@
   min-width: 200px;
   margin-top: 0.5rem;
   overflow: hidden;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .sort-option {
@@ -491,6 +545,66 @@
   background-color: #eff6ff;
   color: #2563eb;
   font-weight: 600;
+}
+
+.filter-category-label {
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  font-size: 0.8rem;
+  color: #6b7280;
+  background-color: #f9fafb;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.filter-permanent-notice {
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  color: #2563eb;
+  background-color: #eff6ff;
+  border-bottom: 2px solid #bfdbfe;
+  font-weight: 600;
+  text-align: center;
+}
+
+.filter-no-options {
+  padding: 1rem;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.active-filter-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: #eff6ff;
+  border-bottom: 1px solid #bfdbfe;
+  font-size: 0.9rem;
+  color: #1e40af;
+}
+
+.active-filter-item span {
+  font-weight: 500;
+}
+
+.remove-filter-btn {
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  line-height: 1;
+}
+
+.remove-filter-btn:hover {
+  background-color: #fee2e2;
 }
 
 .grade-circle {

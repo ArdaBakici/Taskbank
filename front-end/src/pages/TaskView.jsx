@@ -58,7 +58,7 @@ export default function TaskView() {
   }, [id, API_BASE]);
 
   const handleEdit = () => navigate(`/tasks/edit/${id}`);
-  const handleBack = () => navigate("/home");
+  const handleBack = () => navigate(-1);
 
   if (loading) {
     return (
