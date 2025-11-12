@@ -115,10 +115,10 @@ router.post("/", (req, res) => {
   const payload = req.body || {};
   
   // Validate required fields
-  if (!payload.projectId || !payload.title) {
+  if (!payload.title) {
     return res
       .status(400)
-      .json({ message: "projectId and title are required to create a task" });
+      .json({ message: "title is required to create a task" });
   }
   
   // Validate deadline

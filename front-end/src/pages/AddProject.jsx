@@ -4,154 +4,164 @@ import "../css/dashboard.css";
 import "../css/forms.css";
 import DashboardHeader from "../components/DashboardHeader";
 
-export default function AddTask() {
+export default function AddProject() {
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
-    taskName: "",
+    projectName: "",
     description: "",
-    project: "",
-    priority: "medium",
-    status: "Not Started",
+    status: "Planning",
     deadline: "",
     tags: "",
-    context: "other",
+    selectedTasks: [],
   });
 
-  const [projects, setProjects] = useState([]);
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [availableTasks, setAvailableTasks] = useState([]);
+  const [loadingTasks, setLoadingTasks] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-  // Fetch projects from API (like AllTasks fetches tasks)
+  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
+
+  // Load UNASSIGNED tasks from backend (preferred: /tasks?unassigned=1)
   useEffect(() => {
     let isMounted = true;
 
-    async function loadProjects() {
+    async function loadTasks() {
+      setLoadingTasks(true);
       try {
-        // Use same API URL pattern as AllTasks
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
-        const url = `${apiUrl}/projects`;
-        
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        // Try server-side filter first
+        let res = await fetch(`${apiUrl}/tasks?unassigned=1`);
+        if (!res.ok) {
+          // Fallback to fetching all tasks, filter client-side
+          res = await fetch(`${apiUrl}/tasks`);
         }
-        
-        const data = await response.json();
-        
-        if (isMounted) {
-          // Assuming API returns projects in data.projects array (like tasks API)
-          setProjects(data.projects || data || []);
-        }
-      } catch (error) {
-        console.error("Failed to load projects", error);
-        if (isMounted) {
-          // Fallback to empty array if API fails
-          setProjects([]);
-        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+
+        // Normalize: data may be {tasks:[...]} or just [...]
+        const tasks = Array.isArray(data) ? data : data.tasks || [];
+
+        // Fallback filter: keep tasks with no project assigned
+        const unassigned = tasks.filter(
+          (t) => t.projectId == null || t.projectId === "" || t.project === "Unassigned"
+        );
+
+        if (isMounted) setAvailableTasks(unassigned);
+      } catch (e) {
+        console.error("Failed to load tasks:", e);
+        if (isMounted) setAvailableTasks([]);
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoadingTasks(false);
       }
     }
 
-    loadProjects();
-    
+    loadTasks();
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [apiUrl]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    
-    // Clear error for this field when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const handleTaskSelection = (taskId) => {
+    setFormData((prev) => {
+      const isSelected = prev.selectedTasks.includes(taskId);
+      return {
         ...prev,
-        [name]: "",
-      }));
-    }
+        selectedTasks: isSelected
+          ? prev.selectedTasks.filter((id) => id !== taskId)
+          : [...prev.selectedTasks, taskId],
+      };
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate required fields
     const newErrors = {};
-    
-    if (!formData.taskName.trim()) {
-      newErrors.taskName = "Task name is required";
-    }
-    
-    if (!formData.project) {
-      newErrors.project = "Project selection is required";
-    }
-    
-    if (!formData.deadline) {
-      newErrors.deadline = "Deadline is required";
-    }
-    
-    if (!formData.context) {
-      newErrors.context = "Context is required";
-    }
-    
-    // If there are errors, set them and don't submit
+    if (!formData.projectName.trim()) newErrors.projectName = "Project name is required";
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    
-    // Clear any previous errors
     setErrors({});
-    
-    // Transform data to match backend API expectations
-    const taskData = {
-      title: formData.taskName,
+    setSubmitting(true);
+
+    // Build project payload
+    const projectPayload = {
+      name: formData.projectName, // backend may expect `name`; if it expects `title`, swap this key
       description: formData.description,
-      projectId: parseInt(formData.project),
-      priority: formData.priority,
       status: formData.status,
-      deadline: formData.deadline,
-      context: formData.context,
-      tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
+      deadline: formData.deadline || null,
+      tags: formData.tags
+        ? formData.tags.split(",").map((t) => t.trim()).filter(Boolean)
+        : [],
     };
-    
+
     try {
-      // POST to backend API (like AllTasks fetches from API)
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
-      const response = await fetch(`${apiUrl}/tasks`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(taskData)
+      // 1) Create project
+      const createRes = await fetch(`${apiUrl}/projects`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(projectPayload),
       });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create task');
+
+      if (!createRes.ok) {
+        const err = await createRes.json().catch(() => ({}));
+        throw new Error(err.message || `Failed to create project (HTTP ${createRes.status})`);
       }
-      
-      const result = await response.json();
-      console.log("Task created successfully:", result);
-      alert("Task created successfully!");
-      navigate("/tasks");
-      
+
+      const created = await createRes.json();
+      // Normalize id field (could be id or project.id)
+      const projectId =
+        created?.id ?? created?.project?.id ?? created?.projectId ?? created?.data?.id;
+
+      if (!projectId) {
+        throw new Error("Project created but no id returned by backend.");
+      }
+
+      // 2) If tasks were selected, assign them to the new project
+      if (formData.selectedTasks.length > 0) {
+        // Prefer a bulk endpoint if your backend supports it:
+        // await fetch(`${apiUrl}/projects/${projectId}/tasks`, { method:"POST", body: JSON.stringify({ taskIds: formData.selectedTasks }) })
+        // Otherwise, PATCH each task’s projectId
+        await Promise.all(
+          formData.selectedTasks.map(async (taskId) => {
+            const res = await fetch(`${apiUrl}/tasks/${taskId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ projectId }),
+            });
+            if (!res.ok) {
+              const e = await res.json().catch(() => ({}));
+              throw new Error(
+                e.message || `Failed to assign task ${taskId} to project (HTTP ${res.status})`
+              );
+            }
+            return res.json().catch(() => ({}));
+          })
+        );
+      }
+
+      alert("Project created successfully!");
+      navigate("/projects");
     } catch (error) {
-      console.error("Error creating task:", error);
+      console.error("Error creating project:", error);
       alert(`Error: ${error.message}`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleCancel = () => {
-    navigate(-1);
-  };
+  const handleCancel = () => navigate(-1);
 
   return (
     <div className="dashboard-container">
@@ -159,25 +169,26 @@ export default function AddTask() {
 
       <main>
         <div className="dashboard-title-actions">
-          <h2>Create New Task</h2>
+          <h2>Create New Project</h2>
         </div>
 
         <div className="form-card">
           <form onSubmit={handleSubmit}>
             <div className="form-row">
               <div className="form-group full-width">
-                <label htmlFor="taskName">Task Name *</label>
+                <label htmlFor="projectName">Project Name *</label>
                 <input
                   type="text"
-                  id="taskName"
-                  name="taskName"
-                  value={formData.taskName}
+                  id="projectName"
+                  name="projectName"
+                  value={formData.projectName}
                   onChange={handleChange}
-                  placeholder="Enter task name"
-                  className={errors.taskName ? "error" : ""}
+                  placeholder="Enter project name"
+                  className={errors.projectName ? "error" : ""}
+                  disabled={submitting}
                 />
-                {errors.taskName && (
-                  <span className="error-message">{errors.taskName}</span>
+                {errors.projectName && (
+                  <span className="error-message">{errors.projectName}</span>
                 )}
               </div>
             </div>
@@ -190,50 +201,10 @@ export default function AddTask() {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  placeholder="Enter task description"
+                  placeholder="Enter project description"
                   rows="4"
+                  disabled={submitting}
                 />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="project">Project *</label>
-                <select
-                  id="project"
-                  name="project"
-                  value={formData.project}
-                  onChange={handleChange}
-                  className={errors.project ? "error" : ""}
-                  disabled={loading}
-                >
-                  <option value="">
-                    {loading ? "Loading projects..." : "Select a project"}
-                  </option>
-                  {Array.isArray(projects) && projects.map((project) => (
-                    <option key={project.id} value={project.id}>
-                      {project.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.project && (
-                  <span className="error-message">{errors.project}</span>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="priority">Priority</label>
-                <select
-                  id="priority"
-                  name="priority"
-                  value={formData.priority}
-                  onChange={handleChange}
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
-                </select>
               </div>
             </div>
 
@@ -245,27 +216,26 @@ export default function AddTask() {
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
+                  disabled={submitting}
                 >
-                  <option value="Not Started">Not Started</option>
+                  <option value="Planning">Planning</option>
                   <option value="In Progress">In Progress</option>
                   <option value="On Hold">On Hold</option>
                   <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
                 </select>
               </div>
 
               <div className="form-group">
-                <label htmlFor="deadline">Deadline *</label>
+                <label htmlFor="deadline">Deadline</label>
                 <input
                   type="date"
                   id="deadline"
                   name="deadline"
                   value={formData.deadline}
                   onChange={handleChange}
-                  className={errors.deadline ? "error" : ""}
+                  disabled={submitting}
                 />
-                {errors.deadline && (
-                  <span className="error-message">{errors.deadline}</span>
-                )}
               </div>
             </div>
 
@@ -278,34 +248,53 @@ export default function AddTask() {
                   name="tags"
                   value={formData.tags}
                   onChange={handleChange}
-                  placeholder="e.g., frontend, urgent, bug"
+                  placeholder="e.g., web, mobile, urgent"
+                  disabled={submitting}
                 />
               </div>
-              
-              <div className="form-group">
-                <label htmlFor="context">Context *</label>
-                <select
-                  id="context"
-                  name="context"
-                  value={formData.context}
-                  onChange={handleChange}
-                  className={errors.context ? "error" : ""}
-                >
-                  <option value="office">Office</option>
-                  <option value="school">School</option>
-                  <option value="home">Home</option>
-                  <option value="daily-life">Daily Life</option>
-                  <option value="other">Other</option>
-                </select>
-                {errors.context && (
-                  <span className="error-message">{errors.context}</span>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group full-width">
+                <label>Select Tasks to Add to Project</label>
+                <div className="task-selection-list">
+                  {loadingTasks ? (
+                    <div style={{ opacity: 0.7 }}>Loading tasks…</div>
+                  ) : availableTasks.length === 0 ? (
+                    <div style={{ opacity: 0.7 }}>No unassigned tasks found.</div>
+                  ) : (
+                    availableTasks.map((task) => {
+                      const label = task.title || task.name || `Task #${task.id}`;
+                      return (
+                        <div key={task.id} className="task-checkbox-item">
+                          <input
+                            type="checkbox"
+                            id={`task-${task.id}`}
+                            checked={formData.selectedTasks.includes(task.id)}
+                            onChange={() => handleTaskSelection(task.id)}
+                            disabled={submitting}
+                          />
+                          <label htmlFor={`task-${task.id}`}>{label}</label>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+                {formData.selectedTasks.length > 0 && (
+                  <span className="selection-count">
+                    {formData.selectedTasks.length} task(s) selected
+                  </span>
                 )}
               </div>
             </div>
 
             <div className="dashboard-buttons">
-              <button type="button" onClick={handleCancel}>Cancel</button>
-              <button type="submit">Save Task</button>
+              <button type="button" onClick={handleCancel} disabled={submitting}>
+                Cancel
+              </button>
+              <button type="submit" disabled={submitting}>
+                {submitting ? "Saving…" : "Save Project"}
+              </button>
             </div>
           </form>
         </div>

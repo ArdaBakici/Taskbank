@@ -9,7 +9,7 @@ export default function AddTask() {
   const [formData, setFormData] = useState({
     taskName: "",
     description: "",
-    project: "",
+    project: "",                // "" means Unassigned
     priority: "medium",
     status: "Not Started",
     deadline: "",
@@ -21,142 +21,90 @@ export default function AddTask() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // Fetch projects from API (like AllTasks fetches tasks)
   useEffect(() => {
     let isMounted = true;
-
     async function loadProjects() {
       try {
-        // Use same API URL pattern as AllTasks
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
+        const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
         const url = `${apiUrl}/projects`;
-        
         const response = await fetch(url);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        
-        if (isMounted) {
-          // Assuming API returns projects in data.projects array (like tasks API)
-          setProjects(data.projects || data || []);
-        }
-      } catch (error) {
-        console.error("Failed to load projects", error);
-        if (isMounted) {
-          // Fallback to empty array if API fails
-          setProjects([]);
-        }
+        if (isMounted) setProjects(data.projects || data || []);
+      } catch (err) {
+        console.error("Failed to load projects", err);
+        if (isMounted) setProjects([]);
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     }
-
     loadProjects();
-    
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    
-    // Clear error for this field when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate required fields
+
+    // Validate required (project is OPTIONAL now)
     const newErrors = {};
-    
-    if (!formData.taskName.trim()) {
-      newErrors.taskName = "Task name is required";
-    }
-    
-    if (!formData.project) {
-      newErrors.project = "Project selection is required";
-    }
-    
-    if (!formData.deadline) {
-      newErrors.deadline = "Deadline is required";
-    }
-    
-    if (!formData.context) {
-      newErrors.context = "Context is required";
-    }
-    
-    // If there are errors, set them and don't submit
+    if (!formData.taskName.trim()) newErrors.taskName = "Task name is required";
+    if (!formData.deadline) newErrors.deadline = "Deadline is required";
+    if (!formData.context) newErrors.context = "Context is required";
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    
-    // Clear any previous errors
     setErrors({});
-    
-    // Transform data to match backend API expectations
-    const taskData = {
+
+    // Build payload; omit projectId if unassigned
+    const base = {
       title: formData.taskName,
       description: formData.description,
-      projectId: parseInt(formData.project),
       priority: formData.priority,
       status: formData.status,
       deadline: formData.deadline,
       context: formData.context,
-      tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
+      tags: formData.tags ? formData.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
     };
-    
+    const taskData = formData.project
+      ? { ...base, projectId: Number(formData.project) }
+      : { ...base }; // <-- Unassigned: no projectId sent
+    // If your backend prefers null instead, use: { ...base, projectId: null }
+
     try {
-      // POST to backend API (like AllTasks fetches from API)
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
       const response = await fetch(`${apiUrl}/tasks`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(taskData)
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(taskData),
       });
-      
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create task');
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || "Failed to create task");
       }
-      
-      const result = await response.json();
-      console.log("Task created successfully:", result);
+
+      await response.json();
       alert("Task created successfully!");
       navigate("/tasks");
-      
     } catch (error) {
       console.error("Error creating task:", error);
       alert(`Error: ${error.message}`);
     }
   };
 
-  const handleCancel = () => {
-    navigate(-1);
-  };
+  const handleCancel = () => navigate(-1);
 
   return (
     <div className="dashboard-container">
       <DashboardHeader />
-
       <main>
         <div className="dashboard-title-actions">
           <h2>Create New Task</h2>
@@ -176,9 +124,7 @@ export default function AddTask() {
                   placeholder="Enter task name"
                   className={errors.taskName ? "error" : ""}
                 />
-                {errors.taskName && (
-                  <span className="error-message">{errors.taskName}</span>
-                )}
+                {errors.taskName && <span className="error-message">{errors.taskName}</span>}
               </div>
             </div>
 
@@ -198,27 +144,24 @@ export default function AddTask() {
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="project">Project *</label>
+                <label htmlFor="project">Project (optional)</label>
                 <select
                   id="project"
                   name="project"
                   value={formData.project}
                   onChange={handleChange}
-                  className={errors.project ? "error" : ""}
                   disabled={loading}
                 >
-                  <option value="">
-                    {loading ? "Loading projects..." : "Select a project"}
-                  </option>
-                  {Array.isArray(projects) && projects.map((project) => (
-                    <option key={project.id} value={project.id}>
-                      {project.name}
-                    </option>
-                  ))}
+                  {/* Unassigned first */}
+                  <option value="">{loading ? "Loading projects..." : "Unassigned"}</option>
+                  {Array.isArray(projects) &&
+                    projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.name}
+                      </option>
+                    ))}
                 </select>
-                {errors.project && (
-                  <span className="error-message">{errors.project}</span>
-                )}
+                {/* No project error since it's optional */}
               </div>
 
               <div className="form-group">
@@ -240,12 +183,7 @@ export default function AddTask() {
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="status">Status</label>
-                <select
-                  id="status"
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                >
+                <select id="status" name="status" value={formData.status} onChange={handleChange}>
                   <option value="Not Started">Not Started</option>
                   <option value="In Progress">In Progress</option>
                   <option value="On Hold">On Hold</option>
@@ -263,9 +201,7 @@ export default function AddTask() {
                   onChange={handleChange}
                   className={errors.deadline ? "error" : ""}
                 />
-                {errors.deadline && (
-                  <span className="error-message">{errors.deadline}</span>
-                )}
+                {errors.deadline && <span className="error-message">{errors.deadline}</span>}
               </div>
             </div>
 
@@ -281,7 +217,7 @@ export default function AddTask() {
                   placeholder="e.g., frontend, urgent, bug"
                 />
               </div>
-              
+
               <div className="form-group">
                 <label htmlFor="context">Context *</label>
                 <select
@@ -297,9 +233,7 @@ export default function AddTask() {
                   <option value="daily-life">Daily Life</option>
                   <option value="other">Other</option>
                 </select>
-                {errors.context && (
-                  <span className="error-message">{errors.context}</span>
-                )}
+                {errors.context && <span className="error-message">{errors.context}</span>}
               </div>
             </div>
 
