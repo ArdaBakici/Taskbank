@@ -6,16 +6,12 @@ import { FiUser, FiLock, FiBell, FiLogOut } from "react-icons/fi";
 
 export default function Settings() {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState(true);
   const [showPopup, setShowPopup] = useState(false); // state to control popup visibility
 
   const handleOptionClick = (option) => {
     switch (option) {
       case "Change Password":
         setShowPopup(true); // show popup instead of alert
-        break;
-      case "Notifications":
-        setNotifications(!notifications);
         break;
       case "Log Out":
         alert("Logging out...");
@@ -29,7 +25,6 @@ export default function Settings() {
   const profileOptions = [
     { name: "Name", icon: <FiUser />, disabled: true },
     { name: "Change Password", icon: <FiLock /> },
-    { name: "Notifications", icon: <FiBell /> },
     { name: "Log Out", icon: <FiLogOut /> },
   ];
 
@@ -53,12 +48,6 @@ export default function Settings() {
                 <span className="settings-icon">{option.icon}</span>
                 <span className="settings-name">{option.name}</span>
               </div>
-
-              {option.name === "Notifications" && (
-                <span className="settings-value">
-                  {notifications ? "On" : "Off"}
-                </span>
-              )}
             </li>
           ))}
         </ul>
