@@ -183,21 +183,7 @@ const handleDelete = async () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (window.confirm("Are you sure you want to delete this task?")) {
-      try {
-        await fetch(`${API_BASE}/tasks/${id}`, { method: "DELETE" });
-        alert("Task deleted successfully!");
-        navigate(
-          returnToProject ? `/projects/edit/${returnToProject}` : "/tasks"
-        );
-      } catch (err) {
-        console.error(err);
-        alert("Failed to delete task.");
-      }
-    }
-  };
-
+  
   const handleCancel = () => {
     navigate(`/task/${id}`); // go back to the TaskView page for this task // always go back to all tasks
   };
