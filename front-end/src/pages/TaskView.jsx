@@ -35,7 +35,7 @@ export default function TaskView() {
           const resProject = await fetch(`${API_BASE}/projects/${fetchedTask.projectId}`);
           if (resProject.ok) {
             const dataProject = await resProject.json();
-            relatedProject = dataProject.project || null;
+            relatedProject = dataProject || null;
           }
         }
         if (isMounted) setProject(relatedProject);

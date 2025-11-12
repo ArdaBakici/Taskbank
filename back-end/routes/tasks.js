@@ -8,7 +8,6 @@ const {
 } = require("../data/tasks");
 
 const router = express.Router();
-// const { getTasks } = require("../data/tasks");
 
 // GET /api/tasks - List tasks with optional limit and sorting
 router.get("/", (req, res) => {
@@ -93,10 +92,8 @@ router.get("/", (req, res) => {
   }
 });
 
-// TODO (Sid): implement get_task(task_id)
+// GET /api/tasks/:id - Get a specific task by ID
 router.get("/:id", (req, res) => {
-
-
   const id = Number(req.params.id); // extract and convert id from URL
   const task = findTaskById(id); // find the task
 
@@ -111,37 +108,34 @@ router.get("/:id", (req, res) => {
     success: true,
     task,
   });
-
 });
 
-// TODO (Sihyun): implement add_task
 // POST /api/tasks - Create a new task with properties
-
 router.post("/", (req, res) => {
   const payload = req.body || {};
   
-  // Validate required fields (Task 126)
+  // Validate required fields
   if (!payload.projectId || !payload.title) {
     return res
       .status(400)
       .json({ message: "projectId and title are required to create a task" });
   }
   
-  // NEW: Validate deadline (Task 127)
+  // Validate deadline
   if (!payload.deadline) {
     return res
       .status(400)
       .json({ message: "deadline is required to create a task" });
   }
   
-  // NEW: Validate context (Task 127)
+  // Validate context
   if (!payload.context) {
     return res
       .status(400)
       .json({ message: "context is required (office, school, home, daily-life, other)" });
   }
   
-  // NEW: Validate context value (Task 127)
+  // Validate context value
   const validContexts = ['office', 'school', 'home', 'daily-life', 'other'];
   if (!validContexts.includes(payload.context)) {
     return res
@@ -149,7 +143,7 @@ router.post("/", (req, res) => {
       .json({ message: `Invalid context. Must be one of: ${validContexts.join(', ')}` });
   }
   
-  // NEW: Validate priority if provided (Task 127)
+  // Validate priority if provided
   if (payload.priority) {
     const validPriorities = ['low', 'medium', 'high', 'urgent'];
     if (!validPriorities.includes(payload.priority)) {
@@ -159,29 +153,32 @@ router.post("/", (req, res) => {
     }
   }
   
+  // Map priority to urgency for data model
+  const priorityToUrgency = {
+    'low': 'Low',
+    'medium': 'Medium',
+    'high': 'High',
+    'urgent': 'High'
+  };
+  
+  const urgency = priorityToUrgency[payload.priority || 'medium'];
+  
   // Create task with validated data
   const newTask = addTask({
     ...payload,
     projectId: Number(payload.projectId),
-    priority: payload.priority || "medium", // default priority
+    urgency: urgency,
+    priority: payload.priority || "medium",
   });
   
   return res.status(201).json(newTask);
 });
 
-
-// TODO (Sid): implement edit_task
-// router.patch("/:id", (_req, res) => {
-//   res
-//     .status(501)
-//     .json({ message: "PATCH /api/tasks/:id is reserved for Sid to implement." });
-// });
-
-// Edit task
+// PATCH /api/tasks/:id - Update an existing task
 router.patch("/:id", (req, res) => {
   try {
-    const id = Number(req.params.id); // get id from URL
-    const updates = req.body || {}; // get updates from request body
+    const id = Number(req.params.id);
+    const updates = req.body || {};
 
     // Validate priority if provided
     if (updates.priority) {
@@ -190,6 +187,26 @@ router.patch("/:id", (req, res) => {
         return res
           .status(400)
           .json({ message: `Invalid priority. Must be one of: ${validPriorities.join(', ')}` });
+      }
+      
+      // Map priority to urgency for data model
+      const priorityToUrgency = {
+        'low': 'Low',
+        'medium': 'Medium',
+        'high': 'High',
+        'urgent': 'High'
+      };
+      
+      updates.urgency = priorityToUrgency[updates.priority];
+    }
+    
+    // Validate context if provided
+    if (updates.context) {
+      const validContexts = ['office', 'school', 'home', 'daily-life', 'other'];
+      if (!validContexts.includes(updates.context)) {
+        return res
+          .status(400)
+          .json({ message: `Invalid context. Must be one of: ${validContexts.join(', ')}` });
       }
     }
 
@@ -217,10 +234,7 @@ router.patch("/:id", (req, res) => {
   }
 });
 
-
-
-
-// TODO (Srijan): implement delete_task
+// DELETE /api/tasks/:id - Delete a task
 router.delete("/:id", (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -229,7 +243,7 @@ router.delete("/:id", (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid task ID" });
     }
 
-    const deletedTask = deleteTask(id); // function from ../data/tasks
+    const deletedTask = deleteTask(id);
 
     if (!deletedTask) {
       return res.status(404).json({
@@ -252,4 +266,5 @@ router.delete("/:id", (req, res) => {
     });
   }
 });
+
 module.exports = router;

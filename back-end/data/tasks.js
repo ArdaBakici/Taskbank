@@ -10,6 +10,8 @@ const tasks = [
     urgency: "High",
     status: "In Progress",
     assignee: "Alice Nguyen",
+    context: "office",
+    priority: "high"
   },
   {
     id: 102,
@@ -22,6 +24,8 @@ const tasks = [
     urgency: "Medium",
     status: "Not Started",
     assignee: "Jordan Ellis",
+    context: "office",
+    priority: "medium"
   },
   {
     id: 201,
@@ -34,6 +38,8 @@ const tasks = [
     urgency: "Medium",
     status: "In Progress",
     assignee: "Priya Shah",
+    context: "office",
+    priority: "medium"
   },
   {
     id: 202,
@@ -46,6 +52,8 @@ const tasks = [
     urgency: "Medium",
     status: "Not Started",
     assignee: "Liam Chen",
+    context: "office",
+    priority: "medium"
   },
   {
     id: 301,
@@ -58,6 +66,8 @@ const tasks = [
     urgency: "High",
     status: "In Progress",
     assignee: "Sofia Ramirez",
+    context: "office",
+    priority: "high"
   },
   {
     id: 302,
@@ -70,6 +80,8 @@ const tasks = [
     urgency: "Low",
     status: "Not Started",
     assignee: "Ethan Brooks",
+    context: "office",
+    priority: "low"
   },
 ];
 
@@ -89,6 +101,10 @@ function addTask(payload) {
     name: payload.title ?? payload.name,
     ...payload,
     title: payload.title ?? payload.name ?? "Untitled Task",
+    // Ensure tags is always an array
+    tags: Array.isArray(payload.tags) ? payload.tags : [],
+    // Default context if not provided
+    context: payload.context || "other",
   };
   tasks.push(newTask);
   nextTaskId += 1;
@@ -98,11 +114,19 @@ function addTask(payload) {
 function updateTask(id, updates) {
   const task = findTaskById(id);
   if (!task) return null;
-  Object.assign(task, updates);
+  
+  // Handle title/name updates
   if (updates.title || updates.name) {
-    task.title = updates.title ?? updates.name;
-    task.name = task.title;
+    updates.title = updates.title ?? updates.name;
+    updates.name = updates.title;
   }
+  
+  // Ensure tags is always an array if provided
+  if (updates.tags && !Array.isArray(updates.tags)) {
+    updates.tags = [];
+  }
+  
+  Object.assign(task, updates);
   return task;
 }
 
@@ -114,11 +138,6 @@ function deleteTask(id) {
   const [removed] = tasks.splice(index, 1);
   return removed;
 }
-
-
-
-
-
 
 module.exports = {
   getTasks,

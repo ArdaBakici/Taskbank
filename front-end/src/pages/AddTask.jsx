@@ -10,42 +10,57 @@ export default function AddTask() {
     taskName: "",
     description: "",
     project: "",
-    priority: "Medium",
+    priority: "medium",
     status: "Not Started",
     deadline: "",
     tags: "",
+    context: "other",
   });
 
   const [projects, setProjects] = useState([]);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(true);
 
-  // Fallback data in case fetch from mockaroo fails
+  // Fetch projects from API (like AllTasks fetches tasks)
   useEffect(() => {
-    const fallbackProjects = [
-      { id: 1, name: "Website Redesign" },
-      { id: 2, name: "Mobile App Development" },
-      { id: 3, name: "Marketing Campaign" },
-      { id: 4, name: "Database Migration" },
-      { id: 5, name: "Customer Portal" },
-    ];
+    let isMounted = true;
 
-    // Set fallback data immediately
-    setProjects(fallbackProjects);
-
-    // Try to fetch from Mockaroo, but don't fail if it doesn't work
-    const apiKey = process.env.REACT_APP_MOCKAROO_API_KEY;
-    if (apiKey) {
-      fetch(`https://my.api.mockaroo.com/projects.json?key=${apiKey}`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (Array.isArray(data) && data.length > 0) {
-            setProjects(data);
-          }
-        })
-        .catch((error) => {
-          console.log("Using fallback projects", error);
-        });
+    async function loadProjects() {
+      try {
+        // Use same API URL pattern as AllTasks
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
+        const url = `${apiUrl}/projects`;
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (isMounted) {
+          // Assuming API returns projects in data.projects array (like tasks API)
+          setProjects(data.projects || data || []);
+        }
+      } catch (error) {
+        console.error("Failed to load projects", error);
+        if (isMounted) {
+          // Fallback to empty array if API fails
+          setProjects([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
     }
+
+    loadProjects();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleChange = (e) => {
@@ -64,7 +79,7 @@ export default function AddTask() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validate required fields
@@ -78,6 +93,14 @@ export default function AddTask() {
       newErrors.project = "Project selection is required";
     }
     
+    if (!formData.deadline) {
+      newErrors.deadline = "Deadline is required";
+    }
+    
+    if (!formData.context) {
+      newErrors.context = "Context is required";
+    }
+    
     // If there are errors, set them and don't submit
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -87,10 +110,43 @@ export default function AddTask() {
     // Clear any previous errors
     setErrors({});
     
-    // TODO When backend is ready, POST data to backend instead
-    console.log("Creating task:", formData);
-    alert("Task created successfully!");
-    navigate("/tasks");
+    // Transform data to match backend API expectations
+    const taskData = {
+      title: formData.taskName,
+      description: formData.description,
+      projectId: parseInt(formData.project),
+      priority: formData.priority,
+      status: formData.status,
+      deadline: formData.deadline,
+      context: formData.context,
+      tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
+    };
+    
+    try {
+      // POST to backend API (like AllTasks fetches from API)
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
+      const response = await fetch(`${apiUrl}/tasks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(taskData)
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create task');
+      }
+      
+      const result = await response.json();
+      console.log("Task created successfully:", result);
+      alert("Task created successfully!");
+      navigate("/tasks");
+      
+    } catch (error) {
+      console.error("Error creating task:", error);
+      alert(`Error: ${error.message}`);
+    }
   };
 
   const handleCancel = () => {
@@ -149,8 +205,11 @@ export default function AddTask() {
                   value={formData.project}
                   onChange={handleChange}
                   className={errors.project ? "error" : ""}
+                  disabled={loading}
                 >
-                  <option value="">Select a project</option>
+                  <option value="">
+                    {loading ? "Loading projects..." : "Select a project"}
+                  </option>
                   {Array.isArray(projects) && projects.map((project) => (
                     <option key={project.id} value={project.id}>
                       {project.name}
@@ -170,10 +229,10 @@ export default function AddTask() {
                   value={formData.priority}
                   onChange={handleChange}
                 >
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                  <option value="Critical">Critical</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
                 </select>
               </div>
             </div>
@@ -195,14 +254,18 @@ export default function AddTask() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="deadline">Deadline</label>
+                <label htmlFor="deadline">Deadline *</label>
                 <input
                   type="date"
                   id="deadline"
                   name="deadline"
                   value={formData.deadline}
                   onChange={handleChange}
+                  className={errors.deadline ? "error" : ""}
                 />
+                {errors.deadline && (
+                  <span className="error-message">{errors.deadline}</span>
+                )}
               </div>
             </div>
 
@@ -218,11 +281,31 @@ export default function AddTask() {
                   placeholder="e.g., frontend, urgent, bug"
                 />
               </div>
+              
+              <div className="form-group">
+                <label htmlFor="context">Context *</label>
+                <select
+                  id="context"
+                  name="context"
+                  value={formData.context}
+                  onChange={handleChange}
+                  className={errors.context ? "error" : ""}
+                >
+                  <option value="office">Office</option>
+                  <option value="school">School</option>
+                  <option value="home">Home</option>
+                  <option value="daily-life">Daily Life</option>
+                  <option value="other">Other</option>
+                </select>
+                {errors.context && (
+                  <span className="error-message">{errors.context}</span>
+                )}
+              </div>
             </div>
 
             <div className="dashboard-buttons">
-              <button onClick={handleCancel}>Cancel</button>
-              <button onClick={handleSubmit}>Save Task</button>
+              <button type="button" onClick={handleCancel}>Cancel</button>
+              <button type="submit">Save Task</button>
             </div>
           </form>
         </div>
