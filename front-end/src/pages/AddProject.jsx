@@ -6,6 +6,7 @@ import DashboardHeader from "../components/DashboardHeader";
 
 export default function AddProject() {
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     projectName: "",
     description: "",
@@ -17,65 +18,55 @@ export default function AddProject() {
 
   const [errors, setErrors] = useState({});
   const [availableTasks, setAvailableTasks] = useState([]);
+  const [loadingTasks, setLoadingTasks] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-  // Load available tasks
+  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
+
+  // Load UNASSIGNED tasks from backend (preferred: /tasks?unassigned=1)
   useEffect(() => {
-    const fallbackTasks = [
-      { id: 1, name: "Design homepage mockup", project: "Unassigned" },
-      { id: 2, name: "Setup database schema", project: "Unassigned" },
-      { id: 3, name: "Create API endpoints", project: "Unassigned" },
-      { id: 4, name: "Write unit tests", project: "Unassigned" },
-      { id: 5, name: "Deploy to staging", project: "Unassigned" },
-      { id: 6, name: "User authentication flow", project: "Unassigned" },
-      { id: 7, name: "Implement responsive navigation", project: "Unassigned" },
-      { id: 8, name: "Setup CI/CD pipeline", project: "Unassigned" },
-      { id: 9, name: "Create user profile page", project: "Unassigned" },
-      { id: 10, name: "Add search functionality", project: "Unassigned" },
-      { id: 11, name: "Configure email notifications", project: "Unassigned" },
-      { id: 12, name: "Optimize database queries", project: "Unassigned" },
-      { id: 13, name: "Write API documentation", project: "Unassigned" },
-      { id: 14, name: "Implement dark mode", project: "Unassigned" },
-      { id: 15, name: "Add data export feature", project: "Unassigned" },
-      { id: 16, name: "Setup error logging", project: "Unassigned" },
-      { id: 17, name: "Create admin dashboard", project: "Unassigned" },
-      { id: 18, name: "Implement file upload", project: "Unassigned" },
-      { id: 19, name: "Add analytics tracking", project: "Unassigned" },
-      { id: 20, name: "Setup backup system", project: "Unassigned" },
-    ];
+    let isMounted = true;
 
-    // Set fallback data immediately
-    setAvailableTasks(fallbackTasks);
+    async function loadTasks() {
+      setLoadingTasks(true);
+      try {
+        // Try server-side filter first
+        let res = await fetch(`${apiUrl}/tasks?unassigned=1`);
+        if (!res.ok) {
+          // Fallback to fetching all tasks, filter client-side
+          res = await fetch(`${apiUrl}/tasks`);
+        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    // Try to fetch from Mockaroo, but don't fail if it doesn't work
-    const apiKey = process.env.REACT_APP_MOCKAROO_API_KEY;
-    if (apiKey) {
-      fetch(`https://my.api.mockaroo.com/tasks.json?key=${apiKey}`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (Array.isArray(data) && data.length > 0) {
-            setAvailableTasks(data);
-          }
-        })
-        .catch((error) => {
-          console.log("Using fallback tasks", error);
-        });
+        const data = await res.json();
+
+        // Normalize: data may be {tasks:[...]} or just [...]
+        const tasks = Array.isArray(data) ? data : data.tasks || [];
+
+        // Fallback filter: keep tasks with no project assigned
+        const unassigned = tasks.filter(
+          (t) => t.projectId == null || t.projectId === "" || t.project === "Unassigned"
+        );
+
+        if (isMounted) setAvailableTasks(unassigned);
+      } catch (e) {
+        console.error("Failed to load tasks:", e);
+        if (isMounted) setAvailableTasks([]);
+      } finally {
+        if (isMounted) setLoadingTasks(false);
+      }
     }
-  }, []);
+
+    loadTasks();
+    return () => {
+      isMounted = false;
+    };
+  }, [apiUrl]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    
-    // Clear error for this field when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleTaskSelection = (taskId) => {
@@ -90,34 +81,87 @@ export default function AddProject() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate required fields
     const newErrors = {};
-    
-    if (!formData.projectName.trim()) {
-      newErrors.projectName = "Project name is required";
-    }
-    
-    // If there are errors, set them and don't submit
+    if (!formData.projectName.trim()) newErrors.projectName = "Project name is required";
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    
-    // Clear any previous errors
     setErrors({});
-    
-    // TODO When backend is ready, POST data to backend instead
-    console.log("Creating project:", formData);
-    alert("Project created successfully!");
-    navigate("/projects");
+    setSubmitting(true);
+
+    // Build project payload
+    const projectPayload = {
+      name: formData.projectName, // backend may expect `name`; if it expects `title`, swap this key
+      description: formData.description,
+      status: formData.status,
+      deadline: formData.deadline || null,
+      tags: formData.tags
+        ? formData.tags.split(",").map((t) => t.trim()).filter(Boolean)
+        : [],
+    };
+
+    try {
+      // 1) Create project
+      const createRes = await fetch(`${apiUrl}/projects`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(projectPayload),
+      });
+
+      if (!createRes.ok) {
+        const err = await createRes.json().catch(() => ({}));
+        throw new Error(err.message || `Failed to create project (HTTP ${createRes.status})`);
+      }
+
+      const created = await createRes.json();
+      // Normalize id field (could be id or project.id)
+      const projectId =
+        created?.id ?? created?.project?.id ?? created?.projectId ?? created?.data?.id;
+
+      if (!projectId) {
+        throw new Error("Project created but no id returned by backend.");
+      }
+
+      // 2) If tasks were selected, assign them to the new project
+      if (formData.selectedTasks.length > 0) {
+        // Prefer a bulk endpoint if your backend supports it:
+        // await fetch(`${apiUrl}/projects/${projectId}/tasks`, { method:"POST", body: JSON.stringify({ taskIds: formData.selectedTasks }) })
+        // Otherwise, PATCH each task’s projectId
+        await Promise.all(
+          formData.selectedTasks.map(async (taskId) => {
+            const res = await fetch(`${apiUrl}/tasks/${taskId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ projectId }),
+            });
+            if (!res.ok) {
+              const e = await res.json().catch(() => ({}));
+              throw new Error(
+                e.message || `Failed to assign task ${taskId} to project (HTTP ${res.status})`
+              );
+            }
+            return res.json().catch(() => ({}));
+          })
+        );
+      }
+
+      alert("Project created successfully!");
+      navigate("/projects");
+    } catch (error) {
+      console.error("Error creating project:", error);
+      alert(`Error: ${error.message}`);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleCancel = () => {
-    navigate(-1);
-  };
+  const handleCancel = () => navigate(-1);
 
   return (
     <div className="dashboard-container">
@@ -141,6 +185,7 @@ export default function AddProject() {
                   onChange={handleChange}
                   placeholder="Enter project name"
                   className={errors.projectName ? "error" : ""}
+                  disabled={submitting}
                 />
                 {errors.projectName && (
                   <span className="error-message">{errors.projectName}</span>
@@ -158,6 +203,7 @@ export default function AddProject() {
                   onChange={handleChange}
                   placeholder="Enter project description"
                   rows="4"
+                  disabled={submitting}
                 />
               </div>
             </div>
@@ -170,6 +216,7 @@ export default function AddProject() {
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
+                  disabled={submitting}
                 >
                   <option value="Planning">Planning</option>
                   <option value="In Progress">In Progress</option>
@@ -187,6 +234,7 @@ export default function AddProject() {
                   name="deadline"
                   value={formData.deadline}
                   onChange={handleChange}
+                  disabled={submitting}
                 />
               </div>
             </div>
@@ -201,6 +249,7 @@ export default function AddProject() {
                   value={formData.tags}
                   onChange={handleChange}
                   placeholder="e.g., web, mobile, urgent"
+                  disabled={submitting}
                 />
               </div>
             </div>
@@ -209,17 +258,27 @@ export default function AddProject() {
               <div className="form-group full-width">
                 <label>Select Tasks to Add to Project</label>
                 <div className="task-selection-list">
-                  {availableTasks.map((task) => (
-                    <div key={task.id} className="task-checkbox-item">
-                      <input
-                        type="checkbox"
-                        id={`task-${task.id}`}
-                        checked={formData.selectedTasks.includes(task.id)}
-                        onChange={() => handleTaskSelection(task.id)}
-                      />
-                      <label htmlFor={`task-${task.id}`}>{task.name}</label>
-                    </div>
-                  ))}
+                  {loadingTasks ? (
+                    <div style={{ opacity: 0.7 }}>Loading tasks…</div>
+                  ) : availableTasks.length === 0 ? (
+                    <div style={{ opacity: 0.7 }}>No unassigned tasks found.</div>
+                  ) : (
+                    availableTasks.map((task) => {
+                      const label = task.title || task.name || `Task #${task.id}`;
+                      return (
+                        <div key={task.id} className="task-checkbox-item">
+                          <input
+                            type="checkbox"
+                            id={`task-${task.id}`}
+                            checked={formData.selectedTasks.includes(task.id)}
+                            onChange={() => handleTaskSelection(task.id)}
+                            disabled={submitting}
+                          />
+                          <label htmlFor={`task-${task.id}`}>{label}</label>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
                 {formData.selectedTasks.length > 0 && (
                   <span className="selection-count">
@@ -230,8 +289,12 @@ export default function AddProject() {
             </div>
 
             <div className="dashboard-buttons">
-              <button onClick={handleCancel}>Cancel</button>
-              <button onClick={handleSubmit}>Save Project</button>
+              <button type="button" onClick={handleCancel} disabled={submitting}>
+                Cancel
+              </button>
+              <button type="submit" disabled={submitting}>
+                {submitting ? "Saving…" : "Save Project"}
+              </button>
             </div>
           </form>
         </div>
