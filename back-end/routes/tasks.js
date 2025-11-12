@@ -221,10 +221,35 @@ router.patch("/:id", (req, res) => {
 
 
 // TODO (Srijan): implement delete_task
-router.delete("/:id", (_req, res) => {
-  res.status(501).json({
-    message: "DELETE /api/tasks/:id is reserved for Srijan to implement.",
-  });
-});
+router.delete("/:id", (req, res) => {
+  try {
+    const id = Number(req.params.id);
 
+    if (isNaN(id)) {
+      return res.status(400).json({ success: false, message: "Invalid task ID" });
+    }
+
+    const deletedTask = deleteTask(id); // function from ../data/tasks
+
+    if (!deletedTask) {
+      return res.status(404).json({
+        success: false,
+        message: `Task with id ${id} not found.`,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Task deleted successfully.",
+      deleted: deletedTask,
+    });
+  } catch (error) {
+    console.error("Error deleting task:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete task.",
+      error: error.message,
+    });
+  }
+});
 module.exports = router;
