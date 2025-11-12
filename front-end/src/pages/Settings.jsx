@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/dashboard.css";
 import DashboardHeader from "../components/DashboardHeader";
-import { FiUser, FiLock, FiBell, FiLogOut } from "react-icons/fi";
+import { FiUser, FiLock, FiLogOut } from "react-icons/fi";
 
 export default function Settings() {
   const navigate = useNavigate();
