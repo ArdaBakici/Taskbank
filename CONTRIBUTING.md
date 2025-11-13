@@ -186,23 +186,25 @@ Ensure you have the following installed:
    cd taskbank
    ```
 
-2. **Install backend dependencies**
+2. **Install backend dependencies and setup environment variables**
    ```bash
+   cd back-end
+   cp .env.example .env
    npm install
    ```
 
-3. **Install frontend dependencies**
+3. **Install frontend dependencies and setup environment variables**
    ```bash
-   cd client
+   cd front-end
+   cp .env.example .env
    npm install
-   cd ..
    ```
 
-4. **Set up environment variables**
+4. **Environment variables example**
    
-   Create a `.env` file in the root directory:
+   In the `back-end/` directory:
    ```env
-   PORT=5000
+   PORT=4000
    MONGODB_URI=mongodb://localhost:27017/taskbank
    # or for MongoDB Atlas:
    # MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/taskbank
@@ -211,9 +213,9 @@ Ensure you have the following installed:
    JWT_SECRET=your_jwt_secret_here
    ```
    
-   Create a `.env` file in the `client` directory:
+   In the `front-end` directory:
    ```env
-   REACT_APP_API_URL=http://localhost:5000/api
+   REACT_APP_API_URL=http://localhost:4000/api
    ```
 
 5. **Start MongoDB** (if using local installation)
@@ -228,15 +230,16 @@ Ensure you have the following installed:
 6. **Verify your setup**
    ```bash
    # Terminal 1: Start backend
-   npm run server
+   npm run dev
    
    # Terminal 2: Start frontend
-   cd client
+   cd front-end
    npm start
    ```
    
-   - Backend should run on: http://localhost:5000
+   - Backend should run on: http://localhost:4000/api
    - Frontend should open: http://localhost:3000
+   - Alternatively, frontend if you ran in `back-end/` the command `npm run ui:build`, http://localhost:4000/ also serves that build React app.
 
 ### Recommended VS Code Extensions
 

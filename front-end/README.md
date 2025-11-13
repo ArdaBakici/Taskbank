@@ -25,13 +25,13 @@ Before you begin, ensure you have the following installed on your local machine:
 
 ## Environment Setup
 
-1. **Create a `.env` file** in the front-end directory (this file should NOT be committed to version control)
+1. `cp .env.example .env`
 
-2. **Add the following variables** to your `.env` file:
-```env
-   REACT_APP_MOCKAROO_TASKS_URL=<your_mockaroo_tasks_url>
-   REACT_APP_MOCKAROO_PROJECTS_URL=<your_mockaroo_projects_url>
-```
+   Looks like:
+   ```env
+   REACT_APP_API_URL=http://localhost:4000/api
+   ```
+
    > **Note:** We shared the .env files and the API keys needed in the Discord. Please check the Discord if necessary!
 
 ## Running the Application
