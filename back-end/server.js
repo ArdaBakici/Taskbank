@@ -10,7 +10,9 @@ const statsRouter = require("./routes/stats");
 const searchRouter = require("./routes/search");
 
 const app = express();
+require("dotenv").config();
 const PORT = process.env.PORT || 4000;
+console.log(`.env file's port is ${process.env.PORT}`);
 const CLIENT_BUILD_PATH = path.resolve(__dirname, "../front-end/build");
 
 app.use(cors());
