@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import "../css/dashboard.css";
 import "../css/ProjectView.css";
 import DashboardHeader from "../components/DashboardHeader";
+import AllTasks from "./AllTasks";
 const API_BASE = "http://localhost:4000/api";
 
 async function fetchProjectById(id) {
@@ -11,17 +12,10 @@ async function fetchProjectById(id) {
   return res.json();
 }
 
-async function fetchTasksByProject(projectId) {
-  const res = await fetch(`${API_BASE}/projects/${projectId}/tasks`);
-  if (!res.ok) throw new Error("Failed to fetch tasks");
-  return res.json();
-}
-
 export default function ProjectView() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [project, setProject] = useState(null);
-  const [projectTasks, setProjectTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -32,18 +26,13 @@ export default function ProjectView() {
       setLoading(true);
       setError(null);
       try {
-        const [projectData, tasksData] = await Promise.all([
-          fetchProjectById(id),
-          fetchTasksByProject(id),
-        ]);
+        const projectData = await fetchProjectById(id);
         if (!isMounted) return;
         setProject(projectData || null);
-        setProjectTasks(tasksData || []);
       } catch (err) {
         console.error("Failed to load project", err);
         if (isMounted) {
           setProject(null);
-          setProjectTasks([]);
           setError("Unable to load project details right now.");
         }
       } finally {
@@ -61,15 +50,6 @@ export default function ProjectView() {
 
   const handleReturn = () => navigate(-1);
   const handleEdit = () => navigate(`/projects/edit/${id}`);
-  const handleTaskClick = (taskId) => navigate(`/task/${taskId}`);
-
-
-
-
-  const renderTags = (tagList) => {
-    if (!tagList || tagList.length === 0) return "—";
-    return Array.isArray(tagList) ? tagList.join(", ") : tagList;
-  };
 
   return (
     <div className="dashboard-container">
@@ -99,24 +79,16 @@ export default function ProjectView() {
             {/* Tasks section */}
             <div className="dashboard-title-actions">
               <h3>Tasks of Project</h3>
-              <div className="dashboard-buttons">
-                <button>Sort</button>
-              </div>
             </div>
 
-            <div className="task-list">
-              {projectTasks.map((task) => (
-                <div 
-                  key={task.id} 
-                  className="task-row clickable" 
-                  onClick={() => handleTaskClick(task.id)}
-                >
-                  <div>{task.name}</div>
-                  <div>{renderTags(task.tags)}</div>
-                  <div>{task.deadline}</div>
-                </div>
-              ))}
-            </div>
+            <AllTasks 
+              embedded={true} 
+              filterBy="project" 
+              filterValue={id} 
+              showFooter={false}
+              buttons_bitmap={0b0110} // Show Sort (bit 1) and Filter (bit 2) buttons
+            />
+
             <button
               className="section-footer-button"
               onClick={handleReturn}
