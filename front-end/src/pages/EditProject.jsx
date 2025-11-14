@@ -185,8 +185,19 @@ export default function EditProject() {
   // Save project
   const handleSubmit = async(e) => {
     e.preventDefault();
+
+    const newErrors = {};
+
     if (!formData.projectName.trim()) {
-      setErrors({ projectName: "Project name is required" });
+      newErrors.projectName = "Project name is required";
+    }
+
+    if (!formData.deadline) {
+      newErrors.deadline = "Deadline is required";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
@@ -406,14 +417,22 @@ export default function EditProject() {
               </div>
 
               <div className="form-group">
-                <label>Deadline</label>
+                <label>Deadline <span className="required">*</span></label>
+
                 <input
                   type="date"
                   name="deadline"
+                  required
                   value={formData.deadline}
                   onChange={handleChange}
+                  className={errors.deadline ? "input-error" : ""}
                 />
+ 
+                {errors.deadline && (
+                  <p className="error-text">{errors.deadline}</p>
+                )}
               </div>
+
             </div>
 
             <div className="form-row">
