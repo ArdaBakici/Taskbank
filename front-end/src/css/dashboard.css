@@ -919,3 +919,9 @@
 .primary-button:hover {
   background-color: #2563eb;
 }
+
+.task-row.task-due-soon {
+  background-color: #fff3cd !important;   /* light yellow */
+  border-left: 6px solid #ffcc00 !important;
+  border-radius: 6px !important;
+}
