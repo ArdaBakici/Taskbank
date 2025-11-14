@@ -15,6 +15,8 @@ import EditTask from "./pages/EditTask";
 import EditProject from "./pages/EditProject";
 import TaskSearch from "./pages/TaskSearch"; 
 import ChangePassword from "./pages/ChangePassword";
+import ProjectSearch from "./pages/ProjectSearch";
+
 
 function App() {
   return (
@@ -36,6 +38,7 @@ function App() {
         <Route path="/projects/edit/:id" element={<EditProject />} />
         <Route path="/" element={<Login />} /> {/* default fallback */}
         <Route path="*" element={<Home />} />
+        <Route path="/project/search" element={<ProjectSearch />} />
       </Routes>
     </Router>
   );

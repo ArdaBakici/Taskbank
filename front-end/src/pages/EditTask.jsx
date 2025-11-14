@@ -122,7 +122,6 @@ const handleDelete = async () => {
 
     if (!formData.taskName.trim())
       newErrors.taskName = "Task name is required";
-    if (!formData.project) newErrors.project = "Project selection is required";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -134,7 +133,7 @@ const handleDelete = async () => {
       // Prepare payload mapping frontend field names -> backend expectation
       const payload = {
         title: formData.taskName.trim(),
-        projectId: Number(formData.project) || null,
+        projectId: formData.project === "none" ? null : Number(formData.project),
         priority: formData.priority
           ? formData.priority.toLowerCase()
           : undefined,
@@ -176,7 +175,7 @@ const handleDelete = async () => {
       }
 
       alert("Task updated successfully!");
-      navigate(`/task/${id}`); // refresh TaskView
+      navigate(-1);
     } catch (err) {
       console.error("Failed to update task:", err);
       alert("Failed to update task.");
@@ -185,8 +184,9 @@ const handleDelete = async () => {
 
   
   const handleCancel = () => {
-    navigate(`/task/${id}`); // go back to the TaskView page for this task // always go back to all tasks
+    navigate(-1);
   };
+
 
   if (loading) {
     return (
@@ -252,7 +252,7 @@ const handleDelete = async () => {
                   onChange={handleChange}
                   className={errors.project ? "error" : ""}
                 >
-                  <option value="">Select a project</option>
+                  <option value="none">Unassigned</option>
                   {projects.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name}

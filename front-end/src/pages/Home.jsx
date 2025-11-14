@@ -38,7 +38,20 @@ export default function Home() {
         </section>
 
         <section className="home-section">
-          <AllProjects embedded limit={5} />
+          <AllProjects
+            embedded
+            limit={5}
+            renderActions={(navigateFn) => (
+              <button
+                className="search-button"
+                title="Search Projects"
+                onClick={() => navigateFn("/project/search")}
+              >
+                <FiSearch size={18} />
+              </button>
+            )}
+          />
+
 
           <button
             className="section-footer-button"
@@ -47,6 +60,7 @@ export default function Home() {
             All Projects
           </button>
         </section>
+
 
         <div className="home-bottom-buttons">
           <button onClick={() => navigate("/stats")}>Stats</button>

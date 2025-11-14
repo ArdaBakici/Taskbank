@@ -1,0 +1,117 @@
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../css/dashboard.css";
+import DashboardHeader from "../components/DashboardHeader";
+
+export default function ProjectSearch() {
+  const navigate = useNavigate();
+  const [projects, setProjects] = useState([]);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadProjects() {
+      try {
+        setLoading(true);
+
+        const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
+        const url = `${apiUrl}/projects`;
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!isMounted) return;
+
+        // Search by name OR tags
+        const filtered = data.projects.filter((p) => {
+          const nameMatch = p.name.toLowerCase().includes(query.toLowerCase());
+          const tagsMatch =
+            (p.tags || [])
+              .join(" ")
+              .toLowerCase()
+              .includes(query.toLowerCase());
+
+          return nameMatch || tagsMatch;
+        });
+
+        setProjects(filtered);
+      } catch (err) {
+        console.error("Failed to load projects", err);
+        if (isMounted) setError("Unable to load projects right now.");
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+
+    loadProjects();
+    return () => {
+      isMounted = false;
+    };
+  }, [query]);
+
+  const renderTags = (tagList) => {
+    if (!tagList || tagList.length === 0) return "—";
+    return Array.isArray(tagList) ? tagList.join(", ") : tagList;
+  };
+
+  return (
+    <div className="dashboard-container">
+      <DashboardHeader />
+
+      <main>
+        <div className="dashboard-title-actions">
+          <h2>Search Projects</h2>
+        </div>
+
+        {/* EXACT SAME SPACING AS TASK SEARCH */}
+        <div className="form-group full-width">
+          <input
+            id="project-search"
+            type="text"
+            placeholder="Search by project name or tags..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+
+        {/* SAME LIST CLASS AS TASKS */}
+        <div className="task-list">
+          {loading && <p>Loading projects...</p>}
+          {error && <p>{error}</p>}
+
+          {!loading &&
+            !error &&
+            projects.map((project) => (
+              <button
+                key={project.id}
+                type="button"
+                className="task-row task-row-button"
+                onClick={() => navigate(`/project/${project.id}`)}
+              >
+                <div>{project.name}</div>
+                <div>{renderTags(project.tags)}</div>
+                <div>{project.deadline || "—"}</div>
+              </button>
+            ))}
+
+          {!loading && !error && projects.length === 0 && (
+            <p>No projects found.</p>
+          )}
+        </div>
+
+        <button
+          className="section-footer-button tasks-return"
+          onClick={() => navigate("/home")}
+        >
+          Return
+        </button>
+      </main>
+    </div>
+  );
+}
