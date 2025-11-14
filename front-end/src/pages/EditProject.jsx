@@ -156,15 +156,22 @@ export default function EditProject() {
 
   const handleTaskSelection = (taskId) => {
     setFormData((prev) => {
-      const selected = prev.selectedTasks.includes(taskId);
+      const alreadySelected = prev.selectedTasks.includes(taskId);
+
+      // If removing from project → mark as unassigned
+      if (alreadySelected) {
+        unassignTaskLocally(taskId);
+      }
+
       return {
         ...prev,
-        selectedTasks: selected
+        selectedTasks: alreadySelected
           ? prev.selectedTasks.filter((id) => id !== taskId)
           : [...prev.selectedTasks, taskId],
       };
     });
   };
+
 
   // Save project
   const handleSubmit = (e) => {
@@ -207,14 +214,26 @@ export default function EditProject() {
   const handleEditTask = (taskId) =>
     navigate(`/tasks/edit/${taskId}`, { state: { returnToProject: id } });
 
+  const unassignTaskLocally = (taskId) => {
+    setAvailableTasks(prev =>
+      prev.map(t =>
+        t.id === taskId ? { ...t, projectId: null } : t
+      )
+    );
+  };
   // Helpers
   const orderedSelectedTasks = formData.selectedTasks
     .map((taskId) => availableTasks.find((t) => t.id === taskId))
     .filter(Boolean);
 
-  const unselectedTasks = availableTasks.filter(
-    (t) => !formData.selectedTasks.includes(t.id)
-  );
+  const selectedIds = formData.selectedTasks.map(Number);
+
+  const unselectedTasks = availableTasks.filter((t) => {
+    const assigned = t.projectId !== null && t.projectId !== undefined;
+    const selectedForThisProject = selectedIds.includes(Number(t.id));
+    return !assigned && !selectedForThisProject;
+  });
+
 
   const onDragEnd = (event) => {
     const { active, over } = event;
