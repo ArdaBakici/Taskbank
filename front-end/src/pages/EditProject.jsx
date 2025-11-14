@@ -3,11 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import "../css/dashboard.css";
 import "../css/forms.css";
 import DashboardHeader from "../components/DashboardHeader";
-import {
-  fetchProjectById,
-  fetchTasksByProject,
-  fetchTasks,
-} from "../utils/mockDataLoader";
 
 // dnd-kit imports
 import { DndContext, closestCenter } from "@dnd-kit/core";
@@ -20,7 +15,6 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 function SortableTaskItem({ task, index, onEdit, onRemove }) {
-  // Let dnd-kit control the item
   const {
     attributes,
     listeners,
@@ -34,7 +28,7 @@ function SortableTaskItem({ task, index, onEdit, onRemove }) {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.6 : 1,
-    touchAction: "none", // prevent scroll-while-drag on touch
+    touchAction: "none",
   };
 
   return (
@@ -45,7 +39,6 @@ function SortableTaskItem({ task, index, onEdit, onRemove }) {
       data-task-id={task.id}
     >
       <div className="task-reorder-content">
-        {/* Drag handle: spread draggable attributes/listeners here */}
         <span
           className="drag-handle"
           style={{ cursor: "grab", marginRight: "0.5rem", userSelect: "none" }}
@@ -89,31 +82,44 @@ export default function EditProject() {
     status: "Planning",
     deadline: "",
     tags: "",
-    selectedTasks: [], // ordered array of task IDs
+    selectedTasks: [],
   });
 
   const [errors, setErrors] = useState({});
   const [availableTasks, setAvailableTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  // Load existing project data and available tasks
+  // Load initial project data
   useEffect(() => {
     let isMounted = true;
 
     async function loadData() {
       setLoading(true);
       try {
-        const allTasks = await fetchTasks();
+        // Load all tasks
+        const taskRes = await fetch("http://localhost:4000/api/tasks");
+        const taskJson = await taskRes.json();
+        const allTasks = taskJson.tasks || taskJson;
+
         if (isMounted) setAvailableTasks(allTasks || []);
 
         if (id) {
-          const [projectData, projectTasks] = await Promise.all([
-            fetchProjectById(id),
-            fetchTasksByProject(id),
-          ]);
+          // Load project details
+          const projRes = await fetch(
+            `http://localhost:4000/api/projects/${id}`
+          );
+          const projectData = await projRes.json();
+
+          // Load project tasks
+          const projTasksRes = await fetch(
+            `http://localhost:4000/api/projects/${id}/tasks`
+          );
+          const projectTasks = await projTasksRes.json();
 
           if (isMounted && projectData) {
             const selectedTaskIds = (projectTasks || []).map((t) => t.id);
+
             setFormData({
               projectName: projectData.name || "",
               description: projectData.description || "",
@@ -141,6 +147,7 @@ export default function EditProject() {
     };
   }, [id]);
 
+  // Inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -149,44 +156,79 @@ export default function EditProject() {
 
   const handleTaskSelection = (taskId) => {
     setFormData((prev) => {
-      const isSelected = prev.selectedTasks.includes(taskId);
+      const selected = prev.selectedTasks.includes(taskId);
       return {
         ...prev,
-        selectedTasks: isSelected
+        selectedTasks: selected
           ? prev.selectedTasks.filter((id) => id !== taskId)
-          : [...prev.selectedTasks, taskId], // append to end
+          : [...prev.selectedTasks, taskId],
       };
     });
   };
 
+  // Save project
   const handleSubmit = (e) => {
     e.preventDefault();
-    const newErrors = {};
     if (!formData.projectName.trim()) {
-      newErrors.projectName = "Project name is required";
-    }
-    if (Object.keys(newErrors).length) {
-      setErrors(newErrors);
+      setErrors({ projectName: "Project name is required" });
       return;
     }
-    setErrors({});
-    console.log("Updating project with ordered tasks:", { id, ...formData });
+
     alert("Project updated successfully!");
     navigate("/projects");
+  };
+
+  // Delete Project with mode
+  const handleDeleteProject = async (mode) => {
+    try {
+      let url = `http://localhost:4000/api/projects/${id}`;
+
+      if (mode === "delete-tasks") url += "?deleteTasks=true";
+      if (mode === "unassign-tasks") url += "?unassignTasks=true";
+
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || "Failed to delete project");
+      }
+
+      alert("Project deleted successfully!");
+      navigate("/projects");
+    } catch (error) {
+      alert("Error: " + error.message);
+    }
   };
 
   const handleCancel = () => navigate("/projects");
   const handleEditTask = (taskId) =>
     navigate(`/tasks/edit/${taskId}`, { state: { returnToProject: id } });
 
-  // Helpers to map IDs <-> task objects
-  const getOrderedSelectedTasks = () =>
-    formData.selectedTasks
-      .map((taskId) => availableTasks.find((t) => t.id === taskId))
-      .filter(Boolean);
+  // Helpers
+  const orderedSelectedTasks = formData.selectedTasks
+    .map((taskId) => availableTasks.find((t) => t.id === taskId))
+    .filter(Boolean);
 
-  const getUnselectedTasks = () =>
-    availableTasks.filter((t) => !formData.selectedTasks.includes(t.id));
+  const unselectedTasks = availableTasks.filter(
+    (t) => !formData.selectedTasks.includes(t.id)
+  );
+
+  const onDragEnd = (event) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setFormData((prev) => {
+      const current = prev.selectedTasks;
+      const oldIndex = current.indexOf(active.id);
+      const newIndex = current.indexOf(over.id);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+
+      return { ...prev, selectedTasks: arrayMove(current, oldIndex, newIndex) };
+    });
+  };
 
   if (loading) {
     return (
@@ -199,25 +241,6 @@ export default function EditProject() {
     );
   }
 
-  const orderedSelectedTasks = getOrderedSelectedTasks();
-  const unselectedTasks = getUnselectedTasks();
-
-  // dnd-kit: when a drag ends, reorder the selectedTasks array
-  const onDragEnd = (event) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    setFormData((prev) => {
-      const current = prev.selectedTasks;
-      const oldIndex = current.indexOf(active.id);
-      const newIndex = current.indexOf(over.id);
-      if (oldIndex === -1 || newIndex === -1) return prev;
-
-      const reordered = arrayMove(current, oldIndex, newIndex);
-      return { ...prev, selectedTasks: reordered };
-    });
-  };
-
   return (
     <div className="dashboard-container">
       <DashboardHeader />
@@ -228,16 +251,15 @@ export default function EditProject() {
 
         <div className="form-card">
           <form onSubmit={handleSubmit}>
+            {/* Basic Fields */}
             <div className="form-row">
               <div className="form-group full-width">
-                <label htmlFor="projectName">Project Name *</label>
+                <label>Project Name *</label>
                 <input
                   type="text"
-                  id="projectName"
                   name="projectName"
                   value={formData.projectName}
                   onChange={handleChange}
-                  placeholder="Enter project name"
                   className={errors.projectName ? "error" : ""}
                 />
                 {errors.projectName && (
@@ -248,13 +270,11 @@ export default function EditProject() {
 
             <div className="form-row">
               <div className="form-group full-width">
-                <label htmlFor="description">Description</label>
+                <label>Description</label>
                 <textarea
-                  id="description"
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  placeholder="Enter project description"
                   rows="4"
                 />
               </div>
@@ -262,9 +282,8 @@ export default function EditProject() {
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="status">Status</label>
+                <label>Status</label>
                 <select
-                  id="status"
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
@@ -278,10 +297,9 @@ export default function EditProject() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="deadline">Deadline</label>
+                <label>Deadline</label>
                 <input
                   type="date"
-                  id="deadline"
                   name="deadline"
                   value={formData.deadline}
                   onChange={handleChange}
@@ -291,30 +309,27 @@ export default function EditProject() {
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="tags">Tags</label>
+                <label>Tags</label>
                 <input
                   type="text"
-                  id="tags"
                   name="tags"
                   value={formData.tags}
                   onChange={handleChange}
-                  placeholder="e.g., web, mobile, urgent"
                 />
               </div>
             </div>
 
-            {/* Selected Tasks - Reorderable (touch + mouse) */}
+            {/* Selected Tasks */}
             {orderedSelectedTasks.length > 0 && (
               <div className="form-row">
                 <div className="form-group full-width">
                   <label>Project Tasks (Drag to Reorder)</label>
-                  <p className="field-hint">
-                    Tasks are executed in this order. Drag to change priority.
-                  </p>
 
-                  <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+                  <DndContext
+                    collisionDetection={closestCenter}
+                    onDragEnd={onDragEnd}
+                  >
                     <SortableContext
-                      // the list of item ids in order
                       items={formData.selectedTasks}
                       strategy={verticalListSortingStrategy}
                     >
@@ -338,12 +353,11 @@ export default function EditProject() {
               </div>
             )}
 
-            {/* Available Tasks to Add */}
+            {/* Unselected Tasks */}
             {unselectedTasks.length > 0 && (
               <div className="form-row">
                 <div className="form-group full-width">
                   <label>Available Tasks</label>
-                  <p className="field-hint">Click to add tasks to this project</p>
                   <div className="task-selection-list">
                     {unselectedTasks.map((task) => {
                       const isChecked = formData.selectedTasks.includes(task.id);
@@ -352,26 +366,19 @@ export default function EditProject() {
                           <div style={{ display: "flex", alignItems: "center" }}>
                             <input
                               type="checkbox"
-                              id={`task-${task.id}`}
                               checked={isChecked}
                               onChange={() => handleTaskSelection(task.id)}
                               style={{ marginRight: "0.5rem" }}
                             />
-                            <label
-                              htmlFor={`task-${task.id}`}
-                              style={{ margin: 0, cursor: "pointer" }}
-                            >
+                            <label style={{ margin: 0, cursor: "pointer" }}>
                               {task.title || task.name}
                             </label>
                           </div>
+
                           <button
                             type="button"
                             onClick={() => handleEditTask(task.id)}
                             className="inline-edit-btn"
-                            style={{
-                              fontSize: "0.85em",
-                              padding: "0.25rem 0.75rem",
-                            }}
                           >
                             Edit
                           </button>
@@ -383,25 +390,18 @@ export default function EditProject() {
               </div>
             )}
 
-            {formData.selectedTasks.length === 0 && (
-              <div className="form-row">
-                <div className="form-group full-width">
-                  <p className="no-tasks-message">
-                    No tasks selected. Add tasks from the available tasks below.
-                  </p>
-                </div>
+            {/* ACTION BUTTONS */}
+            <div className="form-actions">
+              <div className="dashboard-buttons">
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(true)}
+                  className="delete-button"
+                >
+                  Delete Project
+                </button>
               </div>
-            )}
 
-            {/* Action Buttons */}
-            <div
-              style={{
-                marginTop: "2rem",
-                display: "flex",
-                justifyContent: "center",
-                width: "100%",
-              }}
-            >
               <div className="dashboard-buttons">
                 <button type="button" onClick={handleCancel}>
                   Cancel
@@ -412,6 +412,41 @@ export default function EditProject() {
           </form>
         </div>
       </main>
+
+      {/* DELETE MODAL */}
+      {showDeleteModal && (
+        <div className="tb-modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="tb-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Delete Project</h3>
+            <p className="tb-modal-text">
+              What would you like to do with this project's tasks?
+            </p>
+
+            <div className="tb-modal-buttons">
+              <button
+                className="tb-btn-delete"
+                onClick={() => handleDeleteProject("delete-tasks")}
+              >
+                Delete Project + All Tasks
+              </button>
+
+              <button
+                className="tb-btn-secondary"
+                onClick={() => handleDeleteProject("unassign-tasks")}
+              >
+                Delete Project + Unassign Tasks
+              </button>
+
+              <button
+                className="tb-btn-cancel"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -177,10 +177,39 @@ router.delete("/:projectId/tasks/:taskId", (req, res) => {
 
 
 
-// TODO (Srijan): implement delete_project
-router.delete("/:id", (_req, res) => {
-  res.status(501).json({
-    message: "DELETE /api/projects/:id is reserved for Srijan to implement.",
+// DELETE /api/projects/:id
+router.delete("/:id", (req, res) => {
+  const projectId = Number(req.params.id);
+  const deleteTasks = req.query.deleteTasks === "true";
+  const unassignTasks = req.query.unassignTasks === "true";
+
+  const project = findProjectById(projectId);
+  if (!project) {
+    return res.status(404).json({ message: "Project not found" });
+  }
+
+  // Get all tasks that belong to this project
+  const allTasks = getTasks();
+  const projectTasks = allTasks.filter(t => t.projectId === projectId);
+
+  // Option 1 — delete all tasks
+  if (deleteTasks) {
+    projectTasks.forEach(t => deleteTask(t.id));
+  }
+
+  // Option 2 — unassign tasks (set projectId = null)
+  if (unassignTasks) {
+    projectTasks.forEach(t => updateTask(t.id, { projectId: null }));
+  }
+
+  // Delete the actual project
+  const removedProject = deleteProject(projectId);
+
+  return res.json({
+    message: "Project deleted successfully",
+    project: removedProject,
+    deletedTasks: deleteTasks ? projectTasks.length : 0,
+    unassignedTasks: unassignTasks ? projectTasks.length : 0
   });
 });
 
