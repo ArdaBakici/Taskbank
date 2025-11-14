@@ -122,7 +122,6 @@ const handleDelete = async () => {
 
     if (!formData.taskName.trim())
       newErrors.taskName = "Task name is required";
-    if (!formData.project) newErrors.project = "Project selection is required";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -176,7 +175,7 @@ const handleDelete = async () => {
       }
 
       alert("Task updated successfully!");
-      navigate(`/task/${id}`); // refresh TaskView
+      navigate(-1);
     } catch (err) {
       console.error("Failed to update task:", err);
       alert("Failed to update task.");
@@ -185,8 +184,9 @@ const handleDelete = async () => {
 
   
   const handleCancel = () => {
-    navigate(`/task/${id}`); // go back to the TaskView page for this task // always go back to all tasks
+    navigate(-1);
   };
+
 
   if (loading) {
     return (

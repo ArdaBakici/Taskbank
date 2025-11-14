@@ -7,6 +7,7 @@ export default function AllProjects({
   embedded = false,
   limit,
   showFooter = true,
+  renderActions, 
 }) {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
@@ -102,18 +103,24 @@ export default function AllProjects({
     <>
       <div className="dashboard-title-actions">
         <h2>Projects</h2>
+
         <div className="dashboard-buttons">
+
+          {/* Always show Create & Sort */}
           <button onClick={() => navigate("/projects/new")}>Create</button>
+
           <div className="sort-dropdown-container">
             <button onClick={() => setShowSortMenu(!showSortMenu)}>
-              Sort {sortingMethod !== 'id' && `(${sortOptions.find(opt => opt.value === sortingMethod)?.label})`}
+              Sort {sortingMethod !== 'id' &&
+                `(${sortOptions.find(opt => opt.value === sortingMethod)?.label})`}
             </button>
+
             {showSortMenu && (
               <div className="sort-dropdown-menu">
                 {sortOptions.map((option) => (
                   <button
                     key={option.value}
-                    className={`sort-option ${sortingMethod === option.value ? 'active' : ''}`}
+                    className={`sort-option ${sortingMethod === option.value ? "active" : ""}`}
                     onClick={() => handleSortChange(option.value)}
                   >
                     {option.label}
@@ -122,8 +129,13 @@ export default function AllProjects({
               </div>
             )}
           </div>
+
+          {/* Only show search icon when embedded */}
+          {embedded && renderActions && renderActions(navigate)}
+
         </div>
       </div>
+
 
       <div className="project-list">
         {loading && <p>Loading projects...</p>}
