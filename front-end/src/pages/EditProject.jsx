@@ -90,6 +90,11 @@ export default function EditProject() {
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  const [initialSelectedTaskIds, setInitialSelectedTaskIds] = useState([]);
+  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
+
+
+
   // Load initial project data
   useEffect(() => {
     let isMounted = true;
@@ -132,6 +137,10 @@ export default function EditProject() {
                 : "",
               selectedTasks: selectedTaskIds,
             });
+              setInitialSelectedTaskIds(selectedTaskIds);
+
+            
+            
           }
         }
       } catch (err) {
@@ -174,16 +183,97 @@ export default function EditProject() {
 
 
   // Save project
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     if (!formData.projectName.trim()) {
       setErrors({ projectName: "Project name is required" });
       return;
     }
 
+    // Build payload in the same shape as AddProject
+    const projectPayload = {
+      name: formData.projectName,
+      description: formData.description,
+      status: formData.status,
+      deadline: formData.deadline || null,
+      tags: formData.tags
+        ? formData.tags
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean)
+        : [],
+    };
+
+  try {
+    // 1) Update the project itself
+    const res = await fetch(`${apiUrl}/projects/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(projectPayload),
+    });
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(
+        body.message || `Failed to update project (HTTP ${res.status})`
+      );
+    }
+
+    // 2) Sync task assignments (what changed vs original)
+    const projectId = Number(id);
+
+    const toAssign = formData.selectedTasks.filter(
+      (taskId) => !initialSelectedTaskIds.includes(taskId)
+    );
+
+    const toUnassign = initialSelectedTaskIds.filter(
+      (taskId) => !formData.selectedTasks.includes(taskId)
+    );
+
+    await Promise.all([
+      // Newly added tasks → set projectId
+      ...toAssign.map((taskId) =>
+        fetch(`${apiUrl}/tasks/${taskId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ projectId }),
+        }).then(async (r) => {
+          if (!r.ok) {
+            const body = await r.json().catch(() => ({}));
+            throw new Error(
+              body.message ||
+                `Failed to assign task ${taskId} to project (HTTP ${r.status})`
+            );
+          }
+        })
+      ),
+
+      // Removed tasks → clear projectId
+      ...toUnassign.map((taskId) =>
+        fetch(`${apiUrl}/tasks/${taskId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ projectId: null }),
+        }).then(async (r) => {
+          if (!r.ok) {
+            const body = await r.json().catch(() => ({}));
+            throw new Error(
+              body.message ||
+                `Failed to unassign task ${taskId} from project (HTTP ${r.status})`
+            );
+          }
+        })
+      ),
+    ]);
+
     alert("Project updated successfully!");
     navigate("/projects");
-  };
+  } catch (error) {
+    console.error("Error updating project:", error);
+    alert(`Error updating project: ${error.message}`);
+  }
+};
+
 
   // Delete Project with mode
   const handleDeleteProject = async (mode) => {
