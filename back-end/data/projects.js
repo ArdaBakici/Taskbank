@@ -30,7 +30,7 @@ const projects = [
     id: 4,
     name: "Analytics Dashboard",
     tags: ["Frontend", "Data"],
-    deadline: "2025-12-20",
+    deadline: "2025-11-15",
     description: "Develop a real-time analytics dashboard for internal stakeholders.",
     urgency: "Medium",
     status: "In Progress",

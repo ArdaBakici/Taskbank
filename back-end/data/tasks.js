@@ -5,7 +5,7 @@ const tasks = [
     title: "Design homepage layout",
     name: "Design homepage layout",
     tags: ["UI", "Design"],
-    deadline: "2025-10-31",
+    deadline: "2025-11-15",
     description: "Produce desktop and mobile wireframes for the new homepage.",
     urgency: "High",
     status: "In Progress",
