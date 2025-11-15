@@ -107,7 +107,9 @@ router.get("/:projectId/tasks", (req, res) => {
   }
 
   // Return tasks that belong to this project
-  const projectTasks = getTasks().filter(task => task.projectId === projectId);
+  const projectTasks = getTasks()
+    .filter(task => task.projectId === projectId)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));  
   res.json(projectTasks);
 });
 

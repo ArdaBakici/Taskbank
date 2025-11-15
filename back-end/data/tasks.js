@@ -11,7 +11,8 @@ const tasks = [
     status: "In Progress",
     assignee: "Alice Nguyen",
     context: "office",
-    priority: "high"
+    priority: "high", 
+    order: 0
   },
   {
     id: 102,
@@ -25,7 +26,8 @@ const tasks = [
     status: "Not Started",
     assignee: "Jordan Ellis",
     context: "office",
-    priority: "medium"
+    priority: "medium", 
+    order: 0
   },
   {
     id: 201,
@@ -39,7 +41,8 @@ const tasks = [
     status: "In Progress",
     assignee: "Priya Shah",
     context: "office",
-    priority: "medium"
+    priority: "medium", 
+    order: 0
   },
   {
     id: 202,
@@ -53,7 +56,8 @@ const tasks = [
     status: "Not Started",
     assignee: "Liam Chen",
     context: "office",
-    priority: "medium"
+    priority: "medium", 
+    order: 0
   },
   {
     id: 301,
@@ -67,7 +71,8 @@ const tasks = [
     status: "In Progress",
     assignee: "Sofia Ramirez",
     context: "office",
-    priority: "high"
+    priority: "high", 
+    order: 0
   },
   {
     id: 302,
@@ -81,7 +86,8 @@ const tasks = [
     status: "Not Started",
     assignee: "Ethan Brooks",
     context: "office",
-    priority: "low"
+    priority: "low", 
+    order: 0
   },
 ];
 
@@ -105,6 +111,7 @@ function addTask(payload) {
     tags: Array.isArray(payload.tags) ? payload.tags : [],
     // Default context if not provided
     context: payload.context || "other",
+    order: typeof payload.order === "number" ? payload.order : 0,
   };
   tasks.push(newTask);
   nextTaskId += 1;

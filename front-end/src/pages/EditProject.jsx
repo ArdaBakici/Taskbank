@@ -183,7 +183,7 @@ export default function EditProject() {
 
 
   // Save project
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newErrors = {};
@@ -201,7 +201,6 @@ export default function EditProject() {
       return;
     }
 
-    // Build payload in the same shape as AddProject
     const projectPayload = {
       name: formData.projectName,
       description: formData.description,
@@ -215,75 +214,96 @@ export default function EditProject() {
         : [],
     };
 
-  try {
-    // 1) Update the project itself
-    const res = await fetch(`${apiUrl}/projects/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(projectPayload),
-    });
+    try {
+      // 1) 프로젝트 자체 업데이트
+      const res = await fetch(`${apiUrl}/projects/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(projectPayload),
+      });
 
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw new Error(
-        body.message || `Failed to update project (HTTP ${res.status})`
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(
+          body.message || `Failed to update project (HTTP ${res.status})`
+        );
+      }
+
+      // 2) task assign / unassign 동기화
+      const projectId = Number(id);
+
+      const toAssign = formData.selectedTasks.filter(
+        (taskId) => !initialSelectedTaskIds.includes(taskId)
       );
+
+      const toUnassign = initialSelectedTaskIds.filter(
+        (taskId) => !formData.selectedTasks.includes(taskId)
+      );
+
+      await Promise.all([
+        // 새로 추가된 task들 → projectId 설정
+        ...toAssign.map((taskId) =>
+          fetch(`${apiUrl}/tasks/${taskId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ projectId }),
+          }).then(async (r) => {
+            if (!r.ok) {
+              const body = await r.json().catch(() => ({}));
+              throw new Error(
+                body.message ||
+                  `Failed to assign task ${taskId} to project (HTTP ${r.status})`
+              );
+            }
+          })
+        ),
+
+        // 제거된 task들 → projectId null
+        ...toUnassign.map((taskId) =>
+          fetch(`${apiUrl}/tasks/${taskId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ projectId: null }),
+          }).then(async (r) => {
+            if (!r.ok) {
+              const body = await r.json().catch(() => ({}));
+              throw new Error(
+                body.message ||
+                  `Failed to unassign task ${taskId} from project (HTTP ${r.status})`
+              );
+            }
+          })
+        ),
+      ]);
+
+      // 🔹 3) 드래그로 정해진 순서를 order 필드로 저장
+      // formData.selectedTasks: [taskId1, taskId2, taskId3, ...] (드래그 후 최종 순서)
+      await Promise.all(
+        formData.selectedTasks.map((taskId, index) =>
+          fetch(`${apiUrl}/tasks/${taskId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ order: index }), // 0,1,2,...
+          }).then(async (r) => {
+            if (!r.ok) {
+              const body = await r.json().catch(() => ({}));
+              throw new Error(
+                body.message ||
+                  `Failed to update order for task ${taskId} (HTTP ${r.status})`
+              );
+            }
+          })
+        )
+      );
+
+      alert("Project updated successfully!");
+      navigate("/projects");
+    } catch (error) {
+      console.error("Error updating project:", error);
+      alert(`Error updating project: ${error.message}`);
     }
+  };
 
-    // 2) Sync task assignments (what changed vs original)
-    const projectId = Number(id);
-
-    const toAssign = formData.selectedTasks.filter(
-      (taskId) => !initialSelectedTaskIds.includes(taskId)
-    );
-
-    const toUnassign = initialSelectedTaskIds.filter(
-      (taskId) => !formData.selectedTasks.includes(taskId)
-    );
-
-    await Promise.all([
-      // Newly added tasks → set projectId
-      ...toAssign.map((taskId) =>
-        fetch(`${apiUrl}/tasks/${taskId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ projectId }),
-        }).then(async (r) => {
-          if (!r.ok) {
-            const body = await r.json().catch(() => ({}));
-            throw new Error(
-              body.message ||
-                `Failed to assign task ${taskId} to project (HTTP ${r.status})`
-            );
-          }
-        })
-      ),
-
-      // Removed tasks → clear projectId
-      ...toUnassign.map((taskId) =>
-        fetch(`${apiUrl}/tasks/${taskId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ projectId: null }),
-        }).then(async (r) => {
-          if (!r.ok) {
-            const body = await r.json().catch(() => ({}));
-            throw new Error(
-              body.message ||
-                `Failed to unassign task ${taskId} from project (HTTP ${r.status})`
-            );
-          }
-        })
-      ),
-    ]);
-
-    alert("Project updated successfully!");
-    navigate("/projects");
-  } catch (error) {
-    console.error("Error updating project:", error);
-    alert(`Error updating project: ${error.message}`);
-  }
-};
 
 
   // Delete Project with mode
