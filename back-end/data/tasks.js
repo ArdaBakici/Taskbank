@@ -89,6 +89,21 @@ const tasks = [
     priority: "low", 
     order: 0
   },
+  {
+  id: 9999,
+  projectId: 2,
+  title: "Fake completed test task",
+  name: "Fake completed test task",
+  tags: ["Test", "Automation"],
+  deadline: "2025-12-31",
+  description: "This is a test task inserted for automated unit testing.",
+  urgency: "Medium",
+  status: "Completed",
+  assignee: "Test Runner",
+  context: "office",
+  priority: "medium",
+  order: 0
+},
 ];
 
 let nextTaskId = Math.max(...tasks.map((task) => task.id)) + 1;
