@@ -193,6 +193,8 @@ export default function AllTasks({
     { value: 'title', label: 'Name' },
     { value: 'project', label: 'Project' },
     { value: 'id', label: 'ID' },
+    { value: 'order', label: 'Manual Order' },
+
   ];
 
   const filterOptions = [

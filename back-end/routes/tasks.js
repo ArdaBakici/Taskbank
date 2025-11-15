@@ -145,7 +145,9 @@ router.get("/", (req, res) => {
             if (!scoreMap.has(b.id)) scoreMap.set(b.id, calculateSmartScore(b));
             return scoreMap.get(b.id) - scoreMap.get(a.id);
           };
-        
+        case "order":
+        return (a, b) => (a.order ?? 0) - (b.order ?? 0);
+
         case "deadline":
         case "deadline_asc":
           return (a, b) => new Date(a.deadline) - new Date(b.deadline);
