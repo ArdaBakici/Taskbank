@@ -61,12 +61,13 @@ const calculateSmartScore = (task) => {
 };
 
 // GET /api/tasks - List tasks with optional limit and sorting
+// GET /api/tasks - List tasks with optional limit, sorting, and filters
 router.get("/", async (req, res) => {
   try {
     const numOfTasks = parseInt(req.query.num_of_tasks, 10) || null;
     const sortingMethod = req.query.sorting_method || "id";
 
-    // Parse filters from JSON string
+    // --- Parse filters from query ---
     let filters = {};
     if (req.query.filters) {
       try {
@@ -79,78 +80,74 @@ router.get("/", async (req, res) => {
       }
     }
 
-    let tasks = await Task.find();
-    const totalBeforeFilters = tasks.length;
+    // --- Build Mongo filter object ---
+    const mongoFilter = {};
 
-    // Optional: support /tasks?unassigned=1
+    // Unassigned tasks: /tasks?unassigned=1
     if (
       req.query.unassigned === "1" ||
       req.query.unassigned === "true" ||
       req.query.unassigned === "yes"
     ) {
-      tasks = tasks.filter((t) => !t.projectId);
+      mongoFilter.$or = [
+        { projectId: null },
+        { projectId: { $exists: false } },
+      ];
     }
 
-    // Helper function to apply a single filter
-    const applyFilter = (taskList, filterType, filterVal) => {
-      if (!filterType || !filterVal) return taskList;
-
+    // Apply structured filters from ?filters={}
+    for (const [filterType, filterValue] of Object.entries(filters)) {
+      if (!filterValue) continue;
+      const val = String(filterValue);
       switch (filterType.toLowerCase()) {
         case "status":
-          return taskList.filter(
-            (task) =>
-              task.status &&
-              task.status.toLowerCase() === filterVal.toLowerCase()
-          );
+          mongoFilter.status = val;
+          break;
 
         case "context":
-          return taskList.filter(
-            (task) =>
-              task.context &&
-              task.context.toLowerCase() === filterVal.toLowerCase()
-          );
+          mongoFilter.context = val;
+          break;
 
         case "project":
         case "projectid":
-          return taskList.filter(
-            (task) =>
-              task.projectId &&
-              String(task.projectId) === String(filterVal)
-          );
+          if (mongoose.isValidObjectId(val)) {
+            mongoFilter.projectId = val;
+          }
+          break;
 
         case "tag":
-          return taskList.filter(
-            (task) =>
-              task.tags &&
-              Array.isArray(task.tags) &&
-              task.tags.some(
-                (tag) => tag.toLowerCase() === filterVal.toLowerCase()
-              )
-          );
+          // match tags case-insensitively
+          mongoFilter.tags = {
+            $elemMatch: {
+              $regex: new RegExp(`^${val}$`, "i"),
+            },
+          };
+          break;
 
         default:
-          return taskList;
+          break;
       }
-    };
-
-    // Apply all filters
-    for (const [filterType, filterValue] of Object.entries(filters)) {
-      tasks = applyFilter(tasks, filterType, filterValue);
     }
 
-    // Separate completed and non-completed tasks
+    // Total tasks BEFORE any filters (for UI stats)
+    const totalBeforeFilters = await Task.countDocuments();
+
+    // Fetch tasks AFTER filters (but BEFORE limit)
+    let tasks = await Task.find(mongoFilter).exec();
+    const totalAfterFilters = tasks.length;
+
+    // --- Separate completed vs active ---
     const completedTasks = tasks.filter((t) => t.status === "Completed");
     const activeTasks = tasks.filter((t) => t.status !== "Completed");
 
-    // Define sort function based on sorting method
+    // --- Sorting helper ---
     const getSortFunction = (method) => {
-      const methodLower = method.toLowerCase();
+      const methodLower = (method || "").toLowerCase();
 
       switch (methodLower) {
         case "smart":
         case "smart_sort":
         case "intelligent": {
-          // Precompute scores for efficiency
           const scoreMap = new Map();
           return (a, b) => {
             const keyA = String(a._id);
@@ -166,18 +163,21 @@ router.get("/", async (req, res) => {
 
         case "deadline":
         case "deadline_asc":
-          return (a, b) =>
-            new Date(a.deadline || 0) - new Date(b.deadline || 0);
+          return (
+            new Date(a.deadline || 0) - new Date(b.deadline || 0)
+          );
 
         case "deadline_desc":
-          return (a, b) =>
-            new Date(b.deadline || 0) - new Date(a.deadline || 0);
+          return (
+            new Date(b.deadline || 0) - new Date(a.deadline || 0)
+          );
 
         case "urgency":
         case "urgency_desc": {
           const urgencyOrder = { High: 3, Medium: 2, Low: 1 };
           return (
-            (urgencyOrder[b.urgency] || 0) - (urgencyOrder[a.urgency] || 0)
+            (urgencyOrder[b.urgency] || 0) -
+            (urgencyOrder[a.urgency] || 0)
           );
         }
 
@@ -222,14 +222,14 @@ router.get("/", async (req, res) => {
 
     const sortFunction = getSortFunction(sortingMethod);
 
-    // Sort both groups separately
+    // Sort active and completed separately
     const sortedActiveTasks = [...activeTasks].sort(sortFunction);
     const sortedCompletedTasks = [...completedTasks].sort(sortFunction);
 
-    // Combine: active tasks first, then completed tasks
+    // Active first, then completed at bottom
     const sortedTasks = [...sortedActiveTasks, ...sortedCompletedTasks];
 
-    // Apply limit if num_of_tasks is specified
+    // Apply limit
     const resultTasks = numOfTasks
       ? sortedTasks.slice(0, numOfTasks)
       : sortedTasks;
@@ -237,27 +237,24 @@ router.get("/", async (req, res) => {
     const response = {
       success: true,
       count: resultTasks.length,
-      total: totalBeforeFilters, // Total tasks before filtering
+      total: totalBeforeFilters,     // total tasks in DB
       sorting_method: sortingMethod,
       tasks: resultTasks,
     };
 
-    // Add filter info if filtering was applied
-    if (
-      Object.keys(filters).length > 0 ||
-      req.query.unassigned
-    ) {
+    // If filters or unassigned were used, include metadata
+    if (Object.keys(filters).length > 0 || req.query.unassigned) {
       response.filters = {
         ...filters,
         ...(req.query.unassigned ? { unassigned: true } : {}),
       };
-      response.filtered_total = sortedTasks.length; // Total after filtering, before limit
+      response.filtered_total = totalAfterFilters; // after filters, before limit
     }
 
-    res.status(200).json(response);
+    return res.status(200).json(response);
   } catch (error) {
     console.error("Error listing tasks:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to retrieve tasks",
       error: error.message,
@@ -290,84 +287,83 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// POST /api/tasks - Create a new task with properties
+// POST /api/tasks - Create a new task
 router.post("/", async (req, res) => {
-  const payload = req.body || {};
+  try {
+    const payload = req.body || {};
 
-  // Validate required fields
-  if (!payload.title) {
-    return res
-      .status(400)
-      .json({ message: "title is required to create a task" });
-  }
+    // --- REQUIRED FIELDS ---
+    if (!payload.title) {
+      return res.status(400).json({ message: "title is required to create a task" });
+    }
 
-  // Validate deadline
-  if (!payload.deadline) {
-    return res
-      .status(400)
-      .json({ message: "deadline is required to create a task" });
-  }
+    if (!payload.deadline) {
+      return res.status(400).json({ message: "deadline is required to create a task" });
+    }
 
-  // Validate context
-  if (!payload.context) {
-    return res.status(400).json({
-      message:
-        "context is required (office, school, home, daily-life, other)",
-    });
-  }
-
-  // Validate context value
-  const validContexts = [
-    "office",
-    "school",
-    "home",
-    "daily-life",
-    "other",
-  ];
-  if (!validContexts.includes(payload.context)) {
-    return res.status(400).json({
-      message: `Invalid context. Must be one of: ${validContexts.join(
-        ", "
-      )}`,
-    });
-  }
-
-  // Validate priority if provided
-  if (payload.priority) {
-    const validPriorities = ["low", "medium", "high", "urgent"];
-    if (!validPriorities.includes(payload.priority)) {
+    if (!payload.context) {
       return res.status(400).json({
-        message: `Invalid priority. Must be one of: ${validPriorities.join(
-          ", "
-        )}`,
+        message: "context is required (office, school, home, daily-life, other)",
       });
     }
-  }
 
-  // Map priority to urgency for data model
-  const priorityToUrgency = {
-    low: "Low",
-    medium: "Medium",
-    high: "High",
-    urgent: "High",
-  };
+    const validContexts = ["office", "school", "home", "daily-life", "other"];
+    if (!validContexts.includes(payload.context)) {
+      return res.status(400).json({
+        message: `Invalid context. Must be one of: ${validContexts.join(", ")}`,
+      });
+    }
 
-  const urgency = priorityToUrgency[payload.priority || "medium"];
+    // --- PRIORITY + URGENCY SYNC ---
+    const validPriorities = ["low", "medium", "high", "urgent"];
+    if (payload.priority && !validPriorities.includes(payload.priority)) {
+      return res.status(400).json({
+        message: `Invalid priority. Must be: ${validPriorities.join(", ")}`,
+      });
+    }
 
-  try {
+    const priorityToUrgency = {
+      low: "Low",
+      medium: "Medium",
+      high: "High",
+      urgent: "High",
+    };
+
+    const urgency = priorityToUrgency[payload.priority || "medium"];
+
+    // --- PROJECT RELATION (ObjectId) ---
+    let projectId = null;
+
+    if (payload.projectId) {
+      if (!mongoose.Types.ObjectId.isValid(payload.projectId)) {
+        return res.status(400).json({ message: "Invalid projectId format" });
+      }
+      projectId = payload.projectId;
+    }
+
+    // --- CREATE TASK ---
     const newTask = await Task.create({
-      ...payload,
-      projectId: payload.projectId || null, // should be a Project _id string or null
-      urgency,
-      priority: payload.priority || "medium",
-      name: payload.title ?? payload.name,
+      title: payload.title,
+      name: payload.title,
+      description: payload.description || "",
+      projectId, // <-- this is now ObjectId or null
       tags: Array.isArray(payload.tags) ? payload.tags : [],
+      deadline: payload.deadline,
+      priority: payload.priority || "medium",
+      urgency,
+      status: payload.status || "Not Started",
+      context: payload.context,
+      assignee: payload.assignee || "",
+      order: payload.order || 0,
     });
 
-    return res.status(201).json(newTask);
+    return res.status(201).json({
+      success: true,
+      task: newTask,
+    });
   } catch (err) {
     console.error("Failed to create task:", err);
-    return res.status(500).json({ message: "Failed to create task" });
+    return res.status(500).json({ message: "Failed to create task", error: err.message });
   }
 });
 
@@ -375,29 +371,38 @@ router.post("/", async (req, res) => {
 router.patch("/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    const updates = req.body || {};
 
-    // Validate priority if provided
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid task id" });
+    }
+
+    const updates = req.body;
+
+    // Validate projectId when updating
+    if (updates.projectId && !mongoose.isValidObjectId(updates.projectId)) {
+      return res.status(400).json({ message: "Invalid projectId" });
+    }
+
+    // Validate priority
     if (updates.priority) {
       const validPriorities = ["low", "medium", "high", "urgent"];
       if (!validPriorities.includes(updates.priority)) {
         return res.status(400).json({
-          message: `Invalid priority. Must be one of: ${validPriorities.join(
-            ", "
-          )}`,
+          message: `Invalid priority. Must be: ${validPriorities.join(", ")}`
         });
       }
 
-      const priorityToUrgency = {
+      const map = {
         low: "Low",
         medium: "Medium",
         high: "High",
-        urgent: "High",
+        urgent: "High"
       };
-      updates.urgency = priorityToUrgency[updates.priority];
+
+      updates.urgency = map[updates.priority];
     }
 
-    // keep title/name sync logic
+    // Keep title/name synced
     if (updates.title || updates.name) {
       updates.title = updates.title ?? updates.name;
       updates.name = updates.title;
@@ -405,25 +410,24 @@ router.patch("/:id", async (req, res) => {
 
     const updatedTask = await Task.findByIdAndUpdate(id, updates, {
       new: true,
+      runValidators: true
     });
 
     if (!updatedTask) {
-      return res.status(404).json({
-        success: false,
-        message: `Task with id ${id} not found.`,
-      });
+      return res.status(404).json({ message: "Task not found" });
     }
 
-    res.status(200).json({ success: true, task: updatedTask });
+    return res.json({ success: true, task: updatedTask });
+
   } catch (error) {
     console.error("Error updating task:", error);
-    res.status(500).json({
-      success: false,
+    return res.status(500).json({
       message: "Failed to update task",
-      error: error.message,
+      error: error.message
     });
   }
 });
+
 
 // DELETE /api/tasks/:id - Delete a task
 router.delete("/:id", async (req, res) => {
