@@ -1,27 +1,37 @@
-const express = require("express");
-const { getTasks } = require("../data/tasks");
-const router = express.Router();
+const express = require("express"); 
+const { Task } = require("../mongo-schemas"); 
+const router = express.Router(); 
 
 // GET /api/search?q=keyword
-router.get("/", (req, res) => {
-  try {
+router.get("/", async (req, res) => { 
+  try {//
     const query = (req.query.q || "").toLowerCase();
 
-    // ✅ Use getTasks() as in AllTasks, so deleted tasks are already filtered
-    const tasks = getTasks(); // this only returns active tasks
+    if (!query) {
+      return res.json({ success: true, count: 0, results: [] });
+    }
+    const tasks = await Task.find(); 
 
-    // Search only within active tasks
-    const results = tasks.filter(task => {
+    const results = tasks.filter((task) => {
       const titleMatch = task.title?.toLowerCase().includes(query);
       const descriptionMatch = task.description?.toLowerCase().includes(query);
-      const tagsMatch = task.tags?.some(tag => tag.toLowerCase().includes(query));
+      const tagsMatch = task.tags?.some((tag) =>
+        tag.toLowerCase().includes(query)
+      );
+
       return titleMatch || descriptionMatch || tagsMatch;
     });
 
-    res.json({ success: true, count: results.length, results });
+    return res.json({
+      success: true,
+      count: results.length,
+      results,
+    });
   } catch (error) {
     console.error("Search error:", error);
-    res.status(500).json({ success: false, message: "Search failed" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Search failed" });
   }
 });
 
