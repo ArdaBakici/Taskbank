@@ -375,29 +375,38 @@ router.post("/", async (req, res) => {
 router.patch("/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    const updates = req.body || {};
 
-    // Validate priority if provided
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid task id" });
+    }
+
+    const updates = req.body;
+
+    // Validate projectId when updating
+    if (updates.projectId && !mongoose.isValidObjectId(updates.projectId)) {
+      return res.status(400).json({ message: "Invalid projectId" });
+    }
+
+    // Validate priority
     if (updates.priority) {
       const validPriorities = ["low", "medium", "high", "urgent"];
       if (!validPriorities.includes(updates.priority)) {
         return res.status(400).json({
-          message: `Invalid priority. Must be one of: ${validPriorities.join(
-            ", "
-          )}`,
+          message: `Invalid priority. Must be: ${validPriorities.join(", ")}`
         });
       }
 
-      const priorityToUrgency = {
+      const map = {
         low: "Low",
         medium: "Medium",
         high: "High",
-        urgent: "High",
+        urgent: "High"
       };
-      updates.urgency = priorityToUrgency[updates.priority];
+
+      updates.urgency = map[updates.priority];
     }
 
-    // keep title/name sync logic
+    // Keep title/name synced
     if (updates.title || updates.name) {
       updates.title = updates.title ?? updates.name;
       updates.name = updates.title;
@@ -405,25 +414,24 @@ router.patch("/:id", async (req, res) => {
 
     const updatedTask = await Task.findByIdAndUpdate(id, updates, {
       new: true,
+      runValidators: true
     });
 
     if (!updatedTask) {
-      return res.status(404).json({
-        success: false,
-        message: `Task with id ${id} not found.`,
-      });
+      return res.status(404).json({ message: "Task not found" });
     }
 
-    res.status(200).json({ success: true, task: updatedTask });
+    return res.json({ success: true, task: updatedTask });
+
   } catch (error) {
     console.error("Error updating task:", error);
-    res.status(500).json({
-      success: false,
+    return res.status(500).json({
       message: "Failed to update task",
-      error: error.message,
+      error: error.message
     });
   }
 });
+
 
 // DELETE /api/tasks/:id - Delete a task
 router.delete("/:id", async (req, res) => {
