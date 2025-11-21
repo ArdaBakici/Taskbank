@@ -1,11 +1,14 @@
 const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
-const taskSchema = new mongoose.Schema(
+const taskSchema = new Schema(
   {
     title: { type: String, required: true, trim: true },
     name: { type: String, trim: true },
     description: { type: String, default: "" },
-    projectId: { type: Number, default: null },
+    // Reference to Project
+    projectId: { type: Schema.Types.ObjectId, ref: "Project", default: null },
+
     tags: { type: [String], default: [] },
     deadline: { type: Date },
     urgency: {
@@ -37,7 +40,6 @@ const taskSchema = new mongoose.Schema(
   }
 );
 
-// Helpful for search endpoints.
 taskSchema.index({ title: "text", description: "text" });
 taskSchema.index({ projectId: 1, status: 1, priority: 1 });
 
