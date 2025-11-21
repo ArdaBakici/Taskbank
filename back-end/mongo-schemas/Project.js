@@ -6,14 +6,9 @@ const projectSchema = new mongoose.Schema(
     description: { type: String, default: "" },
     tags: { type: [String], default: [] },
     deadline: { type: Date },
-    urgency: {
-      type: String,
-      enum: ["High", "Medium", "Low"],
-      default: "Medium",
-    },
     status: {
       type: String,
-      enum: ["Not Started", "In Progress", "Planning", "In Review"],
+      enum: ["On Hold", "In Progress", "Planning", "Completed", "Cancelled"],
       default: "Planning",
     },
   },

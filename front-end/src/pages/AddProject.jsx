@@ -122,7 +122,9 @@ export default function AddProject() {
       const created = await createRes.json();
       // Normalize id field (could be id or project.id)
       const projectId =
-        created?.id ?? created?.project?.id ?? created?.projectId ?? created?.data?.id;
+        created?.project?._id ??   // correct location
+        created?._id ??            // fallback
+        null;
 
       if (!projectId) {
         throw new Error("Project created but no id returned by backend.");
