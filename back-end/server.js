@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const mongoose = require("mongoose");
 
 const tasksRouter = require("./routes/tasks");
 const projectsRouter = require("./routes/projects");
@@ -12,6 +13,7 @@ const searchRouter = require("./routes/search");
 const app = express();
 require("dotenv").config();
 const PORT = process.env.PORT || 4000;
+const MONGODB_URI = process.env.MONGODB_URI;
 console.log(`.env file's port is ${process.env.PORT}`);
 const CLIENT_BUILD_PATH = path.resolve(__dirname, "../front-end/build");
 
@@ -44,9 +46,33 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ message: "Internal server error" });
 });
 
-if (require.main === module) {
+async function connectToDatabase() {
+  if (!MONGODB_URI) {
+    console.error("Missing MONGODB_URI in environment variables.");
+    process.exit(1);
+  }
+
+  try {
+    await mongoose.connect(MONGODB_URI);
+    console.log("Connected to MongoDB");
+  } catch (err) {
+    console.error("MongoDB connection error:", err);
+    process.exit(1);
+  }
+}
+
+async function startServer() {
+  await connectToDatabase();
+
   app.listen(PORT, () => {
     console.log(`API listening on http://localhost:${PORT}`);
+  });
+}
+
+if (require.main === module) {
+  startServer().catch((err) => {
+    console.error("Failed to start server:", err);
+    process.exit(1);
   });
 }
 

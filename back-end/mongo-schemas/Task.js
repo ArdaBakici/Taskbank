@@ -1,0 +1,45 @@
+const mongoose = require("mongoose");
+
+const taskSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true, trim: true },
+    name: { type: String, trim: true },
+    description: { type: String, default: "" },
+    projectId: { type: Number, default: null },
+    tags: { type: [String], default: [] },
+    deadline: { type: Date },
+    urgency: {
+      type: String,
+      enum: ["High", "Medium", "Low"],
+      default: "Medium",
+    },
+    status: {
+      type: String,
+      enum: ["Not Started", "In Progress", "Completed", "On Hold", "Blocked"],
+      default: "Not Started",
+    },
+    assignee: { type: String, trim: true },
+    context: {
+      type: String,
+      enum: ["office", "school", "home", "daily-life", "other"],
+      default: "other",
+    },
+    priority: {
+      type: String,
+      enum: ["low", "medium", "high", "urgent"],
+      default: "medium",
+    },
+    order: { type: Number, default: 0 },
+  },
+  {
+    timestamps: true,
+    collection: "tasks",
+  }
+);
+
+// Helpful for search endpoints.
+taskSchema.index({ title: "text", description: "text" });
+taskSchema.index({ projectId: 1, status: 1, priority: 1 });
+
+module.exports =
+  mongoose.models.Task || mongoose.model("Task", taskSchema);
