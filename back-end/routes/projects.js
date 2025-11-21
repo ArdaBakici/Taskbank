@@ -1,3 +1,6 @@
+const { Project } = require("../mongo-schemas");
+
+
 const express = require("express");
 const {
   getProjects,
@@ -114,31 +117,64 @@ router.get("/:projectId/tasks", (req, res) => {
 });
 
 
+// POST /api/projects - Create a new project
+router.post("/", async (req, res) => {
+  try {
+    const payload = req.body || {};
 
-// TODO (Sihyun): implement add_project
-router.post("/", (req, res) => {
-  const payload = req.body || {};
-  
-  // Validate name (already exists)
-  if (!payload.name) {
-    return res.status(400).json({ message: "name is required to create a project" });
+    //
+    // VALIDATION (this stays, but INSIDE the route)
+    //
+
+    // Validate name
+    if (!payload.name) {
+      return res.status(400).json({ message: "name is required to create a project" });
+    }
+
+    // Validate deadline
+    if (!payload.deadline) {
+      return res.status(400).json({ message: "deadline is required to create a project" });
+    }
+
+    // Optionally validate urgency value
+    const allowedUrgencies = ["High", "Medium", "Low"];
+    if (payload.urgency && !allowedUrgencies.includes(payload.urgency)) {
+      return res.status(400).json({ message: "Invalid urgency value" });
+    }
+
+    // Optionally validate status
+    const allowedStatuses = ["Not Started", "In Progress", "Planning", "In Review"];
+    if (payload.status && !allowedStatuses.includes(payload.status)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+
+    //
+    // CREATE PROJECT IN MONGO
+    //
+    const project = await Project.create({
+      name: payload.name,
+      description: payload.description || "",
+      tags: payload.tags || [],
+      deadline: payload.deadline,    // string OK, mongoose will convert
+      urgency: payload.urgency || "Medium",
+      status: payload.status || "Planning",
+    });
+
+    // SUCCESS RESPONSE
+    return res.status(201).json({
+      success: true,
+      project,
+    });
+
+  } catch (error) {
+    console.error("Error creating project:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create project",
+      error: error.message,
+    });
   }
-  
-  // Validate deadline (Task 128)
-  if (!payload.deadline) {
-    return res.status(400).json({ message: "deadline is required to create a project" });
-  }
-  
-  // Create project with defaults
-  const newProject = addProject({
-    ...payload,
-    urgency: payload.priority || "Medium",  // default priority
-    status: payload.status || "Planning"      // default status
-  });
-  
-  return res.status(201).json(newProject);
 });
-
 
 // TODO (Sihyun): implement edit_project
 
