@@ -74,7 +74,7 @@ export default function AddTask() {
       tags: formData.tags ? formData.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
     };
     const taskData = formData.project
-      ? { ...base, projectId: Number(formData.project) }
+      ? { ...base, projectId: formData.project }
       : { ...base }; // <-- Unassigned: no projectId sent
     // If your backend prefers null instead, use: { ...base, projectId: null }
 
@@ -156,7 +156,7 @@ export default function AddTask() {
                   <option value="">{loading ? "Loading projects..." : "Unassigned"}</option>
                   {Array.isArray(projects) &&
                     projects.map((project) => (
-                      <option key={project.id} value={project.id}>
+                      <option key={project._id} value={project._id}>
                         {project.name}
                       </option>
                     ))}

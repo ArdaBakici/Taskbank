@@ -144,10 +144,10 @@ export default function AllProjects({
           !error &&
           projects.map((p) => (
             <button
-              key={p.id}
+              key={p._id}
               type="button"
               className="project-row project-row-button"
-              onClick={() => navigate(`/project/${p.id}`)}
+              onClick={() => navigate(`/project/${p._id}`)}
             >
               <div>{p.name}</div>
               <div>{renderTags(p.tags)}</div>
