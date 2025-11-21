@@ -290,84 +290,83 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// POST /api/tasks - Create a new task with properties
+// POST /api/tasks - Create a new task
 router.post("/", async (req, res) => {
-  const payload = req.body || {};
+  try {
+    const payload = req.body || {};
 
-  // Validate required fields
-  if (!payload.title) {
-    return res
-      .status(400)
-      .json({ message: "title is required to create a task" });
-  }
+    // --- REQUIRED FIELDS ---
+    if (!payload.title) {
+      return res.status(400).json({ message: "title is required to create a task" });
+    }
 
-  // Validate deadline
-  if (!payload.deadline) {
-    return res
-      .status(400)
-      .json({ message: "deadline is required to create a task" });
-  }
+    if (!payload.deadline) {
+      return res.status(400).json({ message: "deadline is required to create a task" });
+    }
 
-  // Validate context
-  if (!payload.context) {
-    return res.status(400).json({
-      message:
-        "context is required (office, school, home, daily-life, other)",
-    });
-  }
-
-  // Validate context value
-  const validContexts = [
-    "office",
-    "school",
-    "home",
-    "daily-life",
-    "other",
-  ];
-  if (!validContexts.includes(payload.context)) {
-    return res.status(400).json({
-      message: `Invalid context. Must be one of: ${validContexts.join(
-        ", "
-      )}`,
-    });
-  }
-
-  // Validate priority if provided
-  if (payload.priority) {
-    const validPriorities = ["low", "medium", "high", "urgent"];
-    if (!validPriorities.includes(payload.priority)) {
+    if (!payload.context) {
       return res.status(400).json({
-        message: `Invalid priority. Must be one of: ${validPriorities.join(
-          ", "
-        )}`,
+        message: "context is required (office, school, home, daily-life, other)",
       });
     }
-  }
 
-  // Map priority to urgency for data model
-  const priorityToUrgency = {
-    low: "Low",
-    medium: "Medium",
-    high: "High",
-    urgent: "High",
-  };
+    const validContexts = ["office", "school", "home", "daily-life", "other"];
+    if (!validContexts.includes(payload.context)) {
+      return res.status(400).json({
+        message: `Invalid context. Must be one of: ${validContexts.join(", ")}`,
+      });
+    }
 
-  const urgency = priorityToUrgency[payload.priority || "medium"];
+    // --- PRIORITY + URGENCY SYNC ---
+    const validPriorities = ["low", "medium", "high", "urgent"];
+    if (payload.priority && !validPriorities.includes(payload.priority)) {
+      return res.status(400).json({
+        message: `Invalid priority. Must be: ${validPriorities.join(", ")}`,
+      });
+    }
 
-  try {
+    const priorityToUrgency = {
+      low: "Low",
+      medium: "Medium",
+      high: "High",
+      urgent: "High",
+    };
+
+    const urgency = priorityToUrgency[payload.priority || "medium"];
+
+    // --- PROJECT RELATION (ObjectId) ---
+    let projectId = null;
+
+    if (payload.projectId) {
+      if (!mongoose.Types.ObjectId.isValid(payload.projectId)) {
+        return res.status(400).json({ message: "Invalid projectId format" });
+      }
+      projectId = payload.projectId;
+    }
+
+    // --- CREATE TASK ---
     const newTask = await Task.create({
-      ...payload,
-      projectId: payload.projectId || null, // should be a Project _id string or null
-      urgency,
-      priority: payload.priority || "medium",
-      name: payload.title ?? payload.name,
+      title: payload.title,
+      name: payload.title,
+      description: payload.description || "",
+      projectId, // <-- this is now ObjectId or null
       tags: Array.isArray(payload.tags) ? payload.tags : [],
+      deadline: payload.deadline,
+      priority: payload.priority || "medium",
+      urgency,
+      status: payload.status || "Not Started",
+      context: payload.context,
+      assignee: payload.assignee || "",
+      order: payload.order || 0,
     });
 
-    return res.status(201).json(newTask);
+    return res.status(201).json({
+      success: true,
+      task: newTask,
+    });
   } catch (err) {
     console.error("Failed to create task:", err);
-    return res.status(500).json({ message: "Failed to create task" });
+    return res.status(500).json({ message: "Failed to create task", error: err.message });
   }
 });
 
