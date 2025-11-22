@@ -89,10 +89,10 @@ export default function ProjectSearch() {
             !error &&
             projects.map((project) => (
               <button
-                key={project.id}
+                key={project._id}
                 type="button"
                 className="task-row task-row-button"
-                onClick={() => navigate(`/project/${project.id}`)}
+                onClick={() => navigate(`/project/${project._id}`)}
               >
                 <div>{project.name}</div>
                 <div>{renderTags(project.tags)}</div>

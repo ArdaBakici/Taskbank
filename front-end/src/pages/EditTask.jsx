@@ -133,7 +133,7 @@ const handleDelete = async () => {
       // Prepare payload mapping frontend field names -> backend expectation
       const payload = {
         title: formData.taskName.trim(),
-        projectId: formData.project === "none" ? null : Number(formData.project),
+        projectId: formData.project === "none" ? null : formData.project,
         priority: formData.priority
           ? formData.priority.toLowerCase()
           : undefined,
@@ -254,7 +254,7 @@ const handleDelete = async () => {
                 >
                   <option value="none">Unassigned</option>
                   {projects.map((p) => (
-                    <option key={p.id} value={p.id}>
+                    <option key={p._id} value={p._id}>
                       {p.name}
                     </option>
                   ))}
