@@ -31,13 +31,22 @@ export default function TaskView() {
 
         // Fetch project from backend if task has a projectId
         let relatedProject = null;
+
+        
         if (fetchedTask && fetchedTask.projectId) {
-          const resProject = await fetch(`${API_BASE}/projects/${fetchedTask.projectId}`);
+          const projectId = typeof fetchedTask.projectId === "object"
+            ? fetchedTask.projectId.toString()
+            : fetchedTask.projectId;
+
+          const resProject = await fetch(`${API_BASE}/projects/${projectId}`);
           if (resProject.ok) {
             const dataProject = await resProject.json();
             relatedProject = dataProject || null;
           }
         }
+
+
+
         if (isMounted) setProject(relatedProject);
       } catch (error) {
         console.error("Failed to load task", error);
@@ -116,7 +125,7 @@ export default function TaskView() {
             </div>
             <div className="form-group">
               <label>Deadline</label>
-              <p>{task.deadline}</p>
+              <p>{task.deadline ? new Date(task.deadline).toLocaleDateString() : ""}</p>
             </div>
             <div className="form-group">
               <label>Urgency</label>

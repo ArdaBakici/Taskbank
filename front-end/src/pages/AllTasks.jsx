@@ -340,7 +340,7 @@ export default function AllTasks({
           tasks.length > 0 &&
           tasks.map((t) => (
             <button
-              key={t.id}
+              key={t._id}
               type="button"
               className={`task-row task-row-button ${
                 isOverdue(t.deadline, t.status)
@@ -349,7 +349,7 @@ export default function AllTasks({
                   ? "task-due-soon"
                   : ""
               }`}
-              onClick={() => navigate(`/task/${t.id}`)}
+              onClick={() => navigate(`/task/${t._id}`)}
             >
               <div>
                 <span className="task-status-icon">
