@@ -15,7 +15,7 @@ export default function EditTask() {
   const [formData, setFormData] = useState({
     taskName: "",
     description: "",
-    project: "",
+    project: "none",
     priority: "Medium",
     status: "Not Started",
     deadline: "",
@@ -49,10 +49,13 @@ export default function EditTask() {
             setFormData({
               taskName: task.title || "",
               description: task.description || "",
-              project: task.projectId || "",
+              // if no projectId -> "none" so it matches the select option
+              project: task.projectId || "none",
+              // urgency is "High/Medium/Low", matches the dropdown values
               priority: task.urgency || "Medium",
               status: task.status || "Not Started",
-              deadline: task.deadline || "",
+              // format for <input type="date">
+              deadline: task.deadline ? task.deadline.slice(0, 10) : "",
               tags: Array.isArray(task.tags)
                 ? task.tags.join(", ")
                 : task.tags || "",
@@ -81,40 +84,39 @@ export default function EditTask() {
     }
   };
 
-const handleDelete = async () => {
-  if (!id) {
-    alert("Task ID missing — cannot delete.");
-    return;
-  }
-
-  if (window.confirm("Are you sure you want to delete this task?")) {
-    try {
-      const response = await fetch(`http://localhost:4000/api/tasks/${id}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-    });
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.message || "Failed to delete task");
-      } 
-
-      const data = await response.json();
-      console.log("Deleted:", data);
-      alert("Task deleted successfully!");
-
-      if (returnToProject) {
-        navigate(`/projects/edit/${returnToProject}`);
-      } else {
-        navigate("/tasks");
-      }
-    } catch (error) {
-      console.error("Error deleting task:", error);
-      alert(`Failed to delete task: ${error.message}`);
+  const handleDelete = async () => {
+    if (!id) {
+      alert("Task ID missing — cannot delete.");
+      return;
     }
-  }
-};
 
+    if (window.confirm("Are you sure you want to delete this task?")) {
+      try {
+        const response = await fetch(`${API_BASE}/tasks/${id}`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.message || "Failed to delete task");
+        }
+
+        const data = await response.json();
+        console.log("Deleted:", data);
+        alert("Task deleted successfully!");
+
+        if (returnToProject) {
+          navigate(`/projects/edit/${returnToProject}`);
+        } else {
+          navigate("/tasks");
+        }
+      } catch (error) {
+        console.error("Error deleting task:", error);
+        alert(`Failed to delete task: ${error.message}`);
+      }
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -182,11 +184,9 @@ const handleDelete = async () => {
     }
   };
 
-  
   const handleCancel = () => {
     navigate(-1);
   };
-
 
   if (loading) {
     return (
@@ -335,8 +335,7 @@ const handleDelete = async () => {
               </div>
               <div className="dashboard-buttons">
                 <button type="button" onClick={handleCancel}>
-                  Cancel
-                </button>
+                  Cancel</button>
                 <button type="submit">Save Changes</button>
               </div>
             </div>
