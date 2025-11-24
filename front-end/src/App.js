@@ -16,29 +16,34 @@ import EditProject from "./pages/EditProject";
 import TaskSearch from "./pages/TaskSearch"; 
 import ChangePassword from "./pages/ChangePassword";
 import ProjectSearch from "./pages/ProjectSearch";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/stats" element={<Stats />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/change-password" element={<ChangePassword />} />
+        {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/tasks" element={<AllTasks />} />
-        <Route path="/tasks/new" element={<AddTask />} />
-        <Route path="/tasks/search" element={<TaskSearch />} /> {/* ← new search route */}
-        <Route path="/task/:id" element={<TaskView />} />
-        <Route path="/project/:id" element={<ProjectView />} />
-        <Route path="/tasks/edit/:id" element={<EditTask />} />
-        <Route path="/projects" element={<AllProjects />} />
-        <Route path="/projects/new" element={<AddProject />} />
-        <Route path="/projects/edit/:id" element={<EditProject />} />
         <Route path="/" element={<Login />} /> {/* default fallback */}
-        <Route path="*" element={<Home />} />
-        <Route path="/project/search" element={<ProjectSearch />} />
+        
+        {/* Protected routes */}
+        <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/stats" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+        <Route path="/tasks" element={<ProtectedRoute><AllTasks /></ProtectedRoute>} />
+        <Route path="/tasks/new" element={<ProtectedRoute><AddTask /></ProtectedRoute>} />
+        <Route path="/tasks/search" element={<ProtectedRoute><TaskSearch /></ProtectedRoute>} />
+        <Route path="/task/:id" element={<ProtectedRoute><TaskView /></ProtectedRoute>} />
+        <Route path="/tasks/edit/:id" element={<ProtectedRoute><EditTask /></ProtectedRoute>} />
+        <Route path="/projects" element={<ProtectedRoute><AllProjects /></ProtectedRoute>} />
+        <Route path="/projects/new" element={<ProtectedRoute><AddProject /></ProtectedRoute>} />
+        <Route path="/projects/edit/:id" element={<ProtectedRoute><EditProject /></ProtectedRoute>} />
+        <Route path="/project/:id" element={<ProtectedRoute><ProjectView /></ProtectedRoute>} />
+        <Route path="/project/search" element={<ProtectedRoute><ProjectSearch /></ProtectedRoute>} />
+        <Route path="*" element={<ProtectedRoute><Home /></ProtectedRoute>} />
       </Routes>
     </Router>
   );

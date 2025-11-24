@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/dashboard.css";
+import { logout } from "../utils/auth";
 import DashboardHeader from "../components/DashboardHeader";
 import { FiUser, FiLock, FiLogOut } from "react-icons/fi";
 
@@ -14,7 +15,7 @@ export default function Settings() {
         setShowPopup(true); // show popup instead of alert
         break;
       case "Log Out":
-        alert("Logging out...");
+        logout();
         navigate("/login");
         break;
       default:
