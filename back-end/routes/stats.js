@@ -1,8 +1,12 @@
 const express = require("express");
 const { getTasks } = require("../data/tasks");
 const { getProjects } = require("../data/projects");
+const authenticate = require("../middleware/auth");
 
 const router = express.Router();
+
+// Apply authentication to all routes
+router.use(authenticate);
 
 router.get("/", (_req, res) => {
   const tasks = getTasks();

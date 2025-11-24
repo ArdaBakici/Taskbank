@@ -1,6 +1,11 @@
 const express = require("express"); 
 const { Task } = require("../mongo-schemas"); 
-const router = express.Router(); 
+const authenticate = require("../middleware/auth");
+
+const router = express.Router();
+
+// Apply authentication to all routes
+router.use(authenticate); 
 
 // GET /api/search?q=keyword
 router.get("/", async (req, res) => { 

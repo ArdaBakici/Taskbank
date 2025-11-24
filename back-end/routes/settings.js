@@ -1,6 +1,10 @@
 const express = require("express");
+const authenticate = require("../middleware/auth");
 
 const router = express.Router();
+
+// Apply authentication to all routes
+router.use(authenticate);
 
 const settings = {
   theme: "light",
