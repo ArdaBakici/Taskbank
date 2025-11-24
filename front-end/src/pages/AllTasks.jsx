@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiCircle, FiCheckCircle, FiLoader, FiPauseCircle, FiAlertCircle, FiFileText } from "react-icons/fi";
+import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import DashboardHeader from "../components/DashboardHeader";
 
@@ -35,7 +36,6 @@ export default function AllTasks({
     async function loadTasks() {
       try {
         // Construct API URL with query parameters
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
         const params = new URLSearchParams();
         
         // When embedded (like in Home), use limit and sorting_method
@@ -62,8 +62,8 @@ export default function AllTasks({
           params.append('filters', JSON.stringify(filters));
         }
         
-        const url = `${apiUrl}/tasks?${params.toString()}`;
-        const response = await fetch(url);
+        const url = `/tasks?${params.toString()}`;
+        const response = await authenticatedFetch(url);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
