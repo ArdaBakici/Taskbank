@@ -1,6 +1,7 @@
 // src/pages/TaskView.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import "../css/forms.css";
 import DashboardHeader from "../components/DashboardHeader";
@@ -12,8 +13,6 @@ export default function TaskView() {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
-
   useEffect(() => {
     let isMounted = true;
 
@@ -21,7 +20,7 @@ export default function TaskView() {
       setLoading(true);
       try {
         // Fetch task from backend
-        const resTask = await fetch(`${API_BASE}/tasks/${id}`);
+        const resTask = await authenticatedFetch(`/tasks/${id}`);
         if (!resTask.ok) throw new Error("Failed to fetch task");
         const dataTask = await resTask.json();
         const fetchedTask = dataTask.task;
@@ -38,7 +37,7 @@ export default function TaskView() {
             ? fetchedTask.projectId.toString()
             : fetchedTask.projectId;
 
-          const resProject = await fetch(`${API_BASE}/projects/${projectId}`);
+          const resProject = await authenticatedFetch(`/projects/${projectId}`);
           if (resProject.ok) {
             const dataProject = await resProject.json();
             relatedProject = dataProject || null;
@@ -64,7 +63,7 @@ export default function TaskView() {
     return () => {
       isMounted = false;
     };
-  }, [id, API_BASE]);
+  }, [id]);
 
   const handleEdit = () => navigate(`/tasks/edit/${id}`);
   const handleBack = () => navigate(-1);

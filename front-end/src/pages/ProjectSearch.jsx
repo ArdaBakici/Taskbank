@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import DashboardHeader from "../components/DashboardHeader";
 
@@ -17,9 +18,7 @@ export default function ProjectSearch() {
       try {
         setLoading(true);
 
-        const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
-        const url = `${apiUrl}/projects`;
-        const response = await fetch(url);
+        const response = await authenticatedFetch('/projects');
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

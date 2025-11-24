@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import "../css/ProjectView.css";
 import DashboardHeader from "../components/DashboardHeader";
 import AllTasks from "./AllTasks";
-const API_BASE = "http://localhost:4000/api";
 
 async function fetchProjectById(id) {
-  const res = await fetch(`${API_BASE}/projects/${id}`);
+  const res = await authenticatedFetch(`/projects/${id}`);
   if (!res.ok) throw new Error("Failed to fetch project");
   return res.json();
 }

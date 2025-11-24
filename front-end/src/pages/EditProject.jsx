@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import "../css/forms.css";
 import DashboardHeader from "../components/DashboardHeader";
@@ -117,9 +118,7 @@ export default function EditProject() {
           const projectData = await projRes.json();
 
           // Load project tasks
-          const projTasksRes = await fetch(
-            `http://localhost:4000/api/projects/${id}/tasks`
-          );
+          const projTasksRes = await authenticatedFetch(`/projects/${id}/tasks`);
           const projectTasks = await projTasksRes.json();
 
           if (isMounted && projectData) {
