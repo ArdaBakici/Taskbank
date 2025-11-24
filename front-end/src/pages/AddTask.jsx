@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import "../css/forms.css";
 import DashboardHeader from "../components/DashboardHeader";
@@ -25,9 +26,7 @@ export default function AddTask() {
     let isMounted = true;
     async function loadProjects() {
       try {
-        const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
-        const url = `${apiUrl}/projects`;
-        const response = await fetch(url);
+        const response = await authenticatedFetch('/projects');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         if (isMounted) setProjects(data.projects || data || []);
@@ -79,10 +78,8 @@ export default function AddTask() {
     // If your backend prefers null instead, use: { ...base, projectId: null }
 
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
-      const response = await fetch(`${apiUrl}/tasks`, {
+      const response = await authenticatedFetch('/tasks', {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(taskData),
       });
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import "../css/forms.css";
 import DashboardHeader from "../components/DashboardHeader";
@@ -21,8 +22,6 @@ export default function AddProject() {
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
-
   // Load UNASSIGNED tasks from backend (preferred: /tasks?unassigned=1)
   useEffect(() => {
     let isMounted = true;
@@ -31,10 +30,10 @@ export default function AddProject() {
       setLoadingTasks(true);
       try {
         // Try server-side filter first
-        let res = await fetch(`${apiUrl}/tasks?unassigned=1`);
+        let res = await authenticatedFetch('/tasks?unassigned=1');
         if (!res.ok) {
           // Fallback to fetching all tasks, filter client-side
-          res = await fetch(`${apiUrl}/tasks`);
+          res = await authenticatedFetch('/tasks');
         }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
@@ -61,7 +60,7 @@ export default function AddProject() {
     return () => {
       isMounted = false;
     };
-  }, [apiUrl]);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -108,9 +107,8 @@ export default function AddProject() {
 
     try {
       // 1) Create project
-      const createRes = await fetch(`${apiUrl}/projects`, {
+      const createRes = await authenticatedFetch('/projects', {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(projectPayload),
       });
 
@@ -133,13 +131,12 @@ export default function AddProject() {
       // 2) If tasks were selected, assign them to the new project
       if (formData.selectedTasks.length > 0) {
         // Prefer a bulk endpoint if your backend supports it:
-        // await fetch(`${apiUrl}/projects/${projectId}/tasks`, { method:"POST", body: JSON.stringify({ taskIds: formData.selectedTasks }) })
-        // Otherwise, PATCH each task’s projectId
+        // await authenticatedFetch(`/projects/${projectId}/tasks`, { method:"POST", body: JSON.stringify({ taskIds: formData.selectedTasks }) })
+        // Otherwise, PATCH each task's projectId
         await Promise.all(
           formData.selectedTasks.map(async (taskId) => {
-            const res = await fetch(`${apiUrl}/tasks/${taskId}`, {
+            const res = await authenticatedFetch(`/tasks/${taskId}`, {
               method: "PATCH",
-              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ projectId }),
             });
             if (!res.ok) {

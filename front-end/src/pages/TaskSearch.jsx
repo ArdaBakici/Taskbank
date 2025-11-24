@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import DashboardHeader from "../components/DashboardHeader";
 
@@ -18,9 +19,8 @@ export default function SearchTasks() {
         setLoading(true);
 
         // Call backend search endpoint
-        const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
-        const url = `${apiUrl}/search?q=${encodeURIComponent(query)}`;
-        const response = await fetch(url);
+        const url = `/search?q=${encodeURIComponent(query)}`;
+        const response = await authenticatedFetch(url);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

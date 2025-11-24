@@ -1,6 +1,7 @@
 // src/pages/EditTask.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import "../css/forms.css";
 import DashboardHeader from "../components/DashboardHeader";
@@ -26,9 +27,6 @@ export default function EditTask() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
 
-  const API_BASE =
-    process.env.REACT_APP_API_URL || "http://localhost:4000/api";
-
   // Load existing task data and available projects
   useEffect(() => {
     let isMounted = true;
@@ -37,13 +35,13 @@ export default function EditTask() {
       setLoading(true);
       try {
         // Fetch projects
-        const resProjects = await fetch(`${API_BASE}/projects`);
+        const resProjects = await authenticatedFetch('/projects');
         const projectsData = await resProjects.json();
         if (isMounted) setProjects(projectsData.projects || []);
 
         // Fetch task by ID
         if (id) {
-          const resTask = await fetch(`${API_BASE}/tasks/${id}`);
+          const resTask = await authenticatedFetch(`/tasks/${id}`);
           const { task } = await resTask.json();
           if (isMounted && task) {
             setFormData({
@@ -73,7 +71,7 @@ export default function EditTask() {
     return () => {
       isMounted = false;
     };
-  }, [id, API_BASE]);
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -92,9 +90,8 @@ export default function EditTask() {
 
     if (window.confirm("Are you sure you want to delete this task?")) {
       try {
-        const response = await fetch(`${API_BASE}/tasks/${id}`, {
+        const response = await authenticatedFetch(`/tasks/${id}`, {
           method: "DELETE",
-          headers: { "Content-Type": "application/json" },
         });
 
         if (!response.ok) {
@@ -160,9 +157,8 @@ export default function EditTask() {
 
       console.log("PATCH payload ->", payload);
 
-      const res = await fetch(`${API_BASE}/tasks/${id}`, {
+      const res = await authenticatedFetch(`/tasks/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 

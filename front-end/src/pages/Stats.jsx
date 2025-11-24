@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import DashboardHeader from "../components/DashboardHeader";
 
@@ -9,23 +10,18 @@ export default function Stats() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const apiBaseUrl = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
-
   useEffect(() => {
     let isMounted = true;
 
     async function fetchStats() {
-      const requestUrl = `${apiBaseUrl}/stats`;
-      const resolvedUrl = requestUrl || "/stats";
       const startedAt = performance.now();
       console.log("[Stats] ▶ fetch", {
-        url: resolvedUrl,
-        origin: apiBaseUrl || "same-origin",
+        url: '/stats',
       });
       try {
-        const response = await fetch(resolvedUrl);
+        const response = await authenticatedFetch('/stats');
         console.log("[Stats] ◀ response", {
-          url: resolvedUrl,
+          url: '/stats',
           status: response.status,
           ok: response.ok,
         });
@@ -47,7 +43,7 @@ export default function Stats() {
         }
       } catch (err) {
         console.error("[Stats] ✖ fetch failed", {
-          url: resolvedUrl,
+          url: '/stats',
           message: err.message,
           elapsedMs: Math.round(performance.now() - startedAt),
         });
@@ -56,7 +52,7 @@ export default function Stats() {
         }
       } finally {
         console.log("[Stats] ■ cycle complete", {
-          url: resolvedUrl,
+          url: '/stats',
           elapsedMs: Math.round(performance.now() - startedAt),
         });
         if (isMounted) {
@@ -69,7 +65,7 @@ export default function Stats() {
     return () => {
       isMounted = false;
     };
-  }, [apiBaseUrl]);
+  }, []);
 
   const metrics = useMemo(() => {
     const tasksByStatus = stats?.tasksByStatus ?? {};

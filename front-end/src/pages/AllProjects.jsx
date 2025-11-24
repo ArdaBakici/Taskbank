@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import DashboardHeader from "../components/DashboardHeader";
 
@@ -22,7 +23,6 @@ export default function AllProjects({
     async function loadProjects() {
       try {
         // Construct API URL with query parameters
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
         const params = new URLSearchParams();
         
         // When embedded (like in Home), use limit and sorting_method
@@ -33,8 +33,8 @@ export default function AllProjects({
         // Always add sorting method
         params.append('sorting_method', sortingMethod);
         
-        const url = `${apiUrl}/projects?${params.toString()}`;
-        const response = await fetch(url);
+        const url = `/projects?${params.toString()}`;
+        const response = await authenticatedFetch(url);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
