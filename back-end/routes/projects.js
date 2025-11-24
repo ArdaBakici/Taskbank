@@ -1,8 +1,12 @@
 const express = require("express");
 const { Project, Task } = require("../mongo-schemas");
 const mongoose = require("mongoose");
+const authenticate = require("../middleware/auth");
 
 const router = express.Router();
+
+// Apply authentication to all routes
+router.use(authenticate);
 
 /* ---------------------------------------------
    GET /api/projects - List projects (sorted)

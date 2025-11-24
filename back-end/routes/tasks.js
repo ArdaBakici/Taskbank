@@ -1,9 +1,12 @@
 const express = require("express");
 const { Task } = require("../mongo-schemas");
 const mongoose = require("mongoose");
-
+const authenticate = require("../middleware/auth");
 
 const router = express.Router();
+
+// Apply authentication to all routes
+router.use(authenticate);
 
 // Helper function to calculate smart sort score
 const calculateSmartScore = (task) => {
