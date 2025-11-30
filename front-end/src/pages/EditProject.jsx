@@ -391,6 +391,7 @@ const unselectedTasks = Array.isArray(availableTasks)
                 <input
                   type="text"
                   name="projectName"
+                  required
                   value={formData.projectName}
                   onChange={handleChange}
                   className={errors.projectName ? "error" : ""}
