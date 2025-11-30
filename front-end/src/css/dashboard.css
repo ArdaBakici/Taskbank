@@ -925,3 +925,16 @@
   border-left: 6px solid #ffcc00 !important;
   border-radius: 6px !important;
 }
+.toggle-password-btn {
+  margin-top: 5px;
+  padding: 0;
+  font-size: 0.8rem;
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+}
+
+.toggle-password-btn:hover {
+  text-decoration: underline;
+}
