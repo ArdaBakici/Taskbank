@@ -1,11 +1,11 @@
 const express = require("express"); 
 const { Task } = require("../mongo-schemas"); 
-const authenticate = require("../middleware/auth");
+const passport = require("passport");
 
 const router = express.Router();
 
 // Apply authentication to all routes
-router.use(authenticate); 
+router.use(passport.authenticate("jwt", { session: false })); 
 
 // GET /api/search?q=keyword
 router.get("/", async (req, res) => { 
@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
     if (!query) {
       return res.json({ success: true, count: 0, results: [] });
     }
-    const tasks = await Task.find(); 
+    const tasks = await Task.find({ userId: req.user.userId }); 
 
     const results = tasks.filter((task) => {
       const titleMatch = task.title?.toLowerCase().includes(query);
