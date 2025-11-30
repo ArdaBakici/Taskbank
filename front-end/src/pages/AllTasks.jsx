@@ -154,8 +154,11 @@ export default function AllTasks({
   };
 
   const handleSortChange = (method) => {
-    setSortingMethod(method);
+    
     setShowSortMenu(false);
+    // If user clicked the same sort option, do nothing
+    if (method === sortingMethod) return;
+    setSortingMethod(method);
     setLoading(true);
   };
 
