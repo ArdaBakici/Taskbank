@@ -154,7 +154,7 @@ export default function AllProjects({
             >
               <div>{p.name}</div>
               <div>{renderTags(p.tags)}</div>
-              <div>{p.deadline}</div>
+              <div>{p.deadline ? p.deadline.slice(0, 10) : "No deadline"}</div>
             </button>
           ))}
       </div>
