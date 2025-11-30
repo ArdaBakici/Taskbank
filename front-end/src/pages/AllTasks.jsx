@@ -358,7 +358,7 @@ export default function AllTasks({
                 {t.name}
               </div>
               <div>{renderTags(t.tags)}</div>
-              <div>{t.deadline}</div>
+              <div>{t.deadline ? t.deadline.slice(0, 10) : "No deadline"}</div>
             </button>
           ))}
       </div>

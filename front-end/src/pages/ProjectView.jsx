@@ -72,7 +72,7 @@ export default function ProjectView() {
             {/* Project description and details */}
             <div className="project-details">
               <p>{project.description}</p>
-              <p><strong>Deadline:</strong> {project.deadline}</p>
+              <p><strong>Deadline:</strong> {project.deadline ? project.deadline.slice(0, 10) : "No deadline set"}</p>
               <p><strong>Urgency:</strong> {project.urgency}</p>
             </div>
 
