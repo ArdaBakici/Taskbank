@@ -21,6 +21,7 @@ export default function AddTask() {
   const [projects, setProjects] = useState([]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
+  const [popup, setPopup] = useState({ show: false, message: "", type: "success" });
 
   useEffect(() => {
     let isMounted = true;
@@ -89,11 +90,10 @@ export default function AddTask() {
       }
 
       await response.json();
-      alert("Task created successfully!");
       navigate("/tasks");
     } catch (error) {
       console.error("Error creating task:", error);
-      alert(`Error: ${error.message}`);
+      setPopup({ show: true, message: `Error: ${error.message}`, type: "error" });
     }
   };
 
@@ -241,6 +241,24 @@ export default function AddTask() {
           </form>
         </div>
       </main>
+
+      {/* POPUP NOTIFICATION */}
+      {popup.show && (
+        <div className="tb-modal-overlay" onClick={() => setPopup({ ...popup, show: false })}>
+          <div className="tb-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>{popup.type === "success" ? "✓ Success" : "✗ Error"}</h3>
+            <p className="tb-modal-text">{popup.message}</p>
+            <div className="tb-modal-buttons">
+              <button
+                className={popup.type === "success" ? "tb-btn-secondary" : "tb-btn-cancel"}
+                onClick={() => setPopup({ ...popup, show: false })}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

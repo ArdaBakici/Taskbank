@@ -26,6 +26,8 @@ export default function EditTask() {
   const [projects, setProjects] = useState([]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
+  const [popup, setPopup] = useState({ show: false, message: "", type: "success" });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Load existing task data and available projects
   useEffect(() => {
@@ -82,36 +84,37 @@ export default function EditTask() {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!id) {
-      alert("Task ID missing — cannot delete.");
+      setPopup({ show: true, message: "Task ID missing — cannot delete.", type: "error" });
       return;
     }
+    setShowDeleteModal(true);
+  };
 
-    if (window.confirm("Are you sure you want to delete this task?")) {
-      try {
-        const response = await authenticatedFetch(`/tasks/${id}`, {
-          method: "DELETE",
-        });
+  const confirmDelete = async () => {
+    setShowDeleteModal(false);
+    try {
+      const response = await authenticatedFetch(`/tasks/${id}`, {
+        method: "DELETE",
+      });
 
-        if (!response.ok) {
-          const err = await response.json();
-          throw new Error(err.message || "Failed to delete task");
-        }
-
-        const data = await response.json();
-        console.log("Deleted:", data);
-        alert("Task deleted successfully!");
-
-        if (returnToProject) {
-          navigate(`/projects/edit/${returnToProject}`);
-        } else {
-          navigate("/tasks");
-        }
-      } catch (error) {
-        console.error("Error deleting task:", error);
-        alert(`Failed to delete task: ${error.message}`);
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || "Failed to delete task");
       }
+
+      const data = await response.json();
+      console.log("Deleted:", data);
+
+      if (returnToProject) {
+        navigate(`/projects/edit/${returnToProject}`);
+      } else {
+        navigate("/tasks");
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      setPopup({ show: true, message: `Failed to delete task: ${error.message}`, type: "error" });
     }
   };
 
@@ -168,15 +171,14 @@ export default function EditTask() {
 
       if (!res.ok) {
         const errMsg = json?.message || "Failed to update task";
-        alert(`Update failed: ${errMsg}`);
+        setPopup({ show: true, message: `Update failed: ${errMsg}`, type: "error" });
         return;
       }
 
-      alert("Task updated successfully!");
       navigate(-1);
     } catch (err) {
       console.error("Failed to update task:", err);
-      alert("Failed to update task.");
+      setPopup({ show: true, message: "Failed to update task.", type: "error" });
     }
   };
 
@@ -338,6 +340,50 @@ export default function EditTask() {
           </form>
         </div>
       </main>
+
+      {/* POPUP NOTIFICATION */}
+      {popup.show && (
+        <div className="tb-modal-overlay" onClick={() => setPopup({ ...popup, show: false })}>
+          <div className="tb-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>{popup.type === "success" ? "✓ Success" : "✗ Error"}</h3>
+            <p className="tb-modal-text">{popup.message}</p>
+            <div className="tb-modal-buttons">
+              <button
+                className={popup.type === "success" ? "tb-btn-secondary" : "tb-btn-cancel"}
+                onClick={() => setPopup({ ...popup, show: false })}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {showDeleteModal && (
+        <div className="tb-modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="tb-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Delete Task</h3>
+            <p className="tb-modal-text">
+              Are you sure you want to delete this task? This action cannot be undone.
+            </p>
+            <div className="tb-modal-buttons">
+              <button
+                className="tb-btn-delete"
+                onClick={confirmDelete}
+              >
+                Delete
+              </button>
+              <button
+                className="tb-btn-cancel"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
