@@ -23,7 +23,7 @@ function SortableTaskItem({ task, index, onEdit, onRemove }) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: task.id });
+  } = useSortable({ id: task._id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -37,7 +37,7 @@ function SortableTaskItem({ task, index, onEdit, onRemove }) {
       ref={setNodeRef}
       style={style}
       className={`task-reorder-item ${isDragging ? "dragging" : ""}`}
-      data-task-id={task.id}
+      data-task-id={task._id}
     >
       <div className="task-reorder-content">
         <span
@@ -56,14 +56,14 @@ function SortableTaskItem({ task, index, onEdit, onRemove }) {
       <div className="task-actions">
         <button
           type="button"
-          onClick={() => onEdit(task.id)}
+          onClick={() => onEdit(task._id)}
           className="inline-edit-btn"
         >
           Edit
         </button>
         <button
           type="button"
-          onClick={() => onRemove(task.id)}
+          onClick={() => onRemove(task._id)}
           className="inline-remove-btn"
         >
           Remove
@@ -101,32 +101,30 @@ export default function EditProject() {
     async function loadData() {
       setLoading(true);
       try {
-        // Load all tasks
-        const taskRes = await fetch("http://localhost:4000/api/tasks");
+        const taskRes = await authenticatedFetch("/tasks");
         const taskJson = await taskRes.json();
         const allTasks = taskJson.tasks || taskJson;
 
         if (isMounted) setAvailableTasks(allTasks || []);
 
         if (id) {
-          // Load project details
-          const projRes = await fetch(
-            `http://localhost:4000/api/projects/${id}`
-          );
+          const projRes = await authenticatedFetch(`/projects/${id}`);
+          if (!projRes.ok) throw new Error("Failed to load project");
           const projectData = await projRes.json();
 
-          // Load project tasks
           const projTasksRes = await authenticatedFetch(`/projects/${id}/tasks`);
+          if (!projTasksRes.ok) throw new Error("Failed to load project tasks");
           const projectTasks = await projTasksRes.json();
 
           if (isMounted && projectData) {
-            const selectedTaskIds = (projectTasks || []).map((t) => t.id);
+            const selectedTaskIds = (projectTasks || []).map((t) => t._id);
 
             setFormData({
               projectName: projectData.name || "",
               description: projectData.description || "",
               status: projectData.status || "Planning",
-              deadline: projectData.deadline || "",
+                deadline: projectData.deadline
+              ? projectData.deadline.slice(0, 10) : "",
               tags: projectData.tags
                 ? Array.isArray(projectData.tags)
                   ? projectData.tags.join(", ")
@@ -134,12 +132,11 @@ export default function EditProject() {
                 : "",
               selectedTasks: selectedTaskIds,
             });
-              setInitialSelectedTaskIds(selectedTaskIds);
-
-            
-            
+            setInitialSelectedTaskIds(selectedTaskIds);
           }
         }
+
+
       } catch (err) {
         console.error("Failed to load project data", err);
       } finally {
@@ -225,8 +222,8 @@ export default function EditProject() {
         );
       }
 
-      // 2) task assign / unassign 동기화
-      const projectId = Number(id);
+  
+      const projectId = id;
 
       const toAssign = formData.selectedTasks.filter(
         (taskId) => !initialSelectedTaskIds.includes(taskId)
@@ -328,22 +325,28 @@ export default function EditProject() {
   const unassignTaskLocally = (taskId) => {
     setAvailableTasks(prev =>
       prev.map(t =>
-        t.id === taskId ? { ...t, projectId: null } : t
+        t._id === taskId ? { ...t, projectId: null } : t
       )
     );
   };
   // Helpers
   const orderedSelectedTasks = formData.selectedTasks
-    .map((taskId) => Array.isArray(availableTasks) ? availableTasks.find((t) => t.id === taskId) : null)
+    .map((taskId) => Array.isArray(availableTasks) ? availableTasks.find((t) => t._id === taskId) : null)
     .filter(Boolean);
 
-  const selectedIds = formData.selectedTasks.map(Number);
+const selectedIds = formData.selectedTasks;
 
-  const unselectedTasks = Array.isArray(availableTasks) ? availableTasks.filter((t) => {
-    const assigned = t.projectId !== null && t.projectId !== undefined;
-    const selectedForThisProject = selectedIds.includes(Number(t.id));
-    return !assigned && !selectedForThisProject;
-  }) : [];
+const unselectedTasks = Array.isArray(availableTasks)
+  ? availableTasks.filter((t) => {
+      const assigned =
+        t.projectId !== null && t.projectId !== undefined;
+
+      const selectedForThisProject = selectedIds.includes(t._id);
+
+      return !assigned && !selectedForThisProject;
+    })
+  : [];
+
 
 
   const onDragEnd = (event) => {
@@ -477,7 +480,7 @@ export default function EditProject() {
                       >
                         {orderedSelectedTasks.map((task, index) => (
                           <SortableTaskItem
-                            key={task.id}
+                            key={task._id}
                             task={task}
                             index={index}
                             onEdit={handleEditTask}
@@ -498,14 +501,14 @@ export default function EditProject() {
                   <label>Available Tasks</label>
                   <div className="task-selection-list">
                     {unselectedTasks.map((task) => {
-                      const isChecked = formData.selectedTasks.includes(task.id);
+                      const isChecked = formData.selectedTasks.includes(task._id);
                       return (
-                        <div key={task.id} className="task-checkbox-item">
+                        <div key={task._id} className="task-checkbox-item">
                           <div style={{ display: "flex", alignItems: "center" }}>
                             <input
                               type="checkbox"
                               checked={isChecked}
-                              onChange={() => handleTaskSelection(task.id)}
+                              onChange={() => handleTaskSelection(task._id)}
                               style={{ marginRight: "0.5rem" }}
                             />
                             <label style={{ margin: 0, cursor: "pointer" }}>
@@ -515,7 +518,7 @@ export default function EditProject() {
 
                           <button
                             type="button"
-                            onClick={() => handleEditTask(task.id)}
+                            onClick={() => handleEditTask(task._id)}
                             className="inline-edit-btn"
                           >
                             Edit

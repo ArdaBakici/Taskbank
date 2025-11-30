@@ -263,17 +263,17 @@ export default function AddProject() {
                     <div style={{ opacity: 0.7 }}>No unassigned tasks found.</div>
                   ) : (
                     availableTasks.map((task) => {
-                      const label = task.title || task.name || `Task #${task.id}`;
+                      const label = task.title || task.name || `Task #${task._id}`;
                       return (
-                        <div key={task.id} className="task-checkbox-item">
+                        <div key={task._id} className="task-checkbox-item">
                           <input
                             type="checkbox"
-                            id={`task-${task.id}`}
-                            checked={formData.selectedTasks.includes(task.id)}
-                            onChange={() => handleTaskSelection(task.id)}
+                            id={`task-${task._id}`}
+                            checked={formData.selectedTasks.includes(task._id)}
+                            onChange={() => handleTaskSelection(task._id)}
                             disabled={submitting}
                           />
-                          <label htmlFor={`task-${task.id}`}>{label}</label>
+                          <label htmlFor={`task-${task._id}`}>{label}</label>
                         </div>
                       );
                     })
