@@ -21,6 +21,7 @@ export default function AddProject() {
   const [availableTasks, setAvailableTasks] = useState([]);
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [popup, setPopup] = useState({ show: false, message: "", type: "success" });
 
   // Load UNASSIGNED tasks from backend (preferred: /tasks?unassigned=1)
   useEffect(() => {
@@ -150,11 +151,10 @@ export default function AddProject() {
         );
       }
 
-      alert("Project created successfully!");
       navigate("/projects");
     } catch (error) {
       console.error("Error creating project:", error);
-      alert(`Error: ${error.message}`);
+      setPopup({ show: true, message: `Error: ${error.message}`, type: "error" });
     } finally {
       setSubmitting(false);
     }
@@ -298,6 +298,24 @@ export default function AddProject() {
           </form>
         </div>
       </main>
+
+      {/* POPUP NOTIFICATION */}
+      {popup.show && (
+        <div className="tb-modal-overlay" onClick={() => setPopup({ ...popup, show: false })}>
+          <div className="tb-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>{popup.type === "success" ? "✓ Success" : "✗ Error"}</h3>
+            <p className="tb-modal-text">{popup.message}</p>
+            <div className="tb-modal-buttons">
+              <button
+                className={popup.type === "success" ? "tb-btn-secondary" : "tb-btn-cancel"}
+                onClick={() => setPopup({ ...popup, show: false })}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -140,6 +140,9 @@ export default function AllProjects({
       <div className="project-list">
         {loading && <p>Loading projects...</p>}
         {error && <p>{error}</p>}
+        {!loading && !error && projects.length === 0 && (
+          <p>No projects found.</p>
+        )}
         {!loading &&
           !error &&
           projects.map((p) => (

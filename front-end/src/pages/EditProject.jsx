@@ -90,11 +90,9 @@ export default function EditProject() {
   const [availableTasks, setAvailableTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [popup, setPopup] = useState({ show: false, message: "", type: "success" });
 
   const [initialSelectedTaskIds, setInitialSelectedTaskIds] = useState([]);
-  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
-
-
 
   // Load initial project data
   useEffect(() => {
@@ -215,9 +213,8 @@ export default function EditProject() {
 
     try {
       // 1) 프로젝트 자체 업데이트
-      const res = await fetch(`${apiUrl}/projects/${id}`, {
+      const res = await authenticatedFetch(`/projects/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(projectPayload),
       });
 
@@ -242,9 +239,8 @@ export default function EditProject() {
       await Promise.all([
         // 새로 추가된 task들 → projectId 설정
         ...toAssign.map((taskId) =>
-          fetch(`${apiUrl}/tasks/${taskId}`, {
+          authenticatedFetch(`/tasks/${taskId}`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ projectId }),
           }).then(async (r) => {
             if (!r.ok) {
@@ -259,9 +255,8 @@ export default function EditProject() {
 
         // 제거된 task들 → projectId null
         ...toUnassign.map((taskId) =>
-          fetch(`${apiUrl}/tasks/${taskId}`, {
+          authenticatedFetch(`/tasks/${taskId}`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ projectId: null }),
           }).then(async (r) => {
             if (!r.ok) {
@@ -279,9 +274,8 @@ export default function EditProject() {
       // formData.selectedTasks: [taskId1, taskId2, taskId3, ...] (드래그 후 최종 순서)
       await Promise.all(
         formData.selectedTasks.map((taskId, index) =>
-          fetch(`${apiUrl}/tasks/${taskId}`, {
+          authenticatedFetch(`/tasks/${taskId}`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ order: index }), // 0,1,2,...
           }).then(async (r) => {
             if (!r.ok) {
@@ -295,11 +289,10 @@ export default function EditProject() {
         )
       );
 
-      alert("Project updated successfully!");
       navigate("/projects");
     } catch (error) {
       console.error("Error updating project:", error);
-      alert(`Error updating project: ${error.message}`);
+      setPopup({ show: true, message: `Error updating project: ${error.message}`, type: "error" });
     }
   };
 
@@ -308,14 +301,13 @@ export default function EditProject() {
   // Delete Project with mode
   const handleDeleteProject = async (mode) => {
     try {
-      let url = `http://localhost:4000/api/projects/${id}`;
+      let url = `/projects/${id}`;
 
       if (mode === "delete-tasks") url += "?deleteTasks=true";
       if (mode === "unassign-tasks") url += "?unassignTasks=true";
 
-      const response = await fetch(url, {
+      const response = await authenticatedFetch(url, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) {
@@ -323,10 +315,9 @@ export default function EditProject() {
         throw new Error(err.message || "Failed to delete project");
       }
 
-      alert("Project deleted successfully!");
       navigate("/projects");
     } catch (error) {
-      alert("Error: " + error.message);
+      setPopup({ show: true, message: "Error: " + error.message, type: "error" });
     }
   };
 
@@ -343,16 +334,16 @@ export default function EditProject() {
   };
   // Helpers
   const orderedSelectedTasks = formData.selectedTasks
-    .map((taskId) => availableTasks.find((t) => t.id === taskId))
+    .map((taskId) => Array.isArray(availableTasks) ? availableTasks.find((t) => t.id === taskId) : null)
     .filter(Boolean);
 
   const selectedIds = formData.selectedTasks.map(Number);
 
-  const unselectedTasks = availableTasks.filter((t) => {
+  const unselectedTasks = Array.isArray(availableTasks) ? availableTasks.filter((t) => {
     const assigned = t.projectId !== null && t.projectId !== undefined;
     const selectedForThisProject = selectedIds.includes(Number(t.id));
     return !assigned && !selectedForThisProject;
-  });
+  }) : [];
 
 
   const onDragEnd = (event) => {
@@ -589,6 +580,24 @@ export default function EditProject() {
                 onClick={() => setShowDeleteModal(false)}
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POPUP NOTIFICATION */}
+      {popup.show && (
+        <div className="tb-modal-overlay" onClick={() => setPopup({ ...popup, show: false })}>
+          <div className="tb-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>{popup.type === "success" ? "✓ Success" : "✗ Error"}</h3>
+            <p className="tb-modal-text">{popup.message}</p>
+            <div className="tb-modal-buttons">
+              <button
+                className={popup.type === "success" ? "tb-btn-secondary" : "tb-btn-cancel"}
+                onClick={() => setPopup({ ...popup, show: false })}
+              >
+                OK
               </button>
             </div>
           </div>
