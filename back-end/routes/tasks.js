@@ -170,14 +170,12 @@ router.get("/", async (req, res) => {
 
         case "deadline":
         case "deadline_asc":
-          return (
-            new Date(a.deadline || 0) - new Date(b.deadline || 0)
-          );
+          return (a, b) =>
+          new Date(a.deadline || 0) - new Date(b.deadline || 0);
 
         case "deadline_desc":
-          return (
-            new Date(b.deadline || 0) - new Date(a.deadline || 0)
-          );
+          return (a, b) =>
+          new Date(b.deadline || 0) - new Date(a.deadline || 0);
 
         case "urgency":
         case "urgency_desc": {
