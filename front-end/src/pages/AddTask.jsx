@@ -116,6 +116,7 @@ export default function AddTask() {
                   type="text"
                   id="taskName"
                   name="taskName"
+                  required
                   value={formData.taskName}
                   onChange={handleChange}
                   placeholder="Enter task name"
@@ -194,6 +195,7 @@ export default function AddTask() {
                   type="date"
                   id="deadline"
                   name="deadline"
+                  required
                   value={formData.deadline}
                   onChange={handleChange}
                   className={errors.deadline ? "error" : ""}

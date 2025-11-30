@@ -215,6 +215,7 @@ export default function EditTask() {
                   type="text"
                   id="taskName"
                   name="taskName"
+                  required
                   value={formData.taskName}
                   onChange={handleChange}
                   className={errors.taskName ? "error" : ""}
@@ -242,7 +243,7 @@ export default function EditTask() {
             {/* Project & Priority */}
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="project">Project *</label>
+                <label htmlFor="project">Project </label>
                 <select
                   id="project"
                   name="project"
@@ -295,11 +296,12 @@ export default function EditTask() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="deadline">Deadline</label>
+                <label htmlFor="deadline">Deadline *</label>
                 <input
                   type="date"
                   id="deadline"
                   name="deadline"
+                  required
                   value={formData.deadline}
                   onChange={handleChange}
                 />

@@ -180,6 +180,7 @@ export default function AddProject() {
                   type="text"
                   id="projectName"
                   name="projectName"
+                  required
                   value={formData.projectName}
                   onChange={handleChange}
                   placeholder="Enter project name"
@@ -226,11 +227,12 @@ export default function AddProject() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="deadline">Deadline</label>
+                <label htmlFor="deadline">Deadline *</label>
                 <input
                   type="date"
                   id="deadline"
                   name="deadline"
+                  required
                   value={formData.deadline}
                   onChange={handleChange}
                   disabled={submitting}
