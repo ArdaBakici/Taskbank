@@ -1,10 +1,10 @@
 const express = require("express");
-const authenticate = require("../middleware/auth");
+const passport = require("passport");
 
 const router = express.Router();
 
 // Apply authentication to all routes
-router.use(authenticate);
+router.use(passport.authenticate("jwt", { session: false }));
 
 const settings = {
   theme: "light",

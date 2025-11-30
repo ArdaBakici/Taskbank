@@ -1,12 +1,12 @@
 const express = require("express");
 const { Project, Task } = require("../mongo-schemas");
 const mongoose = require("mongoose");
-const authenticate = require("../middleware/auth");
+const passport = require("passport");
 
 const router = express.Router();
 
 // Apply authentication to all routes
-router.use(authenticate);
+router.use(passport.authenticate("jwt", { session: false }));
 
 /* ---------------------------------------------
    GET /api/projects - List projects (sorted)
@@ -40,7 +40,7 @@ router.get("/", async (req, res) => {
         break;
     }
 
-    let query = Project.find().sort(sort);
+    let query = Project.find({ userId: req.user.userId }).sort(sort);
 
     if (num_of_projects) {
       query = query.limit(Number(num_of_projects));
@@ -74,7 +74,10 @@ router.get("/:id", async (req, res) => {
       return res.status(400).json({ message: "Invalid project ID" });
     }
 
-    const project = await Project.findById(projectId);
+    const project = await Project.findOne({
+      _id: projectId,
+      userId: req.user.userId,
+    });
 
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
@@ -98,12 +101,18 @@ router.get("/:projectId/tasks", async (req, res) => {
       return res.status(400).json({ message: "Invalid project ID" });
     }
 
-    const project = await Project.findById(projectId);
+    const project = await Project.findOne({
+      _id: projectId,
+      userId: req.user.userId,
+    });
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
 
-    const tasks = await Task.find({ projectId }).sort({ order: 1 });
+    const tasks = await Task.find({
+      projectId,
+      userId: req.user.userId,
+    }).sort({ order: 1 });
     return res.json(tasks);
   } catch (error) {
     console.error(error);
@@ -142,6 +151,7 @@ router.post("/", async (req, res) => {
     const project = await Project.create({
       name: payload.name,
       description: payload.description || "",
+      userId: req.user.userId,
       tags: payload.tags || [],
       deadline: payload.deadline,
       status: payload.status || "Planning",
@@ -172,8 +182,8 @@ router.patch("/:id", async (req, res) => {
       return res.status(400).json({ message: "Invalid project ID" });
     }
 
-    const updated = await Project.findByIdAndUpdate(
-      projectId,
+    const updated = await Project.findOneAndUpdate(
+      { _id: projectId, userId: req.user.userId },
       req.body,
       { new: true, runValidators: true }
     );
@@ -201,7 +211,10 @@ router.delete("/:projectId/tasks/:taskId", async (req, res) => {
       return res.status(400).json({ message: "Invalid ID" });
     }
 
-    const task = await Task.findById(taskId);
+    const task = await Task.findOne({
+      _id: taskId,
+      userId: req.user.userId,
+    });
     if (!task) return res.status(404).json({ message: "Task not found" });
 
     if (task.projectId?.toString() !== projectId) {
@@ -232,20 +245,32 @@ router.delete("/:id", async (req, res) => {
     const deleteTasks = req.query.deleteTasks === "true";
     const unassignTasks = req.query.unassignTasks === "true";
 
-    const project = await Project.findById(projectId);
+    const project = await Project.findOne({
+      _id: projectId,
+      userId: req.user.userId,
+    });
     if (!project) return res.status(404).json({ message: "Project not found" });
 
-    const projectTasks = await Task.find({ projectId });
+    const projectTasks = await Task.find({
+      projectId,
+      userId: req.user.userId,
+    });
 
     if (deleteTasks) {
-      await Task.deleteMany({ projectId });
+      await Task.deleteMany({ projectId, userId: req.user.userId });
     }
 
     if (unassignTasks) {
-      await Task.updateMany({ projectId }, { $set: { projectId: null } });
+      await Task.updateMany(
+        { projectId, userId: req.user.userId },
+        { $set: { projectId: null } }
+      );
     }
 
-    await Project.findByIdAndDelete(projectId);
+    await Project.findOneAndDelete({
+      _id: projectId,
+      userId: req.user.userId,
+    });
 
     return res.json({
       message: "Project deleted successfully",

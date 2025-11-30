@@ -2,6 +2,9 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const mongoose = require("mongoose");
+const passport = require("passport");
+const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
+const { User } = require("./mongo-schemas");
 
 const tasksRouter = require("./routes/tasks");
 const projectsRouter = require("./routes/projects");
@@ -9,6 +12,34 @@ const authRouter = require("./routes/auth");
 const settingsRouter = require("./routes/settings");
 const statsRouter = require("./routes/stats");
 const searchRouter = require("./routes/search");
+
+// Configure Passport JWT strategy
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this-in-production";
+
+const jwtOptions = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: JWT_SECRET,
+};
+
+passport.use(
+  new JwtStrategy(jwtOptions, async (payload, done) => {
+    try {
+      const user = await User.findById(payload.userId);
+      
+      if (!user) {
+        return done(null, false);
+      }
+      
+      return done(null, {
+        userId: user._id,
+        email: user.email,
+        username: user.username,
+      });
+    } catch (error) {
+      return done(error, false);
+    }
+  })
+);
 
 const app = express();
 require("dotenv").config();
@@ -19,6 +50,7 @@ const CLIENT_BUILD_PATH = path.resolve(__dirname, "../front-end/build");
 
 app.use(cors());
 app.use(express.json());
+app.use(passport.initialize());
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });

@@ -4,6 +4,8 @@ const projectSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     description: { type: String, default: "" },
+    // Reference to User (owner)
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
     tags: { type: [String], default: [] },
     deadline: { type: Date },
     status: {

@@ -1,12 +1,12 @@
 const express = require("express");
 const { Task } = require("../mongo-schemas");
 const mongoose = require("mongoose");
-const authenticate = require("../middleware/auth");
+const passport = require("passport");
 
 const router = express.Router();
 
 // Apply authentication to all routes
-router.use(authenticate);
+router.use(passport.authenticate("jwt", { session: false }));
 
 // Helper function to calculate smart sort score
 const calculateSmartScore = (task) => {
@@ -86,7 +86,9 @@ router.get("/", async (req, res) => {
     }
 
     // --- Build Mongo filter object ---
-    const mongoFilter = {};
+    const mongoFilter = {
+      userId: req.user.userId, // Only return tasks belonging to this user
+    };
 
     // Unassigned tasks: /tasks?unassigned=1
     if (
@@ -135,7 +137,7 @@ router.get("/", async (req, res) => {
     }
 
     // Total tasks BEFORE any filters (for UI stats)
-    const totalBeforeFilters = await Task.countDocuments();
+    const totalBeforeFilters = await Task.countDocuments({ userId: req.user.userId });
 
     // Fetch tasks AFTER filters (but BEFORE limit)
     let tasks = await Task.find(mongoFilter).exec();
@@ -271,7 +273,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    const task = await Task.findById(id);
+    const task = await Task.findOne({ _id: id, userId: req.user.userId });
 
     if (!task) {
       return res.status(404).json({
@@ -351,6 +353,7 @@ router.post("/", async (req, res) => {
       title: payload.title,
       name: payload.title,
       description: payload.description || "",
+      userId: req.user.userId, // Set the owner to the authenticated user
       projectId, // <-- this is now ObjectId or null
       tags: Array.isArray(payload.tags) ? payload.tags : [],
       deadline: payload.deadline,
@@ -411,9 +414,11 @@ router.patch("/:id", async (req, res) => {
       }
     }
 
-    const updatedTask = await Task.findByIdAndUpdate(id, updates, {
-      new: true,
-    });
+    const updatedTask = await Task.findOneAndUpdate(
+      { _id: id, userId: req.user.userId },
+      updates,
+      { new: true }
+    );
 
     if (!updatedTask) {
       return res.status(404).json({
@@ -439,7 +444,10 @@ router.delete("/:id", async (req, res) => {
   try {
     const id = req.params.id;
 
-    const deletedTask = await Task.findByIdAndDelete(id);
+    const deletedTask = await Task.findOneAndDelete({
+      _id: id,
+      userId: req.user.userId,
+    });
 
     if (!deletedTask) {
       return res.status(404).json({

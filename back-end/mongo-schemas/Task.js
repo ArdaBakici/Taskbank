@@ -6,6 +6,8 @@ const taskSchema = new Schema(
     title: { type: String, required: true, trim: true },
     name: { type: String, trim: true },
     description: { type: String, default: "" },
+    // Reference to User (owner)
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     // Reference to Project
     projectId: { type: Schema.Types.ObjectId, ref: "Project", default: null },
 
