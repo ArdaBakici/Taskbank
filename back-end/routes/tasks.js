@@ -180,18 +180,17 @@ router.get("/", async (req, res) => {
         case "urgency":
         case "urgency_desc": {
           const urgencyOrder = { High: 3, Medium: 2, Low: 1 };
-          return (
+          return (a, b) =>
             (urgencyOrder[b.urgency] || 0) -
-            (urgencyOrder[a.urgency] || 0)
-          );
+            (urgencyOrder[a.urgency] || 0);
         }
 
         case "urgency_asc": {
           const urgencyOrderAsc = { High: 3, Medium: 2, Low: 1 };
-          return (
+          return (a,b) =>
             (urgencyOrderAsc[a.urgency] || 0) -
-            (urgencyOrderAsc[b.urgency] || 0)
-          );
+            (urgencyOrderAsc[b.urgency] || 0);
+          
         }
 
         case "status":
