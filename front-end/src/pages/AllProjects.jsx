@@ -84,8 +84,10 @@ export default function AllProjects({
   };
 
   const handleSortChange = (method) => {
-    setSortingMethod(method);
+    
     setShowSortMenu(false);
+    if (method === sortingMethod) return;
+    setSortingMethod(method);
     setLoading(true);
   };
 
