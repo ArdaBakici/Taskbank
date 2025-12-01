@@ -404,7 +404,7 @@ router.patch("/:id", async (req, res) => {
       updates.name = updates.title;
     }
 
-    // 🔹 FIX: sanitize projectId so Mongoose doesn't choke on ""
+    //  FIX: sanitize projectId so Mongoose doesn't choke on ""
     if (Object.prototype.hasOwnProperty.call(updates, "projectId")) {
       if (!updates.projectId || updates.projectId === "none") {
         updates.projectId = null;
