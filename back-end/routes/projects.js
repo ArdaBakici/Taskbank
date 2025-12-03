@@ -1,4 +1,5 @@
 const express = require("express");
+const { body, param, validationResult } = require("express-validator");
 const { Project, Task } = require("../mongo-schemas");
 const mongoose = require("mongoose");
 const passport = require("passport");
@@ -123,31 +124,48 @@ router.get("/:projectId/tasks", async (req, res) => {
 /* ---------------------------------------------
    POST /api/projects - Create a new project
 ---------------------------------------------- */
-router.post("/", async (req, res) => {
-  try {
-    const payload = req.body || {};
+router.post(
+  "/",
+  [
+    body("name")
+      .trim()
+      .notEmpty()
+      .withMessage("name is required to create a project")
+      .isLength({ max: 200 })
+      .withMessage("name must not exceed 200 characters"),
+    body("description")
+      .optional()
+      .trim()
+      .isLength({ max: 1000 })
+      .withMessage("description must not exceed 1000 characters"),
+    body("deadline")
+      .notEmpty()
+      .withMessage("deadline is required to create a project")
+      .isISO8601()
+      .withMessage("deadline must be a valid date"),
+    body("status")
+      .optional()
+      .isIn(["On Hold", "In Progress", "Planning", "Completed", "Cancelled"])
+      .withMessage("status must be one of: On Hold, In Progress, Planning, Completed, Cancelled"),
+    body("tags")
+      .optional()
+      .isArray()
+      .withMessage("tags must be an array"),
+  ],
+  async (req, res) => {
+    try {
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          message: "Validation failed",
+          errors: errors.array(),
+        });
+      }
 
-    // Validation
-    if (!payload.name) {
-      return res.status(400).json({ message: "name is required to create a project" });
-    }
+      const payload = req.body || {};
 
-    if (!payload.deadline) {
-      return res.status(400).json({ message: "deadline is required to create a project" });
-    }
-
-    const allowedStatuses = [
-      "On Hold",
-      "In Progress",
-      "Planning",
-      "Completed",
-      "Cancelled",
-    ];
-    if (payload.status && !allowedStatuses.includes(payload.status)) {
-      return res.status(400).json({ message: "Invalid status value" });
-    }
-
-    // Create project
+      // Create project
     const project = await Project.create({
       name: payload.name,
       description: payload.description || "",
@@ -174,15 +192,47 @@ router.post("/", async (req, res) => {
 /* ---------------------------------------------
    PATCH /api/projects/:id - Update a project
 ---------------------------------------------- */
-router.patch("/:id", async (req, res) => {
-  try {
-    const projectId = req.params.id;
+router.patch(
+  "/:id",
+  [
+    param("id").isMongoId().withMessage("Invalid project ID"),
+    body("name")
+      .optional()
+      .trim()
+      .isLength({ min: 1, max: 200 })
+      .withMessage("name must be between 1 and 200 characters"),
+    body("description")
+      .optional()
+      .trim()
+      .isLength({ max: 1000 })
+      .withMessage("description must not exceed 1000 characters"),
+    body("deadline")
+      .optional()
+      .isISO8601()
+      .withMessage("deadline must be a valid date"),
+    body("status")
+      .optional()
+      .isIn(["On Hold", "In Progress", "Planning", "Completed", "Cancelled"])
+      .withMessage("status must be one of: On Hold, In Progress, Planning, Completed, Cancelled"),
+    body("tags")
+      .optional()
+      .isArray()
+      .withMessage("tags must be an array"),
+  ],
+  async (req, res) => {
+    try {
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          message: "Validation failed",
+          errors: errors.array(),
+        });
+      }
 
-    if (!mongoose.isValidObjectId(projectId)) {
-      return res.status(400).json({ message: "Invalid project ID" });
-    }
+      const projectId = req.params.id;
 
-    const updated = await Project.findOneAndUpdate(
+      const updated = await Project.findOneAndUpdate(
       { _id: projectId, userId: req.user.userId },
       req.body,
       { new: true, runValidators: true }

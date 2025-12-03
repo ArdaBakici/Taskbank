@@ -1,4 +1,5 @@
 const express = require("express");
+const { body, validationResult } = require("express-validator");
 const passport = require("passport");
 const { User } = require("../mongo-schemas");
 const router = express.Router();
@@ -21,18 +22,35 @@ router.patch("/", (req, res) => {
   Object.assign(settings, updates);
   res.json({ message: "Settings updated", settings });
 });
-router.patch("/change-password", async (req, res) => {
-  try {
-    const userId = req.user.userId;   // from passport JWT
-    const { oldPassword, newPassword } = req.body;
+router.patch(
+  "/change-password",
+  [
+    body("oldPassword")
+      .notEmpty()
+      .withMessage("Old password is required")
+      .isLength({ min: 1 })
+      .withMessage("Old password cannot be empty"),
+    body("newPassword")
+      .notEmpty()
+      .withMessage("New password is required")
+      .isLength({ min: 6 })
+      .withMessage("New password must be at least 6 characters long"),
+  ],
+  async (req, res) => {
+    try {
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          message: "Validation failed",
+          errors: errors.array(),
+        });
+      }
 
-    if (!oldPassword || !newPassword) {
-      return res
-        .status(400)
-        .json({ message: "Old password and new password are required." });
-    }
+      const userId = req.user.userId;   // from passport JWT
+      const { oldPassword, newPassword } = req.body;
 
-    // Find user
+      // Find user
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found." });
