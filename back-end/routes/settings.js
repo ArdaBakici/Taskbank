@@ -66,4 +66,55 @@ router.patch("/change-password", async (req, res) => {
     return res.status(500).json({ message: "Failed to change password." });
   }
 });
+
+router.patch("/change-username", async (req, res) => {
+  try {
+    const userId = req.user.userId;   // from passport JWT
+    const { newUsername } = req.body;
+
+    if (!newUsername) {
+      return res
+        .status(400)
+        .json({ message: "New username is required." });
+    }
+
+    // Validate username length
+    if (newUsername.length < 3) {
+      return res
+        .status(400)
+        .json({ message: "Username must be at least 3 characters." });
+    }
+
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Check if username is the same
+    if (user.username === newUsername) {
+      return res
+        .status(400)
+        .json({ message: "New username must be different from the current username." });
+    }
+
+    // Check if username already exists
+    const existingUser = await User.findOne({ username: newUsername });
+    if (existingUser) {
+      return res
+        .status(400)
+        .json({ message: "Username already taken." });
+    }
+
+    // Update username
+    user.username = newUsername;
+    await user.save();
+
+    return res.json({ message: "Username changed successfully.", username: newUsername });
+  } catch (error) {
+    console.error("Change username error:", error);
+    return res.status(500).json({ message: "Failed to change username." });
+  }
+});
+
 module.exports = router;
