@@ -84,10 +84,31 @@ export default function ProjectView() {
         {!loading && project ? (
           <>
             {/* Project description and details */}
-            <div className="project-details">
-              <p>{project.description}</p>
-              <p><strong>Deadline:</strong> {formatDeadline(project.deadline)}</p>
-              <p><strong>Urgency:</strong> {project.urgency}</p>
+            <div className="form-card">
+              <div className="form-row">
+                <div className="form-group full-width">
+                  <label>Description</label>
+                  <p>{project.description || "No description"}</p>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Status</label>
+                  <p>{project.status}</p>
+                </div>
+                <div className="form-group">
+                  <label>Deadline</label>
+                  <p>{formatDeadline(project.deadline)}</p>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group full-width">
+                  <label>Tags</label>
+                  <p>{project.tags && project.tags.length > 0 ? project.tags.join(", ") : "No tags"}</p>
+                </div>
+              </div>
             </div>
 
             {/* Tasks section */}
