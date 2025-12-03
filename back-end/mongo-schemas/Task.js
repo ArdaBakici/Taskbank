@@ -20,7 +20,7 @@ const taskSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["Not Started", "In Progress", "Completed", "On Hold", "Blocked"],
+      enum: ["Not Started", "In Progress", "Completed", "On Hold"],
       default: "Not Started",
     },
     assignee: { type: String, trim: true },
