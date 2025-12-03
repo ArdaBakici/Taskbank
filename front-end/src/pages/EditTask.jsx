@@ -21,6 +21,7 @@ export default function EditTask() {
     status: "Not Started",
     deadline: "",
     tags: "",
+    context: "other",
   });
 
   const [projects, setProjects] = useState([]);
@@ -49,16 +50,14 @@ export default function EditTask() {
             setFormData({
               taskName: task.title || "",
               description: task.description || "",
-              // if no projectId -> "none" so it matches the select option
               project: task.projectId || "none",
-              // urgency is "High/Medium/Low", matches the dropdown values
               priority: task.urgency || "Medium",
               status: task.status || "Not Started",
-              // format for <input type="date">
               deadline: task.deadline ? task.deadline.slice(0, 10) : "",
               tags: Array.isArray(task.tags)
                 ? task.tags.join(", ")
                 : task.tags || "",
+              context: task.context || "other",
             });
           }
         }
@@ -151,6 +150,7 @@ export default function EditTask() {
           : formData.tags
           ? formData.tags.split(",").map((t) => t.trim()).filter(Boolean)
           : [],
+        context: formData.context || "",
       };
 
       // Remove undefined keys
@@ -319,6 +319,22 @@ export default function EditTask() {
                   value={formData.tags}
                   onChange={handleChange}
                 />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="context">Context</label>
+                <select
+                  id="context"
+                  name="context"
+                  value={formData.context}
+                  onChange={handleChange}
+                >
+                  <option value="office">Office</option>
+                  <option value="school">School</option>
+                  <option value="home">Home</option>
+                  <option value="daily-life">Daily Life</option>
+                  <option value="other">Other</option>
+                </select>
               </div>
             </div>
 
