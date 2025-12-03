@@ -1,4 +1,5 @@
 const express = require("express");
+const { body, param, validationResult } = require("express-validator");
 const { Task } = require("../mongo-schemas");
 const mongoose = require("mongoose");
 const passport = require("passport");
@@ -291,41 +292,75 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST /api/tasks - Create a new task
-router.post("/", async (req, res) => {
-  try {
-    const payload = req.body || {};
+router.post(
+  "/",
+  [
+    body("title")
+      .trim()
+      .notEmpty()
+      .withMessage("title is required to create a task")
+      .isLength({ max: 200 })
+      .withMessage("title must not exceed 200 characters"),
+    body("deadline")
+      .notEmpty()
+      .withMessage("deadline is required to create a task")
+      .isISO8601()
+      .withMessage("deadline must be a valid date"),
+    body("context")
+      .notEmpty()
+      .withMessage("context is required")
+      .isIn(["office", "school", "home", "daily-life", "other"])
+      .withMessage("context must be one of: office, school, home, daily-life, other"),
+    body("priority")
+      .optional()
+      .isIn(["low", "medium", "high", "urgent"])
+      .withMessage("priority must be one of: low, medium, high, urgent"),
+    body("status")
+      .optional()
+      .isIn(["Not Started", "In Progress", "Completed", "On Hold"])
+      .withMessage("status must be one of: Not Started, In Progress, Completed, On Hold"),
+    body("description")
+      .optional()
+      .trim()
+      .isLength({ max: 1000 })
+      .withMessage("description must not exceed 1000 characters"),
+    body("projectId")
+      .optional()
+      .custom((value) => {
+        if (value && !mongoose.Types.ObjectId.isValid(value)) {
+          throw new Error("Invalid projectId format");
+        }
+        return true;
+      }),
+    body("tags")
+      .optional()
+      .isArray()
+      .withMessage("tags must be an array"),
+    body("assignee")
+      .optional()
+      .trim()
+      .isLength({ max: 100 })
+      .withMessage("assignee must not exceed 100 characters"),
+    body("order")
+      .optional()
+      .isInt({ min: 0 })
+      .withMessage("order must be a non-negative integer"),
+  ],
+  async (req, res) => {
+    try {
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          message: "Validation failed",
+          errors: errors.array(),
+        });
+      }
 
-    // --- REQUIRED FIELDS ---
-    if (!payload.title) {
-      return res.status(400).json({ message: "title is required to create a task" });
-    }
+      const payload = req.body || {};
 
-    if (!payload.deadline) {
-      return res.status(400).json({ message: "deadline is required to create a task" });
-    }
-
-    if (!payload.context) {
-      return res.status(400).json({
-        message: "context is required (office, school, home, daily-life, other)",
-      });
-    }
-
-    const validContexts = ["office", "school", "home", "daily-life", "other"];
-    if (!validContexts.includes(payload.context)) {
-      return res.status(400).json({
-        message: `Invalid context. Must be one of: ${validContexts.join(", ")}`,
-      });
-    }
-
-    // --- PRIORITY + URGENCY SYNC ---
-    const validPriorities = ["low", "medium", "high", "urgent"];
-    if (payload.priority && !validPriorities.includes(payload.priority)) {
-      return res.status(400).json({
-        message: `Invalid priority. Must be: ${validPriorities.join(", ")}`,
-      });
-    }
-
-    const priorityToUrgency = {
+      // --- PRIORITY + URGENCY SYNC ---
+      const priorityToUrgency = {
       low: "Low",
       medium: "Medium",
       high: "High",
@@ -335,14 +370,7 @@ router.post("/", async (req, res) => {
     const urgency = priorityToUrgency[payload.priority || "medium"];
 
     // --- PROJECT RELATION (ObjectId) ---
-    let projectId = null;
-
-    if (payload.projectId) {
-      if (!mongoose.Types.ObjectId.isValid(payload.projectId)) {
-        return res.status(400).json({ message: "Invalid projectId format" });
-      }
-      projectId = payload.projectId;
-    }
+    const projectId = payload.projectId || null;
 
     // --- CREATE TASK ---
     const newTask = await Task.create({
@@ -372,32 +400,84 @@ router.post("/", async (req, res) => {
 });
 
 // PATCH /api/tasks/:id - Update an existing task
-router.patch("/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-    const updates = req.body || {};
-
-    // Validate priority if provided
-    if (updates.priority) {
-      const validPriorities = ["low", "medium", "high", "urgent"];
-      if (!validPriorities.includes(updates.priority)) {
+router.patch(
+  "/:id",
+  [
+    param("id").isMongoId().withMessage("Invalid task ID"),
+    body("title")
+      .optional()
+      .trim()
+      .isLength({ min: 1, max: 200 })
+      .withMessage("title must be between 1 and 200 characters"),
+    body("description")
+      .optional()
+      .trim()
+      .isLength({ max: 1000 })
+      .withMessage("description must not exceed 1000 characters"),
+    body("deadline")
+      .optional()
+      .isISO8601()
+      .withMessage("deadline must be a valid date"),
+    body("context")
+      .optional()
+      .isIn(["office", "school", "home", "daily-life", "other"])
+      .withMessage("context must be one of: office, school, home, daily-life, other"),
+    body("priority")
+      .optional()
+      .isIn(["low", "medium", "high", "urgent"])
+      .withMessage("priority must be one of: low, medium, high, urgent"),
+    body("status")
+      .optional()
+      .isIn(["Not Started", "In Progress", "Completed", "On Hold"])
+      .withMessage("status must be one of: Not Started, In Progress, Completed, On Hold"),
+    body("projectId")
+      .optional()
+      .custom((value) => {
+        if (value && value !== "none" && !mongoose.Types.ObjectId.isValid(value)) {
+          throw new Error("Invalid projectId format");
+        }
+        return true;
+      }),
+    body("tags")
+      .optional()
+      .isArray()
+      .withMessage("tags must be an array"),
+    body("assignee")
+      .optional()
+      .trim()
+      .isLength({ max: 100 })
+      .withMessage("assignee must not exceed 100 characters"),
+    body("order")
+      .optional()
+      .isInt({ min: 0 })
+      .withMessage("order must be a non-negative integer"),
+  ],
+  async (req, res) => {
+    try {
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
         return res.status(400).json({
-          message: `Invalid priority. Must be one of: ${validPriorities.join(
-            ", "
-          )}`,
+          message: "Validation failed",
+          errors: errors.array(),
         });
       }
 
-      const priorityToUrgency = {
-        low: "Low",
-        medium: "Medium",
-        high: "High",
-        urgent: "High",
-      };
-      updates.urgency = priorityToUrgency[updates.priority];
-    }
+      const id = req.params.id;
+      const updates = req.body || {};
 
-    // keep title/name sync logic
+      // Sync urgency with priority if provided
+      if (updates.priority) {
+        const priorityToUrgency = {
+          low: "Low",
+          medium: "Medium",
+          high: "High",
+          urgent: "High",
+        };
+        updates.urgency = priorityToUrgency[updates.priority];
+      }
+
+      // keep title/name sync logic
     if (updates.title || updates.name) {
       updates.title = updates.title ?? updates.name;
       updates.name = updates.title;
