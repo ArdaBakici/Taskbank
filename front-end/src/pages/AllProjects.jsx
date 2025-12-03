@@ -121,7 +121,10 @@ export default function AllProjects({
         <div className="dashboard-buttons">
 
           {/* Always show Create & Sort */}
-          <button onClick={() => navigate("/projects/new")}>Create</button>
+          <div className="sort-dropdown-container">
+            <button className="create-button" onClick={() => navigate("/projects/new")}>Create</button>
+          </div>
+          
 
           <div className="sort-dropdown-container">
             <button onClick={() => setShowSortMenu(!showSortMenu)}>

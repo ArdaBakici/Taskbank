@@ -66,28 +66,6 @@
   height: 40px;
 }
 
-/* Title and buttons */
-.dashboard-title-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.dashboard-buttons button {
-  background-color: #0f172a;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 0.5rem 1rem;
-  margin-left: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.dashboard-buttons button:hover {
-  background-color: #1e293b;
-}
-
 /* Optional: Edit / Return buttons styling */
 .btn-edit {
   background-color: #2563eb;

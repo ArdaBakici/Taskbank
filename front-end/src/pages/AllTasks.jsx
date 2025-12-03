@@ -257,7 +257,9 @@ export default function AllTasks({
         <h2>Tasks</h2>
         <div className="dashboard-buttons">
           {showCreateButton && (
-            <button onClick={() => navigate("/tasks/new")}>Create</button>
+            <div className="sort-dropdown-container">
+              <button className="create-button" onClick={() => navigate("/tasks/new")}>Create</button>
+            </div>
           )}
           {showSortButton && (
             <div className="sort-dropdown-container">
