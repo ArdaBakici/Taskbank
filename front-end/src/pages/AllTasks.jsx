@@ -14,6 +14,7 @@ export default function AllTasks({
   filterBy = null,
   filterValue = null,
   buttons_bitmap = 0b1111, // Default: all buttons shown (bit 0: Create, bit 1: Sort, bit 2: Filter, bit 3: Custom actions)
+  hideFilterDisplay = false, // Hide the permanent filterBy/filterValue display
 }) {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
@@ -288,7 +289,7 @@ export default function AllTasks({
               </button>
               {showFilterMenu && (
                 <div className="sort-dropdown-menu">
-                  {filterBy && filterValue && (
+                  {!hideFilterDisplay && filterBy && filterValue && (
                     <div className="filter-permanent-notice">
                       Filtering by {filterBy}: {filterValue}
                     </div>
@@ -350,7 +351,7 @@ export default function AllTasks({
       </div>
 
       {/* Display current sort and filter status */}
-      {(sortingMethod !== 'smart' || Object.keys(additionalFilters).length > 0 || (filterBy && filterValue)) && (
+      {(sortingMethod !== 'smart' || Object.keys(additionalFilters).length > 0 || (!hideFilterDisplay && filterBy && filterValue)) && (
         <div style={{ 
           padding: '8px 12px', 
           backgroundColor: '#f3f4f6', 
@@ -364,11 +365,11 @@ export default function AllTasks({
               <strong>Sorted by:</strong> {sortOptions.find(opt => opt.value === sortingMethod)?.label}
             </div>
           )}
-          {(Object.keys(additionalFilters).length > 0 || (filterBy && filterValue)) && (
+          {(Object.keys(additionalFilters).length > 0 || (!hideFilterDisplay && filterBy && filterValue)) && (
             <div>
               <strong>Filtered by:</strong>{' '}
-              {filterBy && filterValue && `${filterBy}: ${filterValue}`}
-              {filterBy && filterValue && Object.keys(additionalFilters).length > 0 && ', '}
+              {!hideFilterDisplay && filterBy && filterValue && `${filterBy}: ${filterValue}`}
+              {!hideFilterDisplay && filterBy && filterValue && Object.keys(additionalFilters).length > 0 && ', '}
               {Object.entries(additionalFilters).map(([key, value], index) => (
                 <span key={key}>
                   {key}: {value}
