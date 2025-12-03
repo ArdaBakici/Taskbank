@@ -84,10 +84,8 @@ export default function AllProjects({
   };
 
   const handleSortChange = (method) => {
-    
-    setShowSortMenu(false);
-    if (method === sortingMethod) return;
     setSortingMethod(method);
+    setShowSortMenu(false);
     setLoading(true);
   };
 
@@ -113,8 +111,7 @@ export default function AllProjects({
 
           <div className="sort-dropdown-container">
             <button onClick={() => setShowSortMenu(!showSortMenu)}>
-              Sort {sortingMethod !== 'id' &&
-                `(${sortOptions.find(opt => opt.value === sortingMethod)?.label})`}
+              Sort
             </button>
 
             {showSortMenu && (
@@ -138,13 +135,24 @@ export default function AllProjects({
         </div>
       </div>
 
+      {/* Display current sort status */}
+      {sortingMethod !== 'id' && (
+        <div style={{ 
+          padding: '8px 12px', 
+          backgroundColor: '#f3f4f6', 
+          borderRadius: '6px', 
+          marginBottom: '12px',
+          fontSize: '0.9rem',
+          color: '#4b5563'
+        }}>
+          <strong>Sorted by:</strong> {sortOptions.find(opt => opt.value === sortingMethod)?.label}
+        </div>
+      )}
+
 
       <div className="project-list">
         {loading && <p>Loading projects...</p>}
         {error && <p>{error}</p>}
-        {!loading && !error && projects.length === 0 && (
-          <p>No projects found.</p>
-        )}
         {!loading &&
           !error &&
           projects.map((p) => (
@@ -156,7 +164,7 @@ export default function AllProjects({
             >
               <div>{p.name}</div>
               <div>{renderTags(p.tags)}</div>
-              <div>{p.deadline ? p.deadline.slice(0, 10) : "No deadline"}</div>
+              <div>{p.deadline}</div>
             </button>
           ))}
       </div>
