@@ -262,7 +262,7 @@ export default function AllTasks({
           {showSortButton && (
             <div className="sort-dropdown-container">
               <button onClick={() => setShowSortMenu(!showSortMenu)}>
-                Sort {sortingMethod !== 'smart' && `(${sortOptions.find(opt => opt.value === sortingMethod)?.label})`}
+                Sort
               </button>
               {showSortMenu && (
                 <div className="sort-dropdown-menu">
@@ -282,7 +282,7 @@ export default function AllTasks({
           {showFilterButton && (
             <div className="filter-dropdown-container">
               <button onClick={() => setShowFilterMenu(!showFilterMenu)}>
-                {getFilterButtonLabel()}
+                Filter
               </button>
               {showFilterMenu && (
                 <div className="sort-dropdown-menu">
@@ -346,6 +346,37 @@ export default function AllTasks({
           {showCustomActions && renderActions && renderActions(navigate)}
         </div>
       </div>
+
+      {/* Display current sort and filter status */}
+      {(sortingMethod !== 'smart' || Object.keys(additionalFilters).length > 0 || (filterBy && filterValue)) && (
+        <div style={{ 
+          padding: '8px 12px', 
+          backgroundColor: '#f3f4f6', 
+          borderRadius: '6px', 
+          marginBottom: '12px',
+          fontSize: '0.9rem',
+          color: '#4b5563'
+        }}>
+          {sortingMethod !== 'smart' && (
+            <div>
+              <strong>Sorted by:</strong> {sortOptions.find(opt => opt.value === sortingMethod)?.label}
+            </div>
+          )}
+          {(Object.keys(additionalFilters).length > 0 || (filterBy && filterValue)) && (
+            <div>
+              <strong>Filtered by:</strong>{' '}
+              {filterBy && filterValue && `${filterBy}: ${filterValue}`}
+              {filterBy && filterValue && Object.keys(additionalFilters).length > 0 && ', '}
+              {Object.entries(additionalFilters).map(([key, value], index) => (
+                <span key={key}>
+                  {key}: {value}
+                  {index < Object.keys(additionalFilters).length - 1 && ', '}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
    <div className="task-list">
         {loading && <p>Loading tasks...</p>}

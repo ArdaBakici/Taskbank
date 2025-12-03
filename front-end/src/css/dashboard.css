@@ -77,7 +77,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
 }
 
 .dashboard-title-actions h2 {
@@ -846,7 +845,6 @@
   border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 1rem;
-  margin-bottom: 1.25rem;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
