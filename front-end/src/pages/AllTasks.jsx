@@ -136,7 +136,6 @@ export default function AllTasks({
       "Not Started": <FiCircle className="status-icon-notstarted" />,
       "Completed": <FiCheckCircle className="status-icon-completed" />,
       "On Hold": <FiPauseCircle className="status-icon-onhold" />,
-      "Blocked": <FiAlertCircle className="status-icon-blocked" />,
     };
     return icons[status] || <FiFileText className="status-icon-default" />;
   };
@@ -224,7 +223,6 @@ export default function AllTasks({
         { value: 'Not Started', label: 'Not Started' },
         { value: 'Completed', label: 'Completed' },
         { value: 'On Hold', label: 'On Hold' },
-        { value: 'Blocked', label: 'Blocked' },
       ]
     },
     {

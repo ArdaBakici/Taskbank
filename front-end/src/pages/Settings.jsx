@@ -19,6 +19,9 @@ export default function Settings() {
 
   const handleOptionClick = (option) => {
     switch (option) {
+      case "Change Username":
+        navigate("/change-username");
+        break;
       case "Change Password":
         setShowPopup(true); // show popup instead of alert
         break;
@@ -33,6 +36,7 @@ export default function Settings() {
 
   const profileOptions = [
     { name: "Username", icon: <FiUser />, disabled: true, value: user?.username || "Loading..." },
+    { name: "Change Username", icon: <FiUser /> },
     { name: "Change Password", icon: <FiLock /> },
     { name: "Log Out", icon: <FiLogOut /> },
   ];

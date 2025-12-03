@@ -53,7 +53,6 @@ const calculateSmartScore = (task) => {
     "Not Started": 100,
     Completed: -1000, // Move completed tasks to bottom
     "On Hold": 50,
-    Blocked: 75,
   };
   score += statusScores[task.status] || 0;
 
