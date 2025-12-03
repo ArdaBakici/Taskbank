@@ -19,13 +19,15 @@ export default function Home() {
             embedded
             limit={5}
             renderActions={(navigateFn) => (
-              <button
+              <div className="sort-dropdown-container">
+                <button
                 className="search-button"
                 title="Search Tasks"
                 onClick={() => navigateFn("/tasks/search")}
               >
                 <FiSearch size={18} />
               </button>
+              </div>
             )}
           />
 
@@ -42,6 +44,7 @@ export default function Home() {
             embedded
             limit={5}
             renderActions={(navigateFn) => (
+              <div className="sort-dropdown-container">
               <button
                 className="search-button"
                 title="Search Projects"
@@ -49,6 +52,7 @@ export default function Home() {
               >
                 <FiSearch size={18} />
               </button>
+              </div>
             )}
           />
 

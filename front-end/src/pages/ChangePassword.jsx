@@ -77,56 +77,98 @@ const handleSubmit = async (e) => {
         <form className="change-password-form" onSubmit={handleSubmit}>
           <label htmlFor="oldPassword">
             Current Password
-            <input
-              type={showOld ? "text" : "password"}
-              id="oldPassword"
-              value={oldPassword}
-              onChange={(e) => setOldPassword(e.target.value)}
-              placeholder="Enter current password"
-            />
-            <button
-              type="button"
-              className="toggle-password-btn"
-              onClick={() => setShowOld(!showOld)}
-            >
-              {showOld ? "Hide" : "Show"}
-            </button>
+            <div style={{ marginBottom: "1.25rem", position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <input
+                type={showOld ? "text" : "password"}
+                id="oldPassword"
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                placeholder="Enter current password"
+                style={{ paddingRight: '60px', flex: 1 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowOld(!showOld)}
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  padding: '6px 12px',
+                  fontSize: '0.8rem',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  background: 'white',
+                  cursor: 'pointer',
+                  color: '#666',
+                  fontWeight: '500'
+                }}
+              >
+                {showOld ? "Hide" : "Show"}
+              </button>
+            </div>
           </label>
 
          <label htmlFor="newPassword">
             New Password
-            <input
-              type={showNew ? "text" : "password"}
-              id="newPassword"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Enter new password"
-            />
-            <button
-              type="button"
-              className="toggle-password-btn"
-              onClick={() => setShowNew(!showNew)}
-            >
-              {showNew ? "Hide" : "Show"}
-            </button>
+            <div style={{ marginBottom: "1.25rem", position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <input
+                type={showNew ? "text" : "password"}
+                id="newPassword"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
+                style={{ paddingRight: '60px', flex: 1 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNew(!showNew)}
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  padding: '6px 12px',
+                  fontSize: '0.8rem',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  background: 'white',
+                  cursor: 'pointer',
+                  color: '#666',
+                  fontWeight: '500'
+                }}
+              >
+                {showNew ? "Hide" : "Show"}
+              </button>
+            </div>
           </label>
 
          <label htmlFor="confirmPassword">
             Confirm New Password
-            <input
-              type={showConfirm ? "text" : "password"}
-              id="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm new password"
-            />
-            <button
-              type="button"
-              className="toggle-password-btn"
-              onClick={() => setShowConfirm(!showConfirm)}
-            >
-              {showConfirm ? "Hide" : "Show"}
-            </button>
+            <div style={{ marginBottom: "1.25rem", position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <input
+                type={showConfirm ? "text" : "password"}
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+                style={{ paddingRight: '60px', flex: 1 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm(!showConfirm)}
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  padding: '6px 12px',
+                  fontSize: '0.8rem',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  background: 'white',
+                  cursor: 'pointer',
+                  color: '#666',
+                  fontWeight: '500'
+                }}
+              >
+                {showConfirm ? "Hide" : "Show"}
+              </button>
+            </div>
           </label>
 
           {status.error && <p className="error-message">{status.error}</p>}

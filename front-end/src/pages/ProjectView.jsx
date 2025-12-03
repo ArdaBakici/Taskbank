@@ -101,6 +101,7 @@ export default function ProjectView() {
               filterValue={id} 
               showFooter={false}
               buttons_bitmap={0b0110} // Show Sort (bit 1) and Filter (bit 2) buttons
+              hideFilterDisplay={true}
             />
 
             <button
