@@ -68,6 +68,20 @@ export default function TaskView() {
   const handleEdit = () => navigate(`/tasks/edit/${id}`);
   const handleBack = () => navigate(-1);
 
+  const formatDeadline = (deadline) => {
+    if (!deadline) return "";
+    try {
+      const date = new Date(deadline);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch (e) {
+      return "Invalid date";
+    }
+  };
+
   if (loading) {
     return (
       <div className="dashboard-container">
@@ -124,7 +138,7 @@ export default function TaskView() {
             </div>
             <div className="form-group">
               <label>Deadline</label>
-              <p>{task.deadline ? new Date(task.deadline).toLocaleDateString() : ""}</p>
+              <p>{formatDeadline(task.deadline)}</p>
             </div>
             <div className="form-group">
               <label>Urgency</label>

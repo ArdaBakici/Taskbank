@@ -59,6 +59,20 @@ export default function ProjectSearch() {
     return Array.isArray(tagList) ? tagList.join(", ") : tagList;
   };
 
+  const formatDeadline = (deadline) => {
+    if (!deadline) return "—";
+    try {
+      const date = new Date(deadline);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch (e) {
+      return "Invalid date";
+    }
+  };
+
   return (
     <div className="dashboard-container">
       <DashboardHeader />
@@ -95,7 +109,7 @@ export default function ProjectSearch() {
               >
                 <div>{project.name}</div>
                 <div>{renderTags(project.tags)}</div>
-                <div>{project.deadline || "—"}</div>
+                <div>{formatDeadline(project.deadline)}</div>
               </button>
             ))}
 
