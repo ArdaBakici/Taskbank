@@ -109,6 +109,20 @@ export default function SearchTasks() {
     return Array.isArray(tagList) ? tagList.join(", ") : tagList;
   };
 
+  const formatDeadline = (deadline) => {
+    if (!deadline) return "No deadline";
+    try {
+      const date = new Date(deadline);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch (e) {
+      return "Invalid date";
+    }
+  };
+
   return (
     <div className="dashboard-container">
       <DashboardHeader />
@@ -144,7 +158,7 @@ export default function SearchTasks() {
               >
                 <div>{task.name}</div>
                 <div>{renderTags(task.tags)}</div>
-                <div>{task.deadline}</div>
+                <div>{formatDeadline(task.deadline)}</div>
               </button>
             ))}
           {!loading && !error && tasks.length === 0 && <p>No tasks found.</p>}

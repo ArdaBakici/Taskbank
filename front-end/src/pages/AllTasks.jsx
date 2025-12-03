@@ -115,6 +115,20 @@ export default function AllTasks({
     return Array.isArray(tagList) ? tagList.join(", ") : tagList;
   };
 
+  const formatDeadline = (deadline) => {
+    if (!deadline) return "No deadline";
+    try {
+      const date = new Date(deadline);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch (e) {
+      return "Invalid date";
+    }
+  };
+
   const getStatusIcon = (status) => {
     const icons = {
       "In Progress": <FiLoader className="status-icon-inprogress" />,
@@ -361,7 +375,7 @@ export default function AllTasks({
                 {t.name}
               </div>
               <div>{renderTags(t.tags)}</div>
-              <div>{t.deadline ? t.deadline.slice(0, 10) : "No deadline"}</div>
+              <div>{formatDeadline(t.deadline)}</div>
             </button>
           ))}
       </div>

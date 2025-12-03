@@ -83,6 +83,20 @@ export default function AllProjects({
     return Array.isArray(tagList) ? tagList.join(", ") : tagList;
   };
 
+  const formatDeadline = (deadline) => {
+    if (!deadline) return "No deadline";
+    try {
+      const date = new Date(deadline);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch (e) {
+      return "Invalid date";
+    }
+  };
+
   const handleSortChange = (method) => {
     
     setShowSortMenu(false);
@@ -156,7 +170,7 @@ export default function AllProjects({
             >
               <div>{p.name}</div>
               <div>{renderTags(p.tags)}</div>
-              <div>{p.deadline ? p.deadline.slice(0, 10) : "No deadline"}</div>
+              <div>{formatDeadline(p.deadline)}</div>
             </button>
           ))}
       </div>
