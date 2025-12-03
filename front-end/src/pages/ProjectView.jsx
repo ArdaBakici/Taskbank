@@ -51,6 +51,20 @@ export default function ProjectView() {
   const handleReturn = () => navigate(-1);
   const handleEdit = () => navigate(`/projects/edit/${id}`);
 
+  const formatDeadline = (deadline) => {
+    if (!deadline) return "No deadline set";
+    try {
+      const date = new Date(deadline);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch (e) {
+      return "Invalid date";
+    }
+  };
+
   return (
     <div className="dashboard-container">
       <DashboardHeader />
@@ -72,7 +86,7 @@ export default function ProjectView() {
             {/* Project description and details */}
             <div className="project-details">
               <p>{project.description}</p>
-              <p><strong>Deadline:</strong> {project.deadline ? project.deadline.slice(0, 10) : "No deadline set"}</p>
+              <p><strong>Deadline:</strong> {formatDeadline(project.deadline)}</p>
               <p><strong>Urgency:</strong> {project.urgency}</p>
             </div>
 

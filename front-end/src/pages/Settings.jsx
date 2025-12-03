@@ -1,13 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/dashboard.css";
-import { logout } from "../utils/auth";
+import { logout, getUser } from "../utils/auth";
 import DashboardHeader from "../components/DashboardHeader";
 import { FiUser, FiLock, FiLogOut } from "react-icons/fi";
 
 export default function Settings() {
   const navigate = useNavigate();
-  const [showPopup, setShowPopup] = useState(false); // state to control popup visibility
+  const [showPopup, setShowPopup] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const currentUser = getUser();
+    if (currentUser) {
+      setUser(currentUser);
+    }
+  }, []);
 
   const handleOptionClick = (option) => {
     switch (option) {
@@ -24,7 +32,7 @@ export default function Settings() {
   };
 
   const profileOptions = [
-    { name: "Name", icon: <FiUser />, disabled: true },
+    { name: "Username", icon: <FiUser />, disabled: true, value: user?.username || "Loading..." },
     { name: "Change Password", icon: <FiLock /> },
     { name: "Log Out", icon: <FiLogOut /> },
   ];
@@ -49,6 +57,7 @@ export default function Settings() {
                 <span className="settings-icon">{option.icon}</span>
                 <span className="settings-name">{option.name}</span>
               </div>
+              {option.value && <span className="settings-value">{option.value}</span>}
             </li>
           ))}
         </ul>
