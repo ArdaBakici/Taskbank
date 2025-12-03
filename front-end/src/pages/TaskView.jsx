@@ -147,6 +147,13 @@ export default function TaskView() {
           </div>
 
           <div className="form-row">
+            <div className="form-group">
+              <label>Context</label>
+              <p>{task.context ? task.context.charAt(0).toUpperCase() + task.context.slice(1).replace('-', ' ') : "N/A"}</p>
+            </div>
+          </div>
+
+          <div className="form-row">
             <div className="form-group full-width">
               <label>Project</label>
               <p>{project ? project.name : "Unassigned"}</p>
