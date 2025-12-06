@@ -5,7 +5,17 @@ import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import DashboardHeader from "../components/DashboardHeader";
 
+const getNextStatus= (currentStatus)=>{
+    const statusCycle = {
+    "Not Started": "In Progress",
+    "In Progress": "Completed",
+    "Completed": "In Progress",
+    "On Hold": "In Progress",
+  };
+  return statusCycle[currentStatus] || "Not Started";
+}
 export default function AllTasks({
+
   embedded = false,
 
   limit,
@@ -139,6 +149,8 @@ export default function AllTasks({
     };
     return icons[status] || <FiFileText className="status-icon-default" />;
   };
+
+
   const parseLocalDate = (dateStr) => {
     if (!dateStr) return null;
     const [year, month, day] = dateStr.split("-").map(Number);
@@ -166,6 +178,29 @@ export default function AllTasks({
     const diffDays = (d - today) / (1000 * 60 * 60 * 24);
     return diffDays === 1;
   };
+
+  const handleStatusClick= async(e, taskId, currentStatus)=>{
+    e.stopPropagation(); 
+    const nextStatus= getNextStatus(currentStatus);
+    try{
+    const response = await authenticatedFetch(`/tasks/${taskId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: nextStatus }),
+    });
+    if(!response.ok){
+      throw new Error("failed to update status")
+    }
+    setTasks(prevTasks =>
+      prevTasks.map(task =>
+        task._id === taskId ? { ...task, status: nextStatus } : task
+      )
+    );
+
+    }
+  catch (error){
+    console.error("failed to update status", error);
+  } }
+
 
   const handleSortChange = (method) => {
     
@@ -401,7 +436,9 @@ export default function AllTasks({
               onClick={() => navigate(`/task/${t._id}`)}
             >
               <div>
-                <span className="task-status-icon">
+                <span className="task-status-icon"
+                onClick={(e)=>{handleStatusClick(e, t._id, t.status)}}
+                style= {{cursor: "pointer" }}>
                   {getStatusIcon(t.status)}
                 </span>
                 {t.name}
