@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import DashboardHeader from "../components/DashboardHeader";
+import CircularProgress from "../components/CircularProgress";
 
 export default function Stats() {
   const navigate = useNavigate();
@@ -14,47 +15,21 @@ export default function Stats() {
     let isMounted = true;
 
     async function fetchStats() {
-      const startedAt = performance.now();
-      console.log("[Stats] ▶ fetch", { url: '/stats' });
-      
       try {
         const response = await authenticatedFetch('/stats');
-        console.log("[Stats] ◀ response", {
-          url: '/stats',
-          status: response.status,
-          ok: response.ok,
-        });
-        
         if (!response.ok) {
           throw new Error("Failed to load stats");
         }
-        
         const data = await response.json();
-        console.log("[Stats] ✓ parsed stats", {
-          totals: {
-            tasks: data.totalTasks,
-            projects: data.totalProjects,
-          },
-          elapsedMs: Math.round(performance.now() - startedAt),
-        });
-        
         if (isMounted) {
           setStats(data);
         }
       } catch (err) {
-        console.error("[Stats] ✖ fetch failed", {
-          url: '/stats',
-          message: err.message,
-          elapsedMs: Math.round(performance.now() - startedAt),
-        });
+        console.error("Stats error:", err);
         if (isMounted) {
           setError(err.message);
         }
       } finally {
-        console.log("[Stats] ▪ cycle complete", {
-          url: '/stats',
-          elapsedMs: Math.round(performance.now() - startedAt),
-        });
         if (isMounted) {
           setIsLoading(false);
         }
@@ -126,20 +101,57 @@ export default function Stats() {
               </strong>
             </div>
 
-            {/* Performance Metrics Section */}
+            {/* Performance Metrics Section with Circular Progress */}
             <h3 style={{ marginTop: '2rem' }}>Performance Metrics</h3>
-            <div className="stats-metric">
-              <span>Completion Rate:</span>
-              <strong>{metrics.completionRate}%</strong>
+            
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-around', 
+              flexWrap: 'wrap',
+              gap: '2rem',
+              margin: '2rem 0'
+            }}>
+              <CircularProgress
+                percentage={metrics.completionRate}
+                size={140}
+                strokeWidth={12}
+                color="#4ade80"
+                label="Completion"
+                sublabel="Rate"
+              />
+              
+              <CircularProgress
+                percentage={metrics.onTimeRate}
+                size={140}
+                strokeWidth={12}
+                color="#3b82f6"
+                label="On-Time"
+                sublabel="Completion"
+              />
+              
+              <div style={{ 
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <div style={{ 
+                  fontSize: '2.5rem',
+                  fontWeight: '700',
+                  color: '#111827'
+                }}>
+                  {metrics.avgTasksPerDay}
+                </div>
+                <div style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280',
+                  marginTop: '0.5rem'
+                }}>
+                  Tasks/Day
+                </div>
+              </div>
             </div>
-            <div className="stats-metric">
-              <span>On-Time Completion:</span>
-              <strong>{metrics.onTimeRate}%</strong>
-            </div>
-            <div className="stats-metric">
-              <span>Avg Tasks/Day:</span>
-              <strong>{metrics.avgTasksPerDay}</strong>
-            </div>
+
             <div className="stats-metric">
               <span>Dominant Task Status:</span>
               <strong>{metrics.dominantTaskStatus}</strong>
@@ -186,10 +198,6 @@ export default function Stats() {
     </div>
   );
 }
-
-
-
-
 
 
 /* Fetches `${REACT_APP_API_BASE_URL || ""}/api/stats` so devs can point the React app at whatever backend they have running, replacing the mock metrics/graph with live aggregates without hand-editing the component, emits detailed console diagnostics (URL, status, totals, timings) each cycle for proactive debugging, and renders each status bucket with a count chip plus a labeled bar so the user can see which status each column represents. */
