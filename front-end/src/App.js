@@ -17,6 +17,7 @@ import TaskSearch from "./pages/TaskSearch";
 import ChangePassword from "./pages/ChangePassword";
 import ProjectSearch from "./pages/ProjectSearch";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ChangeUsername from "./pages/ChangeUsername";
 
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
         <Route path="/stats" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+        <Route path="/change-username" element={<ProtectedRoute><ChangeUsername /></ProtectedRoute>} />
         <Route path="/tasks" element={<ProtectedRoute><AllTasks /></ProtectedRoute>} />
         <Route path="/tasks/new" element={<ProtectedRoute><AddTask /></ProtectedRoute>} />
         <Route path="/tasks/search" element={<ProtectedRoute><TaskSearch /></ProtectedRoute>} />
