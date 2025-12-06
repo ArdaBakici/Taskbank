@@ -372,6 +372,10 @@ router.post(
     // --- PROJECT RELATION (ObjectId) ---
     const projectId = payload.projectId || null;
 
+    // Set completedAt if creating a task that's already completed
+    const completedAt = payload.status === "Completed" ? new Date() : null;
+
+
     // --- CREATE TASK ---
     const newTask = await Task.create({
       title: payload.title,
