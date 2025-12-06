@@ -490,6 +490,33 @@ router.patch(
       }
     }
 
+    // Handle completedAt based on status changes
+    if (updates.status) {
+        // First, get the current task to check its current status
+        const currentTask = await Task.findOne({
+          _id: id,
+          userId: req.user.userId,
+        });
+
+        if (!currentTask) {
+          return res.status(404).json({
+            success: false,
+            message: `Task with id ${id} not found.`,
+          });
+        }
+
+        // If changing TO "Completed" and it wasn't completed before
+        if (updates.status === "Completed" && currentTask.status !== "Completed") {
+          updates.completedAt = new Date();
+        }
+
+        // If changing FROM "Completed" to something else
+        if (updates.status !== "Completed" && currentTask.status === "Completed") {
+          updates.completedAt = null; // Clear the completion date
+        }
+      }
+
+
     const updatedTask = await Task.findOneAndUpdate(
       { _id: id, userId: req.user.userId },
       updates,

@@ -35,11 +35,14 @@ const taskSchema = new Schema(
       default: "medium",
     },
     order: { type: Number, default: 0 },
+    completedAt: { type: Date, default: null },
+
   },
   {
     timestamps: true,
     collection: "tasks",
   }
+
 );
 
 taskSchema.index({ title: "text", description: "text" });
