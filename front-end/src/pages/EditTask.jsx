@@ -334,8 +334,7 @@ export default function EditTask() {
                   <option value="home">Home</option>
                   <option value="daily-life">Daily Life</option>
                   <option value="other">Other</option>
-                </select>
-              </div>
+                </select>              </div>
             </div>
 
             {/* Actions */}
