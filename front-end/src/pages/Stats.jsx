@@ -1,9 +1,3 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { authenticatedFetch } from "../utils/auth";
-import "../css/dashboard.css";
-import DashboardHeader from "../components/DashboardHeader";
-
 export default function Stats() {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
@@ -15,9 +9,8 @@ export default function Stats() {
 
     async function fetchStats() {
       const startedAt = performance.now();
-      console.log("[Stats] ▶ fetch", {
-        url: '/stats',
-      });
+      console.log("[Stats] ▶ fetch", { url: '/stats' });
+      
       try {
         const response = await authenticatedFetch('/stats');
         console.log("[Stats] ◀ response", {
@@ -25,19 +18,20 @@ export default function Stats() {
           status: response.status,
           ok: response.ok,
         });
+        
         if (!response.ok) {
           throw new Error("Failed to load stats");
         }
+        
         const data = await response.json();
-        console.log("[Stats] ✔ parsed stats", {
+        console.log("[Stats] ✓ parsed stats", {
           totals: {
             tasks: data.totalTasks,
             projects: data.totalProjects,
           },
-          taskBuckets: data.tasksByStatus,
-          projectBuckets: data.projectsByStatus,
           elapsedMs: Math.round(performance.now() - startedAt),
         });
+        
         if (isMounted) {
           setStats(data);
         }
@@ -51,7 +45,7 @@ export default function Stats() {
           setError(err.message);
         }
       } finally {
-        console.log("[Stats] ■ cycle complete", {
+        console.log("[Stats] ▪ cycle complete", {
           url: '/stats',
           elapsedMs: Math.round(performance.now() - startedAt),
         });
@@ -69,18 +63,23 @@ export default function Stats() {
 
   const metrics = useMemo(() => {
     const tasksByStatus = stats?.tasksByStatus ?? {};
-    const projectsByStatus = stats?.projectsByStatus ?? {};
 
     const mostCommonTaskStatus = Object.entries(tasksByStatus).sort(
       (a, b) => b[1] - a[1]
     )[0]?.[0];
 
     return {
-      tasksTracked: stats?.totalTasks ?? 0,
-      projectsTracked: stats?.totalProjects ?? 0,
+      totalTasks: stats?.totalTasks ?? 0,
+      totalProjects: stats?.totalProjects ?? 0,
+      completedTasks: stats?.completedTasks ?? 0,
+      activeTasks: stats?.activeTasks ?? 0,
+      overdueTasks: stats?.overdueTasks ?? 0,
+      completionRate: stats?.completionRate ?? 0,
+      onTimeRate: stats?.onTimeRate ?? 0,
+      avgTasksPerDay: stats?.avgTasksPerDay ?? 0,
       dominantTaskStatus: mostCommonTaskStatus || "N/A",
       tasksStatusBreakdown: Object.entries(tasksByStatus),
-      projectsStatusBreakdown: Object.entries(projectsByStatus),
+      projectsStatusBreakdown: Object.entries(stats?.projectsByStatus ?? {}),
     };
   }, [stats]);
 
@@ -90,24 +89,58 @@ export default function Stats() {
 
       <main className="stats-main">
         <h2>Statistics</h2>
+        
         {isLoading && <p>Loading stats...</p>}
         {error && <p className="error-text">{error}</p>}
+        
         {!isLoading && !error && (
           <>
+            {/* Overview Section */}
+            <h3>Overview</h3>
             <div className="stats-metric">
               <span>Total Tasks:</span>
-              <strong>{metrics.tasksTracked}</strong>
+              <strong>{metrics.totalTasks}</strong>
             </div>
             <div className="stats-metric">
               <span>Total Projects:</span>
-              <strong>{metrics.projectsTracked}</strong>
+              <strong>{metrics.totalProjects}</strong>
+            </div>
+            <div className="stats-metric">
+              <span>Active Tasks:</span>
+              <strong>{metrics.activeTasks}</strong>
+            </div>
+            <div className="stats-metric">
+              <span>Completed Tasks:</span>
+              <strong>{metrics.completedTasks}</strong>
+            </div>
+            <div className="stats-metric">
+              <span>Overdue Tasks:</span>
+              <strong style={{ color: metrics.overdueTasks > 0 ? '#dc2626' : 'inherit' }}>
+                {metrics.overdueTasks}
+              </strong>
+            </div>
+
+            {/* Performance Metrics Section */}
+            <h3 style={{ marginTop: '2rem' }}>Performance Metrics</h3>
+            <div className="stats-metric">
+              <span>Completion Rate:</span>
+              <strong>{metrics.completionRate}%</strong>
+            </div>
+            <div className="stats-metric">
+              <span>On-Time Completion:</span>
+              <strong>{metrics.onTimeRate}%</strong>
+            </div>
+            <div className="stats-metric">
+              <span>Avg Tasks/Day:</span>
+              <strong>{metrics.avgTasksPerDay}</strong>
             </div>
             <div className="stats-metric">
               <span>Dominant Task Status:</span>
               <strong>{metrics.dominantTaskStatus}</strong>
             </div>
 
-            <h3>Task Status Breakdown</h3>
+            {/* Task Status Breakdown */}
+            <h3 style={{ marginTop: '2rem' }}>Task Status Breakdown</h3>
             <div className="stats-graph">
               {metrics.tasksStatusBreakdown.length === 0 && <p>No task data yet.</p>}
               {metrics.tasksStatusBreakdown.map(([status, count]) => (
@@ -124,7 +157,8 @@ export default function Stats() {
               ))}
             </div>
 
-            <h3>Project Status Breakdown</h3>
+            {/* Project Status Breakdown */}
+            <h3 style={{ marginTop: '2rem' }}>Project Status Breakdown</h3>
             <ul className="stats-list">
               {metrics.projectsStatusBreakdown.length === 0 && <li>No project data yet.</li>}
               {metrics.projectsStatusBreakdown.map(([status, count]) => (
@@ -146,5 +180,3 @@ export default function Stats() {
     </div>
   );
 }
-
-/* Fetches `${REACT_APP_API_BASE_URL || ""}/api/stats` so devs can point the React app at whatever backend they have running, replacing the mock metrics/graph with live aggregates without hand-editing the component, emits detailed console diagnostics (URL, status, totals, timings) each cycle for proactive debugging, and renders each status bucket with a count chip plus a labeled bar so the user can see which status each column represents. */
