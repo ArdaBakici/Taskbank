@@ -1,3 +1,9 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { authenticatedFetch } from "../utils/auth";
+import "../css/dashboard.css";
+import DashboardHeader from "../components/DashboardHeader";
+
 export default function Stats() {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
@@ -180,3 +186,10 @@ export default function Stats() {
     </div>
   );
 }
+
+
+
+
+
+
+/* Fetches `${REACT_APP_API_BASE_URL || ""}/api/stats` so devs can point the React app at whatever backend they have running, replacing the mock metrics/graph with live aggregates without hand-editing the component, emits detailed console diagnostics (URL, status, totals, timings) each cycle for proactive debugging, and renders each status bucket with a count chip plus a labeled bar so the user can see which status each column represents. */
