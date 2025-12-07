@@ -372,6 +372,10 @@ router.post(
     // --- PROJECT RELATION (ObjectId) ---
     const projectId = payload.projectId || null;
 
+    // Set completedAt if creating a task that's already completed
+    const completedAt = payload.status === "Completed" ? new Date() : null;
+
+
     // --- CREATE TASK ---
     const newTask = await Task.create({
       title: payload.title,
@@ -489,6 +493,33 @@ router.patch(
         updates.projectId = null;
       }
     }
+
+    // Handle completedAt based on status changes
+    if (updates.status) {
+        // First, get the current task to check its current status
+        const currentTask = await Task.findOne({
+          _id: id,
+          userId: req.user.userId,
+        });
+
+        if (!currentTask) {
+          return res.status(404).json({
+            success: false,
+            message: `Task with id ${id} not found.`,
+          });
+        }
+
+        // If changing TO "Completed" and it wasn't completed before
+        if (updates.status === "Completed" && currentTask.status !== "Completed") {
+          updates.completedAt = new Date();
+        }
+
+        // If changing FROM "Completed" to something else
+        if (updates.status !== "Completed" && currentTask.status === "Completed") {
+          updates.completedAt = null; // Clear the completion date
+        }
+      }
+
 
     const updatedTask = await Task.findOneAndUpdate(
       { _id: id, userId: req.user.userId },
