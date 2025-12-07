@@ -108,7 +108,11 @@ router.get("/", async (req, res) => {
       const val = String(filterValue);
       switch (filterType.toLowerCase()) {
         case "status":
-          mongoFilter.status = val;
+          if (val === "uncompleted") {
+            mongoFilter.status = { $ne: "Completed" };
+          } else {
+            mongoFilter.status = val;
+          }
           break;
 
         case "context":

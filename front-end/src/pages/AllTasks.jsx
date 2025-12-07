@@ -223,6 +223,7 @@ export default function AllTasks({
         { value: 'Not Started', label: 'Not Started' },
         { value: 'Completed', label: 'Completed' },
         { value: 'On Hold', label: 'On Hold' },
+        { value: 'uncompleted', label: 'Uncompleted' },
       ]
     },
     {
