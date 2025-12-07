@@ -249,9 +249,12 @@ export default function AllTasks({
 
   ];
   // Hide Manual Order only on Home page
+  // - Home page preview
+// - All Tasks page
+// Show ONLY on Project View (filterBy === "project")
   const isHomePageEmbedded = embedded && !filterBy && limit;
-
-  if (!isHomePageEmbedded) {
+  const isProjectView = filterBy === "project";
+  if (isProjectView) {
   sortOptions.push({ value: 'order', label: 'Manual Order' });
   }
   const filterOptions = [
