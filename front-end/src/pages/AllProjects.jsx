@@ -104,7 +104,7 @@ export default function AllProjects({
   };
 
   const sortOptions = [
-    { value: 'id', label: 'ID (Default)' },
+    { value: 'id', label: 'ID' },
     { value: 'deadline', label: 'Deadline (Earliest)' },
     { value: 'deadline_desc', label: 'Deadline (Latest)' },
     { value: 'urgency_desc', label: 'Urgency (High to Low)' },
