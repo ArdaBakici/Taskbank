@@ -16,6 +16,8 @@ export default function AllProjects({
   const [error, setError] = useState(null);
   const [sortingMethod, setSortingMethod] = useState(embedded ? 'deadline' : 'id');
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [statusFilter, setStatusFilter] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -32,6 +34,11 @@ export default function AllProjects({
         
         // Always add sorting method
         params.append('sorting_method', sortingMethod);
+        
+        // Add status filter if set
+        if (statusFilter) {
+          params.append('status', statusFilter);
+        }
         
         const url = `/projects?${params.toString()}`;
         const response = await authenticatedFetch(url);
@@ -62,7 +69,7 @@ export default function AllProjects({
     return () => {
       isMounted = false;
     };
-  }, [embedded, limit, sortingMethod]);
+  }, [embedded, limit, sortingMethod, statusFilter]);
 
   // Close sort menu when clicking outside
   useEffect(() => {
@@ -70,13 +77,16 @@ export default function AllProjects({
       if (showSortMenu && !event.target.closest('.sort-dropdown-container')) {
         setShowSortMenu(false);
       }
+      if (showFilterMenu && !event.target.closest('.filter-dropdown-container')) {
+        setShowFilterMenu(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showSortMenu]);
+  }, [showSortMenu, showFilterMenu]);
 
   const renderTags = (tagList) => {
     if (!tagList || tagList.length === 0) return "—";
@@ -103,13 +113,24 @@ export default function AllProjects({
     setLoading(true);
   };
 
+  const handleFilterChange = (status) => {
+    setStatusFilter(status);
+    setShowFilterMenu(false);
+    setLoading(true);
+  };
+
+  const clearFilter = () => {
+    setStatusFilter(null);
+    setShowFilterMenu(false);
+    setLoading(true);
+  };
+
   const sortOptions = [
     { value: 'id', label: 'ID (Default)' },
     { value: 'deadline', label: 'Deadline (Earliest)' },
     { value: 'deadline_desc', label: 'Deadline (Latest)' },
     { value: 'urgency_desc', label: 'Urgency (High to Low)' },
     { value: 'urgency_asc', label: 'Urgency (Low to High)' },
-    { value: 'status', label: 'Status' },
     { value: 'name', label: 'Name (A-Z)' },
   ];
 
@@ -146,14 +167,71 @@ export default function AllProjects({
             )}
           </div>
 
+          <div className="filter-dropdown-container">
+            <button onClick={() => setShowFilterMenu(!showFilterMenu)}>
+              Filter
+            </button>
+
+            {showFilterMenu && (
+              <div className="sort-dropdown-menu">
+                {statusFilter && (
+                  <>
+                    <div className="filter-category-label">Active Filter</div>
+                    <div className="active-filter-item">
+                      <span>Status: {statusFilter}</span>
+                      <button
+                        className="remove-filter-btn"
+                        onClick={clearFilter}
+                        title="Remove filter"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </>
+                )}
+                <div className="filter-category-label">Status</div>
+                <button
+                  className="sort-option"
+                  onClick={() => handleFilterChange('Planning')}
+                >
+                  Planning
+                </button>
+                <button
+                  className="sort-option"
+                  onClick={() => handleFilterChange('In Progress')}
+                >
+                  In Progress
+                </button>
+                <button
+                  className="sort-option"
+                  onClick={() => handleFilterChange('On Hold')}
+                >
+                  On Hold
+                </button>
+                <button
+                  className="sort-option"
+                  onClick={() => handleFilterChange('Completed')}
+                >
+                  Completed
+                </button>
+                <button
+                  className="sort-option"
+                  onClick={() => handleFilterChange('Cancelled')}
+                >
+                  Cancelled
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Only show search icon when embedded */}
           {embedded && renderActions && renderActions(navigate)}
 
         </div>
       </div>
 
-      {/* Display current sort status */}
-      {sortingMethod !== 'id' && (
+      {/* Display current sort and filter status */}
+      {(sortingMethod !== 'id' || statusFilter) && (
         <div style={{ 
           padding: '8px 12px', 
           backgroundColor: '#f3f4f6', 
@@ -162,7 +240,16 @@ export default function AllProjects({
           fontSize: '0.9rem',
           color: '#4b5563'
         }}>
-          <strong>Sorted by:</strong> {sortOptions.find(opt => opt.value === sortingMethod)?.label}
+          {sortingMethod !== 'id' && (
+            <div>
+              <strong>Sorted by:</strong> {sortOptions.find(opt => opt.value === sortingMethod)?.label}
+            </div>
+          )}
+          {statusFilter && (
+            <div>
+              <strong>Filtered by:</strong> Status: {statusFilter}
+            </div>
+          )}
         </div>
       )}
 
