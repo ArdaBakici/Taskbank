@@ -235,7 +235,7 @@ export default function AllTasks({
     setLoading(true);
   };
 
-  const sortOptions = [
+  let sortOptions = [
     { value: 'smart', label: 'Smart Sort (Default)' },
     { value: 'deadline', label: 'Deadline (Earliest)' },
     { value: 'deadline_desc', label: 'Deadline (Latest)' },
@@ -245,10 +245,15 @@ export default function AllTasks({
     { value: 'title', label: 'Name' },
     { value: 'project', label: 'Project' },
     { value: 'id', label: 'ID' },
-    { value: 'order', label: 'Manual Order' },
+    // { value: 'order', label: 'Manual Order' },
 
   ];
+  // Hide Manual Order only on Home page
+  const isHomePageEmbedded = embedded && !filterBy && limit;
 
+  if (!isHomePageEmbedded) {
+  sortOptions.push({ value: 'order', label: 'Manual Order' });
+  }
   const filterOptions = [
     { 
       category: 'Status',
