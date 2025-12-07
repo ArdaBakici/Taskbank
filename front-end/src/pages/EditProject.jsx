@@ -96,8 +96,6 @@ export default function EditProject() {
 
   // Load initial project data
   useEffect(() => {
-    let isMounted = true;
-
     async function loadData() {
       setLoading(true);
       try {
@@ -105,7 +103,7 @@ export default function EditProject() {
         const taskJson = await taskRes.json();
         const allTasks = taskJson.tasks || taskJson;
 
-        if (isMounted) setAvailableTasks(allTasks || []);
+        setAvailableTasks(allTasks || []);
 
         if (id) {
           const projRes = await authenticatedFetch(`/projects/${id}`);
@@ -116,7 +114,7 @@ export default function EditProject() {
           if (!projTasksRes.ok) throw new Error("Failed to load project tasks");
           const projectTasks = await projTasksRes.json();
 
-          if (isMounted && projectData) {
+          if (projectData) {
             const selectedTaskIds = (projectTasks || []).map((t) => t._id);
 
             setFormData({
@@ -140,14 +138,11 @@ export default function EditProject() {
       } catch (err) {
         console.error("Failed to load project data", err);
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     }
 
     loadData();
-    return () => {
-      isMounted = false;
-    };
   }, [id]);
 
   // Inputs

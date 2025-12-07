@@ -12,8 +12,6 @@ export default function ProjectSearch() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    let isMounted = true;
-
     async function loadProjects() {
       try {
         setLoading(true);
@@ -25,7 +23,6 @@ export default function ProjectSearch() {
         }
 
         const data = await response.json();
-        if (!isMounted) return;
 
         // Search by name OR tags
         const filtered = data.projects.filter((p) => {
@@ -42,16 +39,13 @@ export default function ProjectSearch() {
         setProjects(filtered);
       } catch (err) {
         console.error("Failed to load projects", err);
-        if (isMounted) setError("Unable to load projects right now.");
+        setError("Unable to load projects right now.");
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     }
 
     loadProjects();
-    return () => {
-      isMounted = false;
-    };
   }, [query]);
 
   const renderTags = (tagList) => {

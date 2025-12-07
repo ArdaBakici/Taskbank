@@ -42,8 +42,6 @@ export default function AllTasks({
   const showCustomActions = (buttons_bitmap & 0b1000) !== 0; // bit 3
 
   useEffect(() => {
-    let isMounted = true;
-
     async function loadTasks() {
       try {
         // Construct API URL with query parameters
@@ -82,26 +80,17 @@ export default function AllTasks({
         
         const data = await response.json();
         
-        if (isMounted) {
-          // The API returns tasks in data.tasks array
-          setTasks(data.tasks || []);
-        }
+        // The API returns tasks in data.tasks array
+        setTasks(data.tasks || []);
       } catch (err) {
         console.error("Failed to load tasks", err);
-        if (isMounted) {
-          setError("Unable to load tasks right now.");
-        }
+        setError("Unable to load tasks right now.");
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     }
 
     loadTasks();
-    return () => {
-      isMounted = false;
-    };
   }, [embedded, limit, sortingMethod, filterBy, filterValue, additionalFilters]);
 
   // Close sort menu when clicking outside

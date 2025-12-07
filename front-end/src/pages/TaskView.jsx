@@ -14,8 +14,6 @@ export default function TaskView() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let isMounted = true;
-
     async function loadTask() {
       setLoading(true);
       try {
@@ -25,7 +23,6 @@ export default function TaskView() {
         const dataTask = await resTask.json();
         const fetchedTask = dataTask.task;
 
-        if (!isMounted) return;
         setTask(fetchedTask || null);
 
         // Fetch project from backend if task has a projectId
@@ -46,23 +43,17 @@ export default function TaskView() {
 
 
 
-        if (isMounted) setProject(relatedProject);
+        setProject(relatedProject);
       } catch (error) {
         console.error("Failed to load task", error);
-        if (isMounted) {
-          setTask(null);
-          setProject(null);
-        }
+        setTask(null);
+        setProject(null);
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     }
 
     loadTask();
-
-    return () => {
-      isMounted = false;
-    };
   }, [id]);
 
   const handleEdit = () => navigate(`/tasks/edit/${id}`);

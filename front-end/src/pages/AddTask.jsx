@@ -24,22 +24,20 @@ export default function AddTask() {
   const [popup, setPopup] = useState({ show: false, message: "", type: "success" });
 
   useEffect(() => {
-    let isMounted = true;
     async function loadProjects() {
       try {
         const response = await authenticatedFetch('/projects');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        if (isMounted) setProjects(data.projects || data || []);
+        setProjects(data.projects || data || []);
       } catch (err) {
         console.error("Failed to load projects", err);
-        if (isMounted) setProjects([]);
+        setProjects([]);
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     }
     loadProjects();
-    return () => { isMounted = false; };
   }, []);
 
   const handleChange = (e) => {

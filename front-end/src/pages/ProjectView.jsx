@@ -20,32 +20,22 @@ export default function ProjectView() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    let isMounted = true;
-
     async function loadProject() {
       setLoading(true);
       setError(null);
       try {
         const projectData = await fetchProjectById(id);
-        if (!isMounted) return;
         setProject(projectData || null);
       } catch (err) {
         console.error("Failed to load project", err);
-        if (isMounted) {
-          setProject(null);
-          setError("Unable to load project details right now.");
-        }
+        setProject(null);
+        setError("Unable to load project details right now.");
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     }
 
     loadProject();
-    return () => {
-      isMounted = false;
-    };
   }, [id]);
 
   const handleReturn = () => navigate(-1);
