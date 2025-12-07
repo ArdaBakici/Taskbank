@@ -14,7 +14,7 @@ router.use(passport.authenticate("jwt", { session: false }));
 ---------------------------------------------- */
 router.get("/", async (req, res) => {
   try {
-    const { num_of_projects, sorting_method } = req.query;
+    const { num_of_projects, sorting_method, status } = req.query;
 
     let sort = {};
 
@@ -28,10 +28,6 @@ router.get("/", async (req, res) => {
         sort.deadline = -1;
         break;
 
-      case "status":
-        sort.status = 1;
-        break;
-
       case "name":
         sort.name = 1;
         break;
@@ -41,7 +37,13 @@ router.get("/", async (req, res) => {
         break;
     }
 
-    let query = Project.find({ userId: req.user.userId }).sort(sort);
+    // Build filter
+    const filter = { userId: req.user.userId };
+    if (status) {
+      filter.status = status;
+    }
+
+    let query = Project.find(filter).sort(sort);
 
     if (num_of_projects) {
       query = query.limit(Number(num_of_projects));
