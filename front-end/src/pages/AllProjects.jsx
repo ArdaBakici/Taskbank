@@ -20,8 +20,6 @@ export default function AllProjects({
   const [statusFilter, setStatusFilter] = useState(null);
 
   useEffect(() => {
-    let isMounted = true;
-
     async function loadProjects() {
       try {
         // Construct API URL with query parameters
@@ -49,26 +47,17 @@ export default function AllProjects({
         
         const data = await response.json();
         
-        if (isMounted) {
-          // The API returns projects in data.projects array
-          setProjects(data.projects || []);
-        }
+        // The API returns projects in data.projects array
+        setProjects(data.projects || []);
       } catch (err) {
         console.error("Failed to load projects", err);
-        if (isMounted) {
-          setError("Unable to load projects right now.");
-        }
+        setError("Unable to load projects right now.");
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     }
 
     loadProjects();
-    return () => {
-      isMounted = false;
-    };
   }, [embedded, limit, sortingMethod, statusFilter]);
 
   // Close sort menu when clicking outside

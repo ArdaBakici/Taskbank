@@ -12,42 +12,8 @@ export default function SearchTasks() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  
-  // useEffect(() => {
-  //   let isMounted = true;
-
-    // async function loadTasks() {
-    //   try {
-    //     setLoading(true);
-
-    //     // Call backend search endpoint
-    //     const url = `/search?q=${encodeURIComponent(query)}`;
-    //     const response = await authenticatedFetch(url);
-
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! status: ${response.status}`);
-  //       }
-
-  //       const data = await response.json();
-  //       if (isMounted) setTasks(data.results || []);
-  //     } catch (err) {
-  //       console.error("Failed to load tasks", err);
-  //       if (isMounted) setError("Unable to load tasks right now.");
-  //     } finally {
-  //       if (isMounted) setLoading(false);
-  //     }
-  //   }
-
-  //   loadTasks();
-
-  //   return () => {
-  //     isMounted = false;
-  //   };
-  // }, [query]); // ✅ Re-run whenever query changes
   // 1) Load ALL tasks once on mount
   useEffect(() => {
-    let isMounted = true;
-
     async function loadAllTasks() {
       try {
         setLoading(true);
@@ -60,24 +26,20 @@ export default function SearchTasks() {
         }
 
         const data = await response.json();
-        if (!isMounted) return;
 
         const all = data.tasks || [];
         setAllTasks(all);   // store full list
         setTasks(all);      // initially show all tasks
       } catch (err) {
         console.error("Failed to load tasks", err);
-        if (isMounted) setError("Unable to load tasks right now.");
+        setError("Unable to load tasks right now.");
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     }
 
     loadAllTasks();
 
-    return () => {
-      isMounted = false;
-    };
   }, []); // runs only once on mount
 
   // 2) Filter tasks locally when query changes

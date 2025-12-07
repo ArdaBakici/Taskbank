@@ -12,8 +12,6 @@ export default function Stats() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    let isMounted = true;
-
     async function fetchStats() {
       try {
         const response = await authenticatedFetch('/stats');
@@ -21,25 +19,16 @@ export default function Stats() {
           throw new Error("Failed to load stats");
         }
         const data = await response.json();
-        if (isMounted) {
-          setStats(data);
-        }
+        setStats(data);
       } catch (err) {
         console.error("Stats error:", err);
-        if (isMounted) {
-          setError(err.message);
-        }
+        setError(err.message);
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     }
 
     fetchStats();
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
   const metrics = useMemo(() => {

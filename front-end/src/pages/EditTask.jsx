@@ -32,21 +32,19 @@ export default function EditTask() {
 
   // Load existing task data and available projects
   useEffect(() => {
-    let isMounted = true;
-
     async function loadData() {
       setLoading(true);
       try {
         // Fetch projects
         const resProjects = await authenticatedFetch('/projects');
         const projectsData = await resProjects.json();
-        if (isMounted) setProjects(projectsData.projects || []);
+        setProjects(projectsData.projects || []);
 
         // Fetch task by ID
         if (id) {
           const resTask = await authenticatedFetch(`/tasks/${id}`);
           const { task } = await resTask.json();
-          if (isMounted && task) {
+          if (task) {
             setFormData({
               taskName: task.title || "",
               description: task.description || "",
@@ -64,14 +62,11 @@ export default function EditTask() {
       } catch (error) {
         console.error("Failed to load task data", error);
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     }
 
     loadData();
-    return () => {
-      isMounted = false;
-    };
   }, [id]);
 
   const handleChange = (e) => {

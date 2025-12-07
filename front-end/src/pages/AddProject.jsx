@@ -25,8 +25,6 @@ export default function AddProject() {
 
   // Load UNASSIGNED tasks from backend (preferred: /tasks?unassigned=1)
   useEffect(() => {
-    let isMounted = true;
-
     async function loadTasks() {
       setLoadingTasks(true);
       try {
@@ -48,19 +46,16 @@ export default function AddProject() {
           (t) => t.projectId == null || t.projectId === "" || t.project === "Unassigned"
         );
 
-        if (isMounted) setAvailableTasks(unassigned);
+        setAvailableTasks(unassigned);
       } catch (e) {
         console.error("Failed to load tasks:", e);
-        if (isMounted) setAvailableTasks([]);
+        setAvailableTasks([]);
       } finally {
-        if (isMounted) setLoadingTasks(false);
+        setLoadingTasks(false);
       }
     }
 
     loadTasks();
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
   const handleChange = (e) => {
