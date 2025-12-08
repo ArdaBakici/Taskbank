@@ -1,5 +1,11 @@
 # Taskbank - Smart Task Planner
 
+<p align="center">
+  <a href="https://taskbank.me/" target="_blank" style="font-size: 26px; font-weight: 800; text-decoration: none;">
+    🚀 Launch Taskbank Live → https://taskbank.me/
+  </a>
+</p>
+
 ## Product Vision Statement
 
 **For students and busy professionals who struggle to maintain effective todo lists and get overwhelmed by lengthy task backlogs, Taskbank is a web-based smart task planner that automatically generates optimized daily task lists using GTD (Getting Things Done) principles. Unlike traditional todo apps that simply display all tasks, our product intelligently organizes work based on context, priority, deadlines, and dependencies to help users focus on what matters most each day.**
@@ -77,12 +83,14 @@ The intelligent task sorting algorithm, context-aware filtering, and integration
 - **Frontend**: React.js
 - **Backend**: Node.js with Express.js
 - **Database**: MongoDB
-- **APIs**: Google Tasks API, Google Calendar API (planned for future sprints)
 
 ### Development Tools
 - **Version Control**: Git & GitHub
 - **Package Manager**: npm
 - **Development Environment**: Visual Studio Code (recommended)
+- **Hosting**: DigitalOcean Droplet with Nginx
+- **Containers & Registry**: Docker for containerization with images published to GHCR
+- **Domain & SSL**: Namecheap student free domain with Cloudflare-provided free SSL certificates
 
 
 ## Additional Resources
@@ -93,5 +101,5 @@ The intelligent task sorting algorithm, context-aware filtering, and integration
 
 ---
 
-**Last Updated**: October 13 2025  
-**Project Status**: Sprint 0 - Initial Setup Phase
+**Last Updated**: December 8th 2025  
+**Project Status**: Sprint 4 - Deployment

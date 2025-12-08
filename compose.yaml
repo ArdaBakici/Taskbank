@@ -1,0 +1,21 @@
+services:
+  front-end-server:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+    ports:
+      - "3000:80"          # host:container (Nginx serving React)
+    restart: unless-stopped
+
+  back-end-server:
+    build:
+      context: ./back-end
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+    env_file: ./back-end/.env
+    ports:
+      - "4000:4000"        # host:container (Node/Express on 4000)
+    restart: unless-stopped
