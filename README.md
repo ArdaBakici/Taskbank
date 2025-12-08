@@ -1,3 +1,4 @@
+[![Build, Push, and Deploy](https://github.com/agile-students-fall2025/4-final-taskbank/actions/workflows/build-and-deploy.yml/badge.svg)](https://github.com/agile-students-fall2025/4-final-taskbank/actions/workflows/build-and-deploy.yml)
 # Taskbank - Smart Task Planner
 
 <p align="center">
