@@ -54,12 +54,14 @@ jobs:
           SHORT_SHA="${GITHUB_SHA::7}"
           BUILD_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
           BUILD_TIME="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          BUILD_IMAGE="ghcr.io/agile-students-fall2025/4-final-taskbank:back-end@${GITHUB_SHA}"
 
           docker buildx build --platform linux/amd64 \
             -t ghcr.io/agile-students-fall2025/4-final-taskbank:back-end \
             --build-arg BUILD_SHA="${SHORT_SHA}" \
             --build-arg BUILD_URL="${BUILD_URL}" \
             --build-arg BUILD_TIME="${BUILD_TIME}" \
+            --build-arg BUILD_IMAGE="${BUILD_IMAGE}" \
             -f Dockerfile . --push
 
       - name: SSH deploy
