@@ -90,6 +90,7 @@ The intelligent task sorting algorithm, context-aware filtering, and integration
 - **Development Environment**: Visual Studio Code (recommended)
 - **Hosting**: DigitalOcean Droplet with Nginx
 - **Containers & Registry**: Docker for containerization with images published to GHCR
+- **Domain & SSL**: Namecheap student free domain with Cloudflare-provided free SSL certificates
 
 
 ## Additional Resources
