@@ -11,6 +11,15 @@ FROM node:${NODE_VERSION}-alpine
 # Use production node environment by default.
 ENV NODE_ENV production
 
+# Build metadata (injected via build args).
+ARG BUILD_SHA
+ARG BUILD_URL
+ARG BUILD_TIME
+ARG BUILD_IMAGE
+ENV BUILD_SHA=${BUILD_SHA}
+ENV BUILD_URL=${BUILD_URL}
+ENV BUILD_TIME=${BUILD_TIME}
+ENV BUILD_IMAGE=${BUILD_IMAGE}
 
 WORKDIR /usr/src/app
 

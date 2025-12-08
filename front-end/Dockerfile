@@ -26,6 +26,14 @@ RUN --mount=type=cache,target=/root/.npm npm install --omit=dev
 # Create a stage for building the application.
 FROM deps as build
 
+# Build metadata (injected via build args).
+ARG REACT_APP_BUILD_SHA
+ARG REACT_APP_BUILD_URL
+ARG REACT_APP_BUILD_TIME
+ENV REACT_APP_BUILD_SHA=${REACT_APP_BUILD_SHA}
+ENV REACT_APP_BUILD_URL=${REACT_APP_BUILD_URL}
+ENV REACT_APP_BUILD_TIME=${REACT_APP_BUILD_TIME}
+
 # Copy the rest of the source files into the image.
 COPY . .
 # Run the build script.
