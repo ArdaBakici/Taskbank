@@ -53,7 +53,7 @@ app.use(express.json());
 app.use(passport.initialize());
 
 app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok" });
+  res.json({ status: "ok", lastBuild: new Date().toISOString() });
 });
 
 app.use("/api/tasks", tasksRouter);
