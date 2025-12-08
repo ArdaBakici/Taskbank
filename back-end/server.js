@@ -46,6 +46,10 @@ require("dotenv").config();
 const PORT = process.env.PORT || 4000;
 const MONGODB_URI = process.env.MONGODB_URI;
 console.log(`.env file's port is ${process.env.PORT}`);
+const SERVER_STARTED_AT = new Date().toISOString();
+const BUILD_SHA = process.env.BUILD_SHA || null;
+const BUILD_IMAGE = process.env.BUILD_IMAGE || null;
+const BUILD_TIME = process.env.BUILD_TIME || null;
 const CLIENT_BUILD_PATH = path.resolve(__dirname, "../front-end/build");
 
 app.use(cors());
@@ -53,7 +57,13 @@ app.use(express.json());
 app.use(passport.initialize());
 
 app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", lastBuild: new Date().toISOString() });
+  res.json({
+    status: "ok",
+    startedAt: SERVER_STARTED_AT,
+    buildSha: BUILD_SHA,
+    buildImage: BUILD_IMAGE,
+    buildTime: BUILD_TIME,
+  });
 });
 
 app.use("/api/tasks", tasksRouter);
