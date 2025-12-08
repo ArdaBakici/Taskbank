@@ -18,7 +18,7 @@ import ChangePassword from "./pages/ChangePassword";
 import ProjectSearch from "./pages/ProjectSearch";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ChangeUsername from "./pages/ChangeUsername";
-
+import BuildBadge from "./components/BuildBadge";
 
 function App() {
   return (
@@ -47,6 +47,7 @@ function App() {
         <Route path="/project/search" element={<ProtectedRoute><ProjectSearch /></ProtectedRoute>} />
         <Route path="*" element={<ProtectedRoute><Home /></ProtectedRoute>} />
       </Routes>
+      <BuildBadge />
     </Router>
   );
 }
