@@ -1,0 +1,39 @@
+name: Build Images (no push/deploy)
+
+on:
+  push:
+    branches: ["**"]   # all branches
+    paths:
+      - "front-end/**"
+      - "back-end/**"
+      - ".github/workflows/build-only.yml"
+  pull_request:
+    branches: ["**"]
+    paths:
+      - "front-end/**"
+      - "back-end/**"
+      - ".github/workflows/build-only.yml"
+  workflow_dispatch:
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build front-end (no push)
+        working-directory: front-end
+        run: |
+          docker buildx build --platform linux/amd64 \
+            -t taskbank-frontend:test \
+            -f Dockerfile . --load
+
+      - name: Build back-end (no push)
+        working-directory: back-end
+        run: |
+          docker buildx build --platform linux/amd64 \
+            -t taskbank-backend:test \
+            -f Dockerfile . --load
