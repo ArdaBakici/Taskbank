@@ -158,8 +158,10 @@ export default function Stats() {
                     title={`${status}: ${count}`}
                   >
                     <span className="stats-bar-count">{count} Tasks</span>
+
                   </div>
                   <p className="stats-bar-label">{status}</p>
+          
                 </div>
               ))}
             </div>
