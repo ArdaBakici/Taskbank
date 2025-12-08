@@ -23,7 +23,7 @@ const styles = {
     padding: "6px 10px",
     boxShadow: "0 6px 18px rgba(0, 0, 0, 0.3)",
     opacity: 0,
-    transition: "opacity 150ms ease, boxShadow 150ms ease",
+    transition: "opacity 700ms ease, boxShadow 700ms ease",
     backdropFilter: "blur(6px)",
     fontSize: "12px",
     letterSpacing: "0.2px",
@@ -44,16 +44,39 @@ const styles = {
 };
 
 const BuildBadge = () => {
-  const [hover, setHover] = React.useState(false);
+  const [visible, setVisible] = React.useState(false);
+  const timerRef = React.useRef(null);
+  const shortSha = BUILD_SHA ? BUILD_SHA.slice(0, 7) : null;
+  const shortTime = BUILD_TIME ? BUILD_TIME.slice(0, 16) : null; // e.g., 2025-12-08T12:34
   // if (!BUILD_SHA) return null;
+
+  const showWithDelay = () => {
+    timerRef.current = setTimeout(() => setVisible(true), 2000);
+  };
+
+  const hideAndClear = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    setVisible(false);
+  };
+
+  React.useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div
       style={{ position: "fixed", bottom: 0, left: 0, width: "140px", height: "120px", zIndex: 9998 }}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      onFocus={() => setHover(true)}
-      onBlur={() => setHover(false)}
+      onMouseEnter={showWithDelay}
+      onMouseLeave={hideAndClear}
+      onFocus={showWithDelay}
+      onBlur={hideAndClear}
     >
       <a
         style={styles.wrapper}
@@ -66,13 +89,13 @@ const BuildBadge = () => {
         <span
           style={{
             ...styles.pill,
-            ...(hover ? styles.pillHover : {}),
+            ...(visible ? styles.pillHover : {}),
           }}
         >
           <span style={styles.dot} />
           <span>
-            Build {BUILD_SHA}
-            {BUILD_TIME ? ` · ${BUILD_TIME}` : ""}
+            Build {shortSha || "n/a"}
+            {shortTime ? ` · ${shortTime}` : ""}
           </span>
         </span>
       </a>

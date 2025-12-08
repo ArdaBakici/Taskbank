@@ -7,7 +7,7 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "ui:build": "npm --prefix ../front-end run build",
-    "test": "mocha \"test/**/*.js\" --timeout 5000",
+    "test": "mocha --require ./test/setup.js \"test/**/*.js\" --timeout 5000",
     "coverage": "c8 --reporter=text npm test"
   },
   "keywords": [],
