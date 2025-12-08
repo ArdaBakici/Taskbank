@@ -23,16 +23,6 @@ Before you begin, ensure you have the following installed on your local machine:
    npm install
 ```
 
-## Environment Setup
-
-1. `cp .env.example .env`
-
-   Looks like:
-   ```env
-   REACT_APP_API_URL=http://localhost:4000/api
-   ```
-
-   > **Note:** We shared the .env files and the API keys needed in the Discord. Please check the Discord if necessary!
 
 ## Running the Application
 
