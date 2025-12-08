@@ -1,22 +1,16 @@
 const mongoose = require("mongoose");
 const { connectToDatabase } = require("../server");
 const { User, Task, Project } = require("../mongo-schemas");
+const { createdUsers } = require("./helpers/auth");
 
 exports.mochaHooks = {
   async beforeAll() {
     await connectToDatabase();
   },
   async afterAll() {
-    // Clean up test data created via helpers (users with test_* email/user_*, and their tasks/projects)
+    // Clean up test data created via helpers (only the users we created)
     try {
-      const testUsers = await User.find({
-        $or: [
-          { email: /^test_/i },
-          { username: /^user_/i },
-        ],
-      }).select("_id");
-
-      const userIds = testUsers.map((u) => u._id);
+      const userIds = createdUsers.map((u) => u.userId).filter(Boolean);
       if (userIds.length) {
         await Promise.all([
           Task.deleteMany({ userId: { $in: userIds } }),
