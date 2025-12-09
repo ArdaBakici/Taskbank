@@ -119,3 +119,4 @@ if (require.main === module) {
 }
 
 module.exports = app;
+module.exports.connectToDatabase = connectToDatabase;

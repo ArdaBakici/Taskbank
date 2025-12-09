@@ -555,6 +555,13 @@ router.delete("/:id", async (req, res) => {
   try {
     const id = req.params.id;
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid task ID",
+      });
+    }
+
     const deletedTask = await Task.findOneAndDelete({
       _id: id,
       userId: req.user.userId,

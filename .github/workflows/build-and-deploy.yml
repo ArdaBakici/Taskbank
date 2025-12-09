@@ -2,7 +2,7 @@ name: Build, Push, and Deploy
 
 on:
   push:
-    branches: ["**"]   # run on any branch push
+    branches: [main]   # run on main pushes only
     paths:
       - "front-end/**"
       - "back-end/**"

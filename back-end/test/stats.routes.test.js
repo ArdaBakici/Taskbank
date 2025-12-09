@@ -4,34 +4,66 @@ const { expect } = chai;
 chai.use(chaiHttp);
 
 const app = require("../server");
-const { getTasks } = require("../data/tasks");
-const { getProjects } = require("../data/projects");
+const { getAuthHeader } = require("./helpers/auth");
+const mongoose = require("mongoose");
+
+let authHeader;
+let seededTasks = [];
+let seededProjects = [];
 
 describe("Stats routes", () => {
+  before(async () => {
+    authHeader = await getAuthHeader();
+
+    // seed data for this user
+    const proj = await chai
+      .request(app)
+      .post("/api/projects")
+      .set(authHeader)
+      .send({
+        name: "Stats Project",
+        deadline: "2025-12-31",
+        status: "Planning",
+      });
+    const projectId = proj.body.project?._id || proj.body.project?.id;
+    seededProjects = [proj.body.project];
+
+    const t1 = await chai.request(app).post("/api/tasks").set(authHeader).send({
+      title: "Active Task",
+      status: "In Progress",
+      deadline: "2025-12-31",
+      context: "office",
+      priority: "high",
+      projectId,
+    });
+    const t2 = await chai.request(app).post("/api/tasks").set(authHeader).send({
+      title: "Completed Task",
+      status: "Completed",
+      deadline: "2025-01-01",
+      context: "home",
+      priority: "medium",
+      projectId,
+    });
+    seededTasks = [t1.body.task, t2.body.task];
+  });
+
   it("GET /api/stats returns totals and grouped counts", async () => {
-    const res = await chai.request(app).get("/api/stats");
+    const res = await chai.request(app).get("/api/stats").set(authHeader);
 
     expect(res.status).to.equal(200);
     expect(res.body).to.be.an("object");
-    expect(res.body).to.have.all.keys(
-      "totalTasks",
-      "totalProjects",
-      "tasksByStatus",
-      "projectsByStatus"
-    );
+    expect(res.body).to.include.keys("totalTasks", "totalProjects", "tasksByStatus", "projectsByStatus");
 
-    const tasks = getTasks();
-    const projects = getProjects();
+    expect(res.body.totalTasks).to.equal(seededTasks.length);
+    expect(res.body.totalProjects).to.equal(seededProjects.length);
 
-    expect(res.body.totalTasks).to.equal(tasks.length);
-    expect(res.body.totalProjects).to.equal(projects.length);
-
-    const expectedTaskBuckets = tasks.reduce((acc, task) => {
+    const expectedTaskBuckets = seededTasks.reduce((acc, task) => {
       acc[task.status] = (acc[task.status] || 0) + 1;
       return acc;
     }, {});
-    const expectedProjectBuckets = projects.reduce((acc, project) => {
-      acc[project.status] = (acc[project.status] || 0) + 1;
+    const expectedProjectBuckets = seededProjects.reduce((acc, project) => {
+      const status = project.status || "Planning";
+      acc[status] = (acc[status] || 0) + 1;
       return acc;
     }, {});
 
