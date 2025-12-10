@@ -175,6 +175,19 @@ export default function AllTasks({
     return diffDays === 1;
   };
 
+  const isDueToday = (deadline, status) => {
+    if (status === "Completed" || !deadline) return false;
+
+    const today = new Date();
+    const d = parseLocalDate(deadline);
+
+    today.setHours(0, 0, 0, 0);
+    d.setHours(0, 0, 0, 0);
+
+    const diffDays = (d - today) / (1000 * 60 * 60 * 24);
+    return diffDays === 0;
+  };
+
   const handleStatusClick= async(e, taskId, currentStatus)=>{
     e.stopPropagation(); 
     const nextStatus= getNextStatus(currentStatus);
@@ -438,6 +451,8 @@ export default function AllTasks({
               className={`task-row task-row-button ${
                 isOverdue(t.deadline, t.status)
                   ? "task-overdue"
+                  : isDueToday(t.deadline, t.status)
+                  ? "task-due-today"
                   : isDueTomorrow(t.deadline, t.status)
                   ? "task-due-soon"
                   : ""
