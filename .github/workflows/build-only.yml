@@ -2,17 +2,9 @@ name: Build Images (no push/deploy)
 
 on:
   push:
-    branches: ["**"]   # all branches
-    paths:
-      - "front-end/**"
-      - "back-end/**"
-      - ".github/workflows/build-only.yml"
+    branches-ignore: ["main"]   # all branches except main
   pull_request:
-    branches: ["**"]
-    paths:
-      - "front-end/**"
-      - "back-end/**"
-      - ".github/workflows/build-only.yml"
+    branches-ignore: ["main"]
   workflow_dispatch:
 
 jobs:

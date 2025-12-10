@@ -37,9 +37,9 @@ Taskbank is designed for everyone who needs task management, but specifically ta
 
 ## Team Members
 
-- **[Arda Bakici (Sprint 0 Product Owner)](https://github.com/ArdaBakici)** 
+- **[Arda Bakici](https://github.com/ArdaBakici)** 
 - **[Siddhanta Paudel](https://github.com/PaudelSiddhanta)** 
-- **[Sihyun Kim (Sprint 0 Scrum Master)](https://github.com/sihyunlkim)** 
+- **[Sihyun Kim](https://github.com/sihyunlkim)** 
 - **[Srijan Sthapit](https://github.com/Srijan3141)** 
 - **[William Chan](https://github.com/wc2184)** 
 
@@ -98,6 +98,10 @@ The intelligent task sorting algorithm and context-aware filtering require caref
 - [Issue Tracker](https://github.com/agile-students-fall2025/4-final-taskbank/issues)
 - [Initial Project Proposal](https://github.com/agile-students-fall2025/1-project-proposal-igor)
 - [Contributing Guidelines](./CONTRIBUTING.md)
+
+## CI/CD Automation
+- Pull requests and branch pushes run the relevant builds/tests automatically when code paths that require them change like the back-end/ and front-end/ folders.
+- Any change to `main` (such as merging a feature branch) kicks off a full deploy of the frontend and backend to Digital Ocean and https://taskbank.me will be updated.
 
 ## Extra Credit Achievements
 
