@@ -4,13 +4,14 @@ import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import DashboardHeader from "../components/DashboardHeader";
 import CircularProgress from "../components/CircularProgress";
-
+// Stats dashboard component displaying task and project analytics
 export default function Stats() {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+ // Fetch statistics data on component mount
   useEffect(() => {
     async function fetchStats() {
       try {
@@ -31,9 +32,11 @@ export default function Stats() {
     fetchStats();
   }, []);
 
+  // Process raw stats data into display-ready metrics
   const metrics = useMemo(() => {
     const tasksByStatus = stats?.tasksByStatus ?? {};
 
+    // Find the most common task status
     const mostCommonTaskStatus = Object.entries(tasksByStatus).sort(
       (a, b) => b[1] - a[1]
     )[0]?.[0];
@@ -59,7 +62,7 @@ export default function Stats() {
 
       <main className="stats-main">
         <h2>Statistics</h2>
-        
+        {/* Loading and error states */}
         {isLoading && <p>Loading stats...</p>}
         {error && <p className="error-text">{error}</p>}
         
@@ -93,6 +96,7 @@ export default function Stats() {
             {/* Performance Metrics Section with Circular Progress */}
             <h3 style={{ marginTop: '2rem' }}>Performance Metrics</h3>
             
+            {/* Circular progress indicators for key performance metrics */}
             <div style={{ 
               display: 'flex', 
               justifyContent: 'space-around', 
@@ -117,7 +121,7 @@ export default function Stats() {
                 label="On-Time"
                 sublabel="Completion"
               />
-              
+              {/* Average tasks per day metric */}
               <div style={{ 
                 display: 'flex',
                 flexDirection: 'column',
