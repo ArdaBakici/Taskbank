@@ -5,7 +5,7 @@
 
 <p align="center">
   <a href="https://taskbank.me/" target="_blank" style="font-size: 40px; font-weight: 800; text-decoration: none;">
-    🚀 Launch Taskbank Live → https://taskbank.me/
+    🚀 Launch Taskbank → https://taskbank.me/
   </a>
 </p>
 
