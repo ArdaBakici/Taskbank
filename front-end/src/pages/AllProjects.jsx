@@ -84,10 +84,24 @@ export default function AllProjects({
     return Array.isArray(tagList) ? tagList.join(", ") : tagList;
   };
 
+  const parseLocalDate = (dateStr) => {
+    if (!dateStr) return null;
+    try {
+      // Handle both ISO format (2025-12-10T00:00:00.000Z) and simple format (2025-12-10)
+      const dateOnly = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+      const [year, month, day] = dateOnly.split("-").map(Number);
+      // This creates a date in your LOCAL timezone with that year-month-day
+      return new Date(year, month - 1, day);
+    } catch (e) {
+      return null;
+    }
+  };
+
   const formatDeadline = (deadline) => {
     if (!deadline) return "No deadline";
     try {
-      const date = new Date(deadline);
+      const date = parseLocalDate(deadline);
+      if (!date) return "No deadline";
       return date.toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",

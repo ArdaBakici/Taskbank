@@ -59,10 +59,24 @@ export default function TaskView() {
   const handleEdit = () => navigate(`/tasks/edit/${id}`);
   const handleBack = () => navigate(-1);
 
+  const parseLocalDate = (dateStr) => {
+    if (!dateStr) return null;
+    try {
+      // Handle both ISO format (2025-12-10T00:00:00.000Z) and simple format (2025-12-10)
+      const dateOnly = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+      const [year, month, day] = dateOnly.split("-").map(Number);
+      // This creates a date in your LOCAL timezone with that year-month-day
+      return new Date(year, month - 1, day);
+    } catch (e) {
+      return null;
+    }
+  };
+
   const formatDeadline = (deadline) => {
     if (!deadline) return "";
     try {
-      const date = new Date(deadline);
+      const date = parseLocalDate(deadline);
+      if (!date) return "";
       return date.toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
