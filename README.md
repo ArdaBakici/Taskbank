@@ -3,11 +3,9 @@
 [![Deploy](https://img.shields.io/github/actions/workflow/status/agile-students-fall2025/4-final-taskbank/build-and-deploy.yml?branch=main&label=Deploy)](https://github.com/agile-students-fall2025/4-final-taskbank/actions/workflows/build-and-deploy.yml)
 # Taskbank - Smart Task Planner
 
-<p align="center">
-  <a href="https://taskbank.me/" target="_blank" style="font-size: 40px; font-weight: 800; text-decoration: none;">
-    🚀 Launch Taskbank → https://taskbank.me/
-  </a>
-</p>
+
+## 🚀 Launch Taskbank → https://taskbank.me/
+
 
 ## Product Vision Statement
 
