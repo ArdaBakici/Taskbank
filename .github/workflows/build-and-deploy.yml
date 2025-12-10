@@ -1,12 +1,10 @@
 name: Build, Push, and Deploy
 
 on:
-  push:
-    branches: [main]   # run on main pushes only
-    paths:
-      - "front-end/**"
-      - "back-end/**"
-      - ".github/workflows/build-and-deploy.yml"
+  workflow_run:
+    workflows: ["Backend Tests"]
+    types:
+      - completed
   workflow_dispatch:
 
 permissions:
@@ -15,6 +13,7 @@ permissions:
 
 jobs:
   build-and-deploy:
+    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     environment: deploy-to-droplet
     steps:
@@ -66,7 +65,6 @@ jobs:
 
       - name: SSH deploy
         uses: appleboy/ssh-action@v1.2.0
-        if: github.ref == 'refs/heads/main'
         with:
           host: ${{ vars.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
