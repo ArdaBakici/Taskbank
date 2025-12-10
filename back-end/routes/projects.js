@@ -6,51 +6,96 @@ const passport = require("passport");
 
 const router = express.Router();
 
+// ----------------------------------------------------------------------------------
+// Projects route handlers
+// These endpoints allow authenticated users to manage projects. The router is scoped
+// so that responses always contain only the resources belonging to the authenticated
+// user (via `req.user.userId`).
+//
+// Important notes:
+// - Sorting is handled server-side using `sorting_method` query param (see switch).
+// - Paging-like behavior can be approximated using `num_of_projects` query param.
+// - Status can be used to filter server-side via the `status` query param.
+// - All routes are protected and require a valid JWT via Passport (see router.use).
+// ----------------------------------------------------------------------------------
+
 // Apply authentication to all routes
 router.use(passport.authenticate("jwt", { session: false }));
 
 /* ---------------------------------------------
    GET /api/projects - List projects (sorted)
----------------------------------------------- */
+
+   Query Parameters (optional):
+     - num_of_projects: integer -> limit the number of returned projects
+     - sorting_method: string -> controls server-side sort order; examples:
+         "deadline", "deadline_desc", "name" (see switch cases below)
+       If omitted, the backend falls back to newest-first (createdAt desc).
+     - status: string -> filter projects by status (e.g. "Planning", "Completed")
+
+   Response Shape:
+     { success: true, count: <number>, projects: [<project objects>] }
+
+   Notes:
+     - The server uses the authenticated user's ID to scope results. If the
+       `status` param is provided, only projects matching that status are returned.
+     - Sorting occurs before applying the limit when `num_of_projects` is used.
+--------------------------------------------- */
 router.get("/", async (req, res) => {
   try {
     const { num_of_projects, sorting_method, status } = req.query;
 
+    // Build the sort object for mongoose's .sort() based on sorting_method
+    // Allowed methods are limited in the switch below to avoid arbitrary input
+    // being passed directly to Mongoose as a sort object.
     let sort = {};
 
     switch ((sorting_method || "").toLowerCase()) {
+      // The string value used by front-end must match these options (e.g., 'deadline').
       case "deadline":
       case "deadline_asc":
+        // Sort by earliest deadline first
         sort.deadline = 1;
         break;
 
       case "deadline_desc":
+        // Sort by latest deadlines first
         sort.deadline = -1;
         break;
 
       case "name":
+        // Sort alphabetically by name (ascending)
         sort.name = 1;
         break;
 
       default:
+        // If no known sorting method provided, fall back to newest first
         sort.createdAt = -1; // newest first
         break;
     }
 
-    // Build filter
+    // Build Mongo filter object - always scope by the user so no user sees
+    // another user's projects. The `status` query param, if provided, is also
+    // applied to the filter so the client can ask for a specific project status.
     const filter = { userId: req.user.userId };
     if (status) {
       filter.status = status;
     }
 
+    // Attach the sort to the mongoose query so the DB returns results in the
+    // requested order. We avoid sending arbitrary sort objects from the client
+    // (we only set the sort fields above via the switch) to prevent abuse.
     let query = Project.find(filter).sort(sort);
 
+    // The optional `num_of_projects` param limits the result count
+    // (useful for embedded lists like Home where we only show a few projects).
     if (num_of_projects) {
       query = query.limit(Number(num_of_projects));
     }
 
+    // Execute the DB query and return the projects in a single list.
     const projects = await query.exec();
 
+    // Return a stable response that clients rely on for UI display and counts
     return res.status(200).json({
       success: true,
       count: projects.length,

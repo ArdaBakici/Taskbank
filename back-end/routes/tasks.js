@@ -6,10 +6,14 @@ const passport = require("passport");
 
 const router = express.Router();
 
+// Tasks API routes. These endpoints handle CRUD for tasks and
+// support sorting, filtering, and a simple 'smart' score for prioritization.
+
 // Apply authentication to all routes
 router.use(passport.authenticate("jwt", { session: false }));
 
 // Helper function to calculate smart sort score
+// This is used for 'smart' sorting that weights deadlines, priority, and status
 const calculateSmartScore = (task) => {
   let score = 0;
   const now = new Date();
@@ -65,14 +69,16 @@ const calculateSmartScore = (task) => {
   return score;
 };
 
-// GET /api/tasks - List tasks with optional limit and sorting
 // GET /api/tasks - List tasks with optional limit, sorting, and filters
+// Query params supported: num_of_tasks, sorting_method, unassigned, filters (JSON)
 router.get("/", async (req, res) => {
   try {
     const numOfTasks = parseInt(req.query.num_of_tasks, 10) || null;
+    // Default sorting for tasks: id (unless overridden by query)
     const sortingMethod = req.query.sorting_method || "id";
 
     // --- Parse filters from query ---
+    // `filters` param is expected to be a JSON stringified object
     let filters = {};
     if (req.query.filters) {
       try {
@@ -86,11 +92,13 @@ router.get("/", async (req, res) => {
     }
 
     // --- Build Mongo filter object ---
+    // Always include userId to scope to the authenticated user's items
     const mongoFilter = {
       userId: req.user.userId, // Only return tasks belonging to this user
     };
 
     // Unassigned tasks: /tasks?unassigned=1
+    // Provide a short form for users to get tasks not attached to a project
     if (
       req.query.unassigned === "1" ||
       req.query.unassigned === "true" ||
@@ -140,7 +148,7 @@ router.get("/", async (req, res) => {
       }
     }
 
-    // Total tasks BEFORE any filters (for UI stats)
+    // Total tasks BEFORE any filters, used by the UI for total counts
     const totalBeforeFilters = await Task.countDocuments({ userId: req.user.userId });
 
     // Fetch tasks AFTER filters (but BEFORE limit)
@@ -148,10 +156,12 @@ router.get("/", async (req, res) => {
     const totalAfterFilters = tasks.length;
 
     // --- Separate completed vs active ---
+    // We keep completed tasks at the bottom of the response list
     const completedTasks = tasks.filter((t) => t.status === "Completed");
     const activeTasks = tasks.filter((t) => t.status !== "Completed");
 
     // --- Sorting helper ---
+    // Returns a JS comparator based on the sorting method
     const getSortFunction = (method) => {
       const methodLower = (method || "").toLowerCase();
 
@@ -237,7 +247,7 @@ router.get("/", async (req, res) => {
     // Active first, then completed at bottom
     const sortedTasks = [...sortedActiveTasks, ...sortedCompletedTasks];
 
-    // Apply limit
+    // Apply limit (pagination-like behavior)
     const resultTasks = numOfTasks
       ? sortedTasks.slice(0, numOfTasks)
       : sortedTasks;
@@ -250,7 +260,7 @@ router.get("/", async (req, res) => {
       tasks: resultTasks,
     };
 
-    // If filters or unassigned were used, include metadata
+    // If filters or unassigned were used, include metadata in response
     if (Object.keys(filters).length > 0 || req.query.unassigned) {
       response.filters = {
         ...filters,
@@ -271,6 +281,7 @@ router.get("/", async (req, res) => {
 });
 
 // GET /api/tasks/:id - Get a specific task by ID
+// id in path must be a valid Mongo ObjectId
 router.get("/:id", async (req, res) => {
   try {
     const id = req.params.id;
@@ -296,6 +307,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST /api/tasks - Create a new task
+// Payload should contain at least title, deadline, and context
 router.post(
   "/",
   [
@@ -374,6 +386,7 @@ router.post(
     const urgency = priorityToUrgency[payload.priority || "medium"];
 
     // --- PROJECT RELATION (ObjectId) ---
+    // Convert projectId to an ObjectId or set to null for unassigned
     const projectId = payload.projectId || null;
 
     // Set completedAt if creating a task that's already completed
@@ -381,6 +394,7 @@ router.post(
 
 
     // --- CREATE TASK ---
+    // Create task document in DB and respond with the created item
     const newTask = await Task.create({
       title: payload.title,
       name: payload.title,
@@ -408,6 +422,7 @@ router.post(
 });
 
 // PATCH /api/tasks/:id - Update an existing task
+// Handles partial updates; special handling for completedAt and projectId sanitization
 router.patch(
   "/:id",
   [
@@ -474,7 +489,7 @@ router.patch(
       const id = req.params.id;
       const updates = req.body || {};
 
-      // Sync urgency with priority if provided
+      // Sync urgency with priority if provided (ensure consistency)
       if (updates.priority) {
         const priorityToUrgency = {
           low: "Low",
@@ -485,13 +500,13 @@ router.patch(
         updates.urgency = priorityToUrgency[updates.priority];
       }
 
-      // keep title/name sync logic
+      // Keep title/name sync logic so either field can be used
     if (updates.title || updates.name) {
       updates.title = updates.title ?? updates.name;
       updates.name = updates.title;
     }
 
-    //  FIX: sanitize projectId so Mongoose doesn't choke on ""
+    // Sanitize projectId to avoid empty string issues
     if (Object.prototype.hasOwnProperty.call(updates, "projectId")) {
       if (!updates.projectId || updates.projectId === "none") {
         updates.projectId = null;
@@ -499,6 +514,7 @@ router.patch(
     }
 
     // Handle completedAt based on status changes
+    // If a task is moved to Complete set completedAt, otherwise clear it
     if (updates.status) {
         // First, get the current task to check its current status
         const currentTask = await Task.findOne({
@@ -551,6 +567,7 @@ router.patch(
 
 
 // DELETE /api/tasks/:id - Delete a task
+// Validates ID and removes the task from the DB
 router.delete("/:id", async (req, res) => {
   try {
     const id = req.params.id;

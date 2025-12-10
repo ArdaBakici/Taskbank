@@ -5,11 +5,14 @@ const { User } = require("../mongo-schemas");
 
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this-in-production";
+// Auth routes for registering and logging in users
+
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this-in-production"; // fallback for local/dev environment
 const JWT_EXPIRES_IN = "7d"; // Token expires in 7 days
 
 /**
  * Generate JWT token for user
+ * Includes only minimal user data in token payload
  */
 const generateToken = (user) => {
   return jwt.sign(
@@ -56,6 +59,7 @@ router.post(
 
       const { username, email, password } = req.body;
 
+      // Prevent duplicate accounts by email or username
       // Check if user already exists
       const existingUser = await User.findOne({
         $or: [{ email }, { username }],
@@ -74,7 +78,8 @@ router.post(
         }
       }
 
-      // Create new user (password will be hashed by pre-save hook)
+      // Create new user
+      // Note: password hashing is handled by the User model's pre-save hook
       const user = new User({
         username,
         email,
@@ -141,7 +146,8 @@ router.post(
         });
       }
 
-      // Verify password
+      // Check provided password against stored hash
+      // (comparePassword implemented on the User model)
       const isPasswordValid = await user.comparePassword(password);
       if (!isPasswordValid) {
         return res.status(401).json({ 

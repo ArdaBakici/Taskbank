@@ -14,7 +14,8 @@ export default function AllProjects({
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [sortingMethod, setSortingMethod] = useState(embedded ? 'deadline' : 'id');
+  // Default sorting for Projects: Deadline (earliest first)
+  const [sortingMethod, setSortingMethod] = useState('deadline');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
@@ -115,12 +116,12 @@ export default function AllProjects({
   };
 
   const sortOptions = [
-    { value: 'id', label: 'ID' },
     { value: 'deadline', label: 'Deadline (Earliest)' },
     { value: 'deadline_desc', label: 'Deadline (Latest)' },
     { value: 'urgency_desc', label: 'Urgency (High to Low)' },
     { value: 'urgency_asc', label: 'Urgency (Low to High)' },
     { value: 'name', label: 'Name (A-Z)' },
+    { value: 'id', label: 'ID' },
   ];
 
   const listContent = (
@@ -220,7 +221,7 @@ export default function AllProjects({
       </div>
 
       {/* Display current sort and filter status */}
-      {(sortingMethod !== 'id' || statusFilter) && (
+      {(sortingMethod !== 'deadline' || statusFilter) && (
         <div style={{ 
           padding: '8px 12px', 
           backgroundColor: '#f3f4f6', 
@@ -229,7 +230,7 @@ export default function AllProjects({
           fontSize: '0.9rem',
           color: '#4b5563'
         }}>
-          {sortingMethod !== 'id' && (
+          {sortingMethod !== 'deadline' && (
             <div>
               <strong>Sorted by:</strong> {sortOptions.find(opt => opt.value === sortingMethod)?.label}
             </div>
