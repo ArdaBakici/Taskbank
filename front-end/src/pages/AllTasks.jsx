@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiCircle, FiCheckCircle, FiLoader, FiPauseCircle, FiAlertCircle, FiFileText, FiSearch } from "react-icons/fi";
+import { FiCircle, FiCheckCircle, FiLoader, FiPauseCircle, FiFileText, FiSearch } from "react-icons/fi";
 import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import DashboardHeader from "../components/DashboardHeader";
@@ -241,7 +241,6 @@ export default function AllTasks({
   // - Home page preview
 // - All Tasks page
 // Show ONLY on Project View (filterBy === "project")
-  const isHomePageEmbedded = embedded && !filterBy && limit;
   const isProjectView = filterBy === "project";
   if (isProjectView) {
   sortOptions.push({ value: 'order', label: 'Manual Order' });
@@ -275,13 +274,6 @@ export default function AllTasks({
     const isAlreadyFiltered = additionalFilters.hasOwnProperty(option.filterBy);
     return (!permanentFilterType || option.filterBy !== permanentFilterType) && !isAlreadyFiltered;
   });
-
-  // Get display label for filter button
-  const getFilterButtonLabel = () => {
-    const filterCount = Object.keys(additionalFilters).length;
-    if (filterCount === 0) return 'Filter';
-    return `Filter (${filterCount} active)`;
-  };
 
   const listContent = (
     <>
