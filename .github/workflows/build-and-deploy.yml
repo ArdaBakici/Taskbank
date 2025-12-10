@@ -2,7 +2,7 @@ name: Build, Push, and Deploy
 
 on:
   workflow_run:
-    workflows: ["Backend Tests"]
+    workflows: ["Build Images (no push/deploy)"]
     types:
       - completed
   workflow_dispatch:
