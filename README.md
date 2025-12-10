@@ -3,11 +3,9 @@
 [![Deploy](https://img.shields.io/github/actions/workflow/status/agile-students-fall2025/4-final-taskbank/build-and-deploy.yml?branch=main&label=Deploy)](https://github.com/agile-students-fall2025/4-final-taskbank/actions/workflows/build-and-deploy.yml)
 # Taskbank - Smart Task Planner
 
-<p align="center">
-  <a href="https://taskbank.me/" target="_blank" style="font-size: 40px; font-weight: 800; text-decoration: none;">
-    🚀 Launch Taskbank → https://taskbank.me/
-  </a>
-</p>
+
+## 🚀 Launch Taskbank → https://taskbank.me/
+
 
 ## Product Vision Statement
 
@@ -37,9 +35,9 @@ Taskbank is designed for everyone who needs task management, but specifically ta
 
 ## Team Members
 
-- **[Arda Bakici (Sprint 0 Product Owner)](https://github.com/ArdaBakici)** 
+- **[Arda Bakici](https://github.com/ArdaBakici)** 
 - **[Siddhanta Paudel](https://github.com/PaudelSiddhanta)** 
-- **[Sihyun Kim (Sprint 0 Scrum Master)](https://github.com/sihyunlkim)** 
+- **[Sihyun Kim](https://github.com/sihyunlkim)** 
 - **[Srijan Sthapit](https://github.com/Srijan3141)** 
 - **[William Chan](https://github.com/wc2184)** 
 
@@ -99,11 +97,15 @@ The intelligent task sorting algorithm and context-aware filtering require caref
 - [Initial Project Proposal](https://github.com/agile-students-fall2025/1-project-proposal-igor)
 - [Contributing Guidelines](./CONTRIBUTING.md)
 
-## Extra Credit Achievements
+## CI/CD Automation
+- Pull requests and branch pushes run the relevant builds/tests automatically when code paths that require them change like the back-end/ and front-end/ folders.
+- Any change to `main` (such as merging a feature branch) kicks off a full deploy of the frontend and backend to Digital Ocean and https://taskbank.me will be updated.
 
+## Extra Credit Achievements 
+Completed all three extra credit assignments for Sprint 4. 
 - **Containerized deployment**: Everything ships in Docker with images published to GHCR.
 - **Continuous Integration**: GitHub Actions builds and tests on every push/PR.
-- **Continuous Deployment**: Main branch auto-deploys to our droplet after CI passes.
+- **Continuous Deployment**: Main branch auto-deploys to our container registry after pull requests are merged to the main branch. Github Actions then ssh's into the droplet, and the container images of the frontend and backend apps are then pulled inside the droplet. Docker images are rebuilt and started, and the website https://taskbank.me is then updated.
 
 ---
 
