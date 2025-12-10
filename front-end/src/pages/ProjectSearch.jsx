@@ -1,21 +1,30 @@
+// React and routing imports
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import DashboardHeader from "../components/DashboardHeader";
 
+/**
+ * ProjectSearch component - Search and filter projects by name or tags
+ * Features real-time search with instant filtering as user types
+ */
 export default function ProjectSearch() {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState([]);
-  const [query, setQuery] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  
+  // Component state management
+  const [projects, setProjects] = useState([]); // Filtered projects matching search query
+  const [query, setQuery] = useState(""); // Current search input
+  const [loading, setLoading] = useState(true); // Loading indicator
+  const [error, setError] = useState(null); // Error state for API failures
 
+  // Real-time search effect - triggers whenever search query changes
   useEffect(() => {
     async function loadProjects() {
       try {
         setLoading(true);
 
+        // Fetch all projects from backend
         const response = await authenticatedFetch('/projects');
 
         if (!response.ok) {
@@ -24,15 +33,18 @@ export default function ProjectSearch() {
 
         const data = await response.json();
 
-        // Search by name OR tags
+        // Client-side filtering - search by project name OR tags
         const filtered = data.projects.filter((p) => {
+          // Case-insensitive search in project name
           const nameMatch = p.name.toLowerCase().includes(query.toLowerCase());
+          // Case-insensitive search in tags (joined as single string)
           const tagsMatch =
             (p.tags || [])
               .join(" ")
               .toLowerCase()
               .includes(query.toLowerCase());
 
+          // Return true if either name or tags contain the search query
           return nameMatch || tagsMatch;
         });
 
@@ -46,24 +58,27 @@ export default function ProjectSearch() {
     }
 
     loadProjects();
-  }, [query]);
+  }, [query]); // Re-run search whenever query changes
 
+  // Helper function to display tags in a readable format
   const renderTags = (tagList) => {
-    if (!tagList || tagList.length === 0) return "—";
+    if (!tagList || tagList.length === 0) return "—"; // Show dash for no tags
     return Array.isArray(tagList) ? tagList.join(", ") : tagList;
   };
 
+  // Helper function to format deadline dates for display
   const formatDeadline = (deadline) => {
-    if (!deadline) return "—";
+    if (!deadline) return "—"; // Show dash for no deadline
     try {
       const date = new Date(deadline);
+      // Format as "Dec 9, 2025" style
       return date.toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
         day: "numeric",
       });
     } catch (e) {
-      return "Invalid date";
+      return "Invalid date"; // Handle malformed dates gracefully
     }
   };
 
@@ -76,30 +91,33 @@ export default function ProjectSearch() {
           <h2>Search Projects</h2>
         </div>
 
-        {/* EXACT SAME SPACING AS TASK SEARCH */}
+        {/* Search input - matches styling from TaskSearch for consistency */}
         <div className="form-group full-width">
           <input
             id="project-search"
             type="text"
             placeholder="Search by project name or tags..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => setQuery(e.target.value)} // Real-time search as user types
           />
         </div>
 
-        {/* SAME LIST CLASS AS TASKS */}
+        {/* Results list - uses same CSS classes as task list for consistency */}
         <div className="task-list">
+          {/* Loading state */}
           {loading && <p>Loading projects...</p>}
+          {/* Error state */}
           {error && <p>{error}</p>}
 
+          {/* Search results - each project is clickable */}
           {!loading &&
             !error &&
             projects.map((project) => (
               <button
                 key={project._id}
                 type="button"
-                className="task-row task-row-button"
-                onClick={() => navigate(`/project/${project._id}`)}
+                className="task-row task-row-button" // Reuse task styling for consistency
+                onClick={() => navigate(`/project/${project._id}`)} // Navigate to project details
               >
                 <div>{project.name}</div>
                 <div>{renderTags(project.tags)}</div>
@@ -107,11 +125,13 @@ export default function ProjectSearch() {
               </button>
             ))}
 
+          {/* No results message */}
           {!loading && !error && projects.length === 0 && (
             <p>No projects found.</p>
           )}
         </div>
 
+        {/* Return to home button */}
         <button
           className="section-footer-button tasks-return"
           onClick={() => navigate("/home")}

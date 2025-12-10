@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FiSearch } from "react-icons/fi";
 import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import DashboardHeader from "../components/DashboardHeader";
@@ -216,6 +217,19 @@ export default function AllProjects({
 
           {/* Only show search icon when embedded */}
           {embedded && renderActions && renderActions(navigate)}
+          
+          {/* Always show search button when not embedded */}
+          {!embedded && (
+            <div className="sort-dropdown-container">
+              <button
+                className="search-button"
+                title="Search Projects"
+                onClick={() => navigate("/project/search")}
+              >
+                <FiSearch size={18} />
+              </button>
+            </div>
+          )}
 
         </div>
       </div>

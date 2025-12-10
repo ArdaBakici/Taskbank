@@ -1,4 +1,5 @@
-// src/pages/EditTask.jsx
+// EditTask component - Allows editing existing tasks
+// Features: Task info editing, project assignment, task deletion
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { authenticatedFetch } from "../utils/auth";
@@ -6,54 +7,62 @@ import "../css/dashboard.css";
 import "../css/forms.css";
 import DashboardHeader from "../components/DashboardHeader";
 
+/**
+ * EditTask component - Edit existing task information
+ * Supports navigation back to project view if accessed from project context
+ */
 export default function EditTask() {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams(); // Get task ID from URL
   const location = useLocation();
 
+  // Check if we came from a project edit page (for proper navigation back)
   const returnToProject = location.state?.returnToProject;
 
+  // Form data state - matches task properties
   const [formData, setFormData] = useState({
     taskName: "",
     description: "",
-    project: "none",
+    project: "none", // "none" means unassigned
     priority: "Medium",
     status: "Not Started",
     deadline: "",
-    tags: "",
+    tags: "", // Comma-separated string for display
     context: "other",
   });
 
-  const [projects, setProjects] = useState([]);
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [popup, setPopup] = useState({ show: false, message: "", type: "success" });
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  // UI state management
+  const [projects, setProjects] = useState([]); // Available projects for assignment
+  const [errors, setErrors] = useState({}); // Form validation errors
+  const [loading, setLoading] = useState(true); // Loading indicator
+  const [popup, setPopup] = useState({ show: false, message: "", type: "success" }); // Success/error notifications
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // Delete confirmation modal
 
-  // Load existing task data and available projects
+  // Load task data and available projects on component mount
   useEffect(() => {
     async function loadData() {
       setLoading(true);
       try {
-        // Fetch projects
+        // Fetch all available projects for dropdown selection
         const resProjects = await authenticatedFetch('/projects');
         const projectsData = await resProjects.json();
         setProjects(projectsData.projects || []);
 
-        // Fetch task by ID
+        // Fetch the specific task to edit
         if (id) {
           const resTask = await authenticatedFetch(`/tasks/${id}`);
           const { task } = await resTask.json();
           if (task) {
+            // Populate form with existing task data
             setFormData({
               taskName: task.title || "",
               description: task.description || "",
-              project: task.projectId || "none",
-              priority: task.urgency || "Medium",
+              project: task.projectId || "none", // Convert null to "none" for select
+              priority: task.urgency || "Medium", // Backend uses 'urgency' field
               status: task.status || "Not Started",
-              deadline: task.deadline ? task.deadline.slice(0, 10) : "",
+              deadline: task.deadline ? task.deadline.slice(0, 10) : "", // Format for date input
               tags: Array.isArray(task.tags)
-                ? task.tags.join(", ")
+                ? task.tags.join(", ") // Convert array to comma-separated string
                 : task.tags || "",
               context: task.context || "other",
             });
@@ -69,15 +78,18 @@ export default function EditTask() {
     loadData();
   }, [id]);
 
+  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
+    // Clear validation error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
+  // Initialize delete process - show confirmation modal
   const handleDelete = () => {
     if (!id) {
       setPopup({ show: true, message: "Task ID missing — cannot delete.", type: "error" });
@@ -86,6 +98,7 @@ export default function EditTask() {
     setShowDeleteModal(true);
   };
 
+  // Confirm and execute task deletion
   const confirmDelete = async () => {
     setShowDeleteModal(false);
     try {
@@ -101,9 +114,12 @@ export default function EditTask() {
       const data = await response.json();
       console.log("Deleted:", data);
 
+      // Navigate back to appropriate page after successful deletion
       if (returnToProject) {
+        // Return to project edit page if we came from there
         navigate(`/projects/edit/${returnToProject}`);
       } else {
+        // Otherwise go to main tasks list
         navigate("/tasks");
       }
     } catch (error) {
@@ -112,13 +128,16 @@ export default function EditTask() {
     }
   };
 
+  // Handle form submission and task update
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate required fields
     const newErrors = {};
-
     if (!formData.taskName.trim())
       newErrors.taskName = "Task name is required";
 
+    // Stop submission if validation fails
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -126,10 +145,11 @@ export default function EditTask() {
 
     setErrors({});
     try {
-      // Prepare payload mapping frontend field names -> backend expectation
+      // Prepare payload - map frontend fields to backend expectations
       const payload = {
-        title: formData.taskName.trim(),
+        title: formData.taskName.trim(), // Backend expects 'title' not 'taskName'
         projectId: formData.project === "none" ? null : formData.project,
+        // Backend has both 'priority' and 'urgency' fields
         priority: formData.priority
           ? formData.priority.toLowerCase()
           : undefined,
@@ -140,6 +160,7 @@ export default function EditTask() {
         description: formData.description || "",
         status: formData.status || "",
         deadline: formData.deadline || "",
+        // Convert comma-separated tags back to array
         tags: Array.isArray(formData.tags)
           ? formData.tags
           : formData.tags
@@ -148,13 +169,14 @@ export default function EditTask() {
         context: formData.context || "",
       };
 
-      // Remove undefined keys
+      // Clean up payload - remove undefined values
       Object.keys(payload).forEach(
         (k) => payload[k] === undefined && delete payload[k]
       );
 
       console.log("PATCH payload ->", payload);
 
+      // Send update request to backend
       const res = await authenticatedFetch(`/tasks/${id}`, {
         method: "PATCH",
         body: JSON.stringify(payload),
@@ -164,12 +186,14 @@ export default function EditTask() {
       const json = await res.json();
       console.log("PATCH response body:", json);
 
+      // Handle API response
       if (!res.ok) {
         const errMsg = json?.message || "Failed to update task";
         setPopup({ show: true, message: `Update failed: ${errMsg}`, type: "error" });
         return;
       }
 
+      // Success - navigate back to previous page
       navigate(-1);
     } catch (err) {
       console.error("Failed to update task:", err);
@@ -177,6 +201,7 @@ export default function EditTask() {
     }
   };
 
+  // Cancel editing and return to previous page
   const handleCancel = () => {
     navigate(-1);
   };

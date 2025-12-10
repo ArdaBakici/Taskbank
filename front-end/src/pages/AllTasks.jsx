@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiCircle, FiCheckCircle, FiLoader, FiPauseCircle, FiAlertCircle, FiFileText } from "react-icons/fi";
+import { FiCircle, FiCheckCircle, FiLoader, FiPauseCircle, FiAlertCircle, FiFileText, FiSearch } from "react-icons/fi";
 import { authenticatedFetch } from "../utils/auth";
 import "../css/dashboard.css";
 import DashboardHeader from "../components/DashboardHeader";
@@ -378,6 +378,18 @@ export default function AllTasks({
             </div>
           )}
           {showCustomActions && renderActions && renderActions(navigate)}
+          {/* Always show search button when not embedded */}
+          {!embedded && (
+            <div className="sort-dropdown-container">
+              <button
+                className="search-button"
+                title="Search Tasks"
+                onClick={() => navigate("/tasks/search")}
+              >
+                <FiSearch size={18} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

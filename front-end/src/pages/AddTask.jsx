@@ -1,3 +1,4 @@
+// React and routing imports
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { authenticatedFetch } from "../utils/auth";
@@ -5,34 +6,43 @@ import "../css/dashboard.css";
 import "../css/forms.css";
 import DashboardHeader from "../components/DashboardHeader";
 
+/**
+ * AddTask component - Create new tasks with project assignment
+ * Features: Form validation, project selection, tag support, context categories
+ */
 export default function AddTask() {
   const navigate = useNavigate();
+  
+  // Form data state - all task properties
   const [formData, setFormData] = useState({
     taskName: "",
     description: "",
-    project: "",                // "" means Unassigned
-    priority: "medium",
-    status: "Not Started",
+    project: "",                // Empty string means unassigned
+    priority: "medium",         // Default priority level
+    status: "Not Started",      // Default status for new tasks
     deadline: "",
-    tags: "",
-    context: "other",
+    tags: "",                   // Comma-separated string
+    context: "other",           // Default context category
   });
 
-  const [projects, setProjects] = useState([]);
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [popup, setPopup] = useState({ show: false, message: "", type: "success" });
+  // UI state management
+  const [projects, setProjects] = useState([]); // Available projects for assignment
+  const [errors, setErrors] = useState({});     // Form validation errors
+  const [loading, setLoading] = useState(true); // Projects loading state
+  const [popup, setPopup] = useState({ show: false, message: "", type: "success" }); // Success/error notifications
 
+  // Load available projects on component mount
   useEffect(() => {
     async function loadProjects() {
       try {
         const response = await authenticatedFetch('/projects');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
+        // Handle different API response formats
         setProjects(data.projects || data || []);
       } catch (err) {
         console.error("Failed to load projects", err);
-        setProjects([]);
+        setProjects([]); // Fallback to empty array on error
       } finally {
         setLoading(false);
       }
@@ -40,61 +50,73 @@ export default function AddTask() {
     loadProjects();
   }, []);
 
+  // Handle form input changes and clear validation errors
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing in a field
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  // Handle form submission with validation and API call
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate required (project is OPTIONAL now)
+    // Validate required fields (project is optional)
     const newErrors = {};
     if (!formData.taskName.trim()) newErrors.taskName = "Task name is required";
     if (!formData.deadline) newErrors.deadline = "Deadline is required";
     if (!formData.context) newErrors.context = "Context is required";
 
+    // Stop submission if validation fails
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
     setErrors({});
 
-    // Build payload; omit projectId if unassigned
+    // Build API payload with proper field mapping
     const base = {
-      title: formData.taskName,
+      title: formData.taskName,      // Backend expects 'title' not 'taskName'
       description: formData.description,
       priority: formData.priority,
       status: formData.status,
       deadline: formData.deadline,
       context: formData.context,
+      // Convert comma-separated tags to array
       tags: formData.tags ? formData.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
     };
+    
+    // Only include projectId if a project is selected (not unassigned)
     const taskData = formData.project
-      ? { ...base, projectId: formData.project }
-      : { ...base }; // <-- Unassigned: no projectId sent
-    // If your backend prefers null instead, use: { ...base, projectId: null }
+      ? { ...base, projectId: formData.project }  // Assigned to project
+      : { ...base };                              // Unassigned task
+    // Alternative: use { ...base, projectId: null } if backend prefers explicit null
 
     try {
+      // Send task creation request to backend
       const response = await authenticatedFetch('/tasks', {
         method: "POST",
         body: JSON.stringify(taskData),
       });
 
+      // Handle API error responses
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.message || "Failed to create task");
       }
 
       await response.json();
+      // Navigate to tasks list on successful creation
       navigate("/tasks");
     } catch (error) {
       console.error("Error creating task:", error);
+      // Show error popup to user
       setPopup({ show: true, message: `Error: ${error.message}`, type: "error" });
     }
   };
 
+  // Cancel form and go back to previous page
   const handleCancel = () => navigate(-1);
 
   return (
@@ -107,6 +129,7 @@ export default function AddTask() {
 
         <div className="form-card">
           <form onSubmit={handleSubmit}>
+            {/* Task Name - Required Field */}
             <div className="form-row">
               <div className="form-group full-width">
                 <label htmlFor="taskName">Task Name *</label>
@@ -124,6 +147,7 @@ export default function AddTask() {
               </div>
             </div>
 
+            {/* Task Description - Optional */}
             <div className="form-row">
               <div className="form-group full-width">
                 <label htmlFor="description">Description</label>
@@ -138,6 +162,7 @@ export default function AddTask() {
               </div>
             </div>
 
+            {/* Project Assignment (Optional) and Priority */}
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="project">Project (optional)</label>
@@ -148,7 +173,7 @@ export default function AddTask() {
                   onChange={handleChange}
                   disabled={loading}
                 >
-                  {/* Unassigned first */}
+                  {/* Unassigned option is default */}
                   <option value="">{loading ? "Loading projects..." : "Unassigned"}</option>
                   {Array.isArray(projects) &&
                     projects.map((project) => (
@@ -157,7 +182,7 @@ export default function AddTask() {
                       </option>
                     ))}
                 </select>
-                {/* No project error since it's optional */}
+                {/* No validation error since project is optional */}
               </div>
 
               <div className="form-group">
@@ -176,6 +201,7 @@ export default function AddTask() {
               </div>
             </div>
 
+            {/* Status and Deadline */}
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="status">Status</label>
@@ -202,6 +228,7 @@ export default function AddTask() {
               </div>
             </div>
 
+            {/* Tags and Context */}
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="tags">Tags</label>
@@ -211,7 +238,7 @@ export default function AddTask() {
                   name="tags"
                   value={formData.tags}
                   onChange={handleChange}
-                  placeholder="e.g., frontend, urgent, bug"
+                  placeholder="e.g., frontend, urgent, bug" // Example of comma-separated format
                 />
               </div>
 
@@ -234,6 +261,7 @@ export default function AddTask() {
               </div>
             </div>
 
+            {/* Form Action Buttons */}
             <div className="dashboard-buttons">
               <button type="button" onClick={handleCancel}>Cancel</button>
               <button type="submit">Save Task</button>
@@ -242,7 +270,7 @@ export default function AddTask() {
         </div>
       </main>
 
-      {/* POPUP NOTIFICATION */}
+      {/* Error/Success Popup Notification */}
       {popup.show && (
         <div className="tb-modal-overlay" onClick={() => setPopup({ ...popup, show: false })}>
           <div className="tb-modal" onClick={(e) => e.stopPropagation()}>

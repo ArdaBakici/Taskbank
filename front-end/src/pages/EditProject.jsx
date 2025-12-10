@@ -1,3 +1,4 @@
+// React and routing imports
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { authenticatedFetch } from "../utils/auth";
@@ -5,7 +6,7 @@ import "../css/dashboard.css";
 import "../css/forms.css";
 import DashboardHeader from "../components/DashboardHeader";
 
-// dnd-kit imports
+// Drag and drop functionality for task reordering
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -15,7 +16,13 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+/**
+ * Sortable task item component for drag-and-drop reordering
+ * Displays individual tasks with drag handle, name, and action buttons
+ */
+
 function SortableTaskItem({ task, index, onEdit, onRemove }) {
+  // Setup drag and drop functionality for this task item
   const {
     attributes,
     listeners,
@@ -73,56 +80,71 @@ function SortableTaskItem({ task, index, onEdit, onRemove }) {
   );
 }
 
+/**
+ * EditProject component - Allows editing existing projects
+ * Features: Basic project info editing, task assignment/reordering, project deletion
+ */
 export default function EditProject() {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams(); // Get project ID from URL
 
+  // Form state for project details
   const [formData, setFormData] = useState({
     projectName: "",
     description: "",
     status: "Planning",
     deadline: "",
     tags: "",
-    selectedTasks: [],
+    selectedTasks: [], // Array of task IDs assigned to this project
   });
 
-  const [errors, setErrors] = useState({});
-  const [availableTasks, setAvailableTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [popup, setPopup] = useState({ show: false, message: "", type: "success" });
+  // UI state management
+  const [errors, setErrors] = useState({}); // Form validation errors
+  const [availableTasks, setAvailableTasks] = useState([]); // All tasks from backend
+  const [loading, setLoading] = useState(true); // Loading indicator
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // Delete confirmation modal
+  const [popup, setPopup] = useState({ show: false, message: "", type: "success" }); // Success/error notifications
 
+  // Track original task assignments to determine what changed
   const [initialSelectedTaskIds, setInitialSelectedTaskIds] = useState([]);
 
-  // Load initial project data
+  // Load initial project data and available tasks on component mount
   useEffect(() => {
     async function loadData() {
       setLoading(true);
       try {
+        // Fetch all available tasks first
         const taskRes = await authenticatedFetch("/tasks");
         const taskJson = await taskRes.json();
         const allTasks = taskJson.tasks || taskJson;
 
         setAvailableTasks(allTasks || []);
 
+        // If editing existing project, load its data
         if (id) {
+          // Get project basic info
           const projRes = await authenticatedFetch(`/projects/${id}`);
           if (!projRes.ok) throw new Error("Failed to load project");
           const projectData = await projRes.json();
 
+          // Get tasks assigned to this project
           const projTasksRes = await authenticatedFetch(`/projects/${id}/tasks`);
           if (!projTasksRes.ok) throw new Error("Failed to load project tasks");
           const projectTasks = await projTasksRes.json();
 
           if (projectData) {
+            // Extract task IDs from project tasks for tracking assignments
             const selectedTaskIds = (projectTasks || []).map((t) => t._id);
 
+            // Populate form with existing project data
             setFormData({
               projectName: projectData.name || "",
               description: projectData.description || "",
               status: projectData.status || "Planning",
-                deadline: projectData.deadline
+              // Format date for HTML date input (YYYY-MM-DD)
+              deadline: projectData.deadline
               ? projectData.deadline.slice(0, 10) : "",
+              // Convert tags array to comma-separated string for display
               tags: projectData.tags
                 ? Array.isArray(projectData.tags)
                   ? projectData.tags.join(", ")
@@ -130,6 +152,7 @@ export default function EditProject() {
                 : "",
               selectedTasks: selectedTaskIds,
             });
+            // Remember original assignments to track changes
             setInitialSelectedTaskIds(selectedTaskIds);
           }
         }
@@ -145,24 +168,27 @@ export default function EditProject() {
     loadData();
   }, [id]);
 
-  // Inputs
+  // Form input handlers
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear validation error when user starts typing
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  // Handle task assignment/unassignment
   const handleTaskSelection = (taskId) => {
     setFormData((prev) => {
       const alreadySelected = prev.selectedTasks.includes(taskId);
 
-      // If removing from project → mark as unassigned
+      // If removing from project, update local state to reflect change
       if (alreadySelected) {
         unassignTaskLocally(taskId);
       }
 
       return {
         ...prev,
+        // Toggle task selection
         selectedTasks: alreadySelected
           ? prev.selectedTasks.filter((id) => id !== taskId)
           : [...prev.selectedTasks, taskId],
@@ -171,10 +197,11 @@ export default function EditProject() {
   };
 
 
-  // Save project
+  // Save project changes
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validate required fields
     const newErrors = {};
 
     if (!formData.projectName.trim()) {
@@ -185,6 +212,7 @@ export default function EditProject() {
       newErrors.deadline = "Deadline is required";
     }
 
+    // Stop if validation fails
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -204,7 +232,7 @@ export default function EditProject() {
     };
 
     try {
-      // 1) 프로젝트 자체 업데이트
+      // Step 1: Update the project's basic information
       const res = await authenticatedFetch(`/projects/${id}`, {
         method: "PATCH",
         body: JSON.stringify(projectPayload),
@@ -217,9 +245,9 @@ export default function EditProject() {
         );
       }
 
-  
       const projectId = id;
 
+      // Step 2: Determine which tasks need to be assigned/unassigned
       const toAssign = formData.selectedTasks.filter(
         (taskId) => !initialSelectedTaskIds.includes(taskId)
       );
@@ -262,13 +290,13 @@ export default function EditProject() {
         ),
       ]);
 
-      // 🔹 3) 드래그로 정해진 순서를 order 필드로 저장
-      // formData.selectedTasks: [taskId1, taskId2, taskId3, ...] (드래그 후 최종 순서)
+      // Step 3: Update task ordering based on drag-and-drop sequence
+      // formData.selectedTasks contains task IDs in the order they were arranged
       await Promise.all(
         formData.selectedTasks.map((taskId, index) =>
           authenticatedFetch(`/tasks/${taskId}`, {
             method: "PATCH",
-            body: JSON.stringify({ order: index }), // 0,1,2,...
+            body: JSON.stringify({ order: index }), // Set order: 0, 1, 2, etc.
           }).then(async (r) => {
             if (!r.ok) {
               const body = await r.json().catch(() => ({}));
@@ -290,13 +318,14 @@ export default function EditProject() {
 
 
 
-  // Delete Project with mode
+  // Delete project with different modes for handling associated tasks
   const handleDeleteProject = async (mode) => {
     try {
       let url = `/projects/${id}`;
 
-      if (mode === "delete-tasks") url += "?deleteTasks=true";
-      if (mode === "unassign-tasks") url += "?unassignTasks=true";
+      // Add query parameters based on deletion mode
+      if (mode === "delete-tasks") url += "?deleteTasks=true"; // Delete project and all its tasks
+      if (mode === "unassign-tasks") url += "?unassignTasks=true"; // Delete project but keep tasks unassigned
 
       const response = await authenticatedFetch(url, {
         method: "DELETE",
@@ -313,10 +342,12 @@ export default function EditProject() {
     }
   };
 
+  // Navigation helpers
   const handleCancel = () => navigate("/projects");
   const handleEditTask = (taskId) =>
     navigate(`/tasks/edit/${taskId}`, { state: { returnToProject: id } });
 
+  // Update task's project assignment in local state (optimistic update)
   const unassignTaskLocally = (taskId) => {
     setAvailableTasks(prev =>
       prev.map(t =>
@@ -324,36 +355,46 @@ export default function EditProject() {
       )
     );
   };
-  // Helpers
+  
+  // Helper functions for task organization
+  // Get selected tasks in the order they should appear (for drag-and-drop list)
   const orderedSelectedTasks = formData.selectedTasks
     .map((taskId) => Array.isArray(availableTasks) ? availableTasks.find((t) => t._id === taskId) : null)
     .filter(Boolean);
 
 const selectedIds = formData.selectedTasks;
 
+// Filter tasks to show only unassigned ones (available for selection)
 const unselectedTasks = Array.isArray(availableTasks)
   ? availableTasks.filter((t) => {
+      // Check if task is already assigned to another project
       const assigned =
         t.projectId !== null && t.projectId !== undefined;
 
+      // Check if task is selected for this project
       const selectedForThisProject = selectedIds.includes(t._id);
 
+      // Show only unassigned tasks that aren't selected for this project
       return !assigned && !selectedForThisProject;
     })
   : [];
 
 
 
+  // Handle drag and drop reordering of selected tasks
   const onDragEnd = (event) => {
     const { active, over } = event;
+    // Exit early if no valid drop target or no actual movement
     if (!over || active.id === over.id) return;
 
     setFormData((prev) => {
       const current = prev.selectedTasks;
       const oldIndex = current.indexOf(active.id);
       const newIndex = current.indexOf(over.id);
+      // Ensure both items exist in the array
       if (oldIndex === -1 || newIndex === -1) return prev;
 
+      // Reorder the selectedTasks array using dnd-kit's arrayMove utility
       return { ...prev, selectedTasks: arrayMove(current, oldIndex, newIndex) };
     });
   };
