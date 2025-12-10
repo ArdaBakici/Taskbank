@@ -529,17 +529,22 @@ const unselectedTasks = Array.isArray(availableTasks)
 
             {/* ACTION BUTTONS */}
             <div className="form-actions">
-              <button
-                type="button"
-                onClick={() => setShowDeleteModal(true)}
-                className="delete-button"
-              >
-                Delete Project
-              </button>
-              <button type="button" onClick={handleCancel} className="cancel-btn">
-                Cancel
-              </button>
-              <button type="submit" className="save-btn">Save Changes</button>
+              <div className="dashboard-buttons">
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(true)}
+                  className="delete-button"
+                >
+                  Delete Project
+                </button>
+              </div>
+
+              <div className="dashboard-buttons">
+                <button type="button" onClick={handleCancel}>
+                  Cancel
+                </button>
+                <button type="submit">Save Changes</button>
+              </div>
             </div>
           </form>
         </div>
