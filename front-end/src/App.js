@@ -18,10 +18,12 @@ import ChangePassword from "./pages/ChangePassword";
 import ProjectSearch from "./pages/ProjectSearch";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ChangeUsername from "./pages/ChangeUsername";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
