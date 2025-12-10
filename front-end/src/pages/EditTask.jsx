@@ -334,20 +334,17 @@ export default function EditTask() {
 
             {/* Actions */}
             <div className="form-actions">
-              <div className="dashboard-buttons">
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  className="delete-button"
-                >
-                  Delete Task
-                </button>
-              </div>
-              <div className="dashboard-buttons">
-                <button type="button" onClick={handleCancel}>
-                  Cancel</button>
-                <button type="submit">Save Changes</button>
-              </div>
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="delete-button"
+              >
+                Delete Task
+              </button>
+              <button type="button" onClick={handleCancel} className="cancel-btn">
+                Cancel
+              </button>
+              <button type="submit" className="save-btn">Save Changes</button>
             </div>
           </form>
         </div>
