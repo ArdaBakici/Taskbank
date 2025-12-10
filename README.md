@@ -1,9 +1,11 @@
-[![Build, Push, and Deploy](https://github.com/agile-students-fall2025/4-final-taskbank/actions/workflows/build-and-deploy.yml/badge.svg)](https://github.com/agile-students-fall2025/4-final-taskbank/actions/workflows/build-and-deploy.yml)
+[![Build](https://img.shields.io/github/actions/workflow/status/agile-students-fall2025/4-final-taskbank/build-only.yml?branch=main&label=Build)](https://github.com/agile-students-fall2025/4-final-taskbank/actions/workflows/build-only.yml)
+[![Tests](https://img.shields.io/github/actions/workflow/status/agile-students-fall2025/4-final-taskbank/backend-tests.yml?branch=main&label=Tests)](https://github.com/agile-students-fall2025/4-final-taskbank/actions/workflows/backend-tests.yml)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/agile-students-fall2025/4-final-taskbank/build-and-deploy.yml?branch=main&label=Deploy)](https://github.com/agile-students-fall2025/4-final-taskbank/actions/workflows/build-and-deploy.yml)
 # Taskbank - Smart Task Planner
 
 <p align="center">
-  <a href="https://taskbank.me/" target="_blank" style="font-size: 26px; font-weight: 800; text-decoration: none;">
-    🚀 Launch Taskbank Live → https://taskbank.me/
+  <a href="https://taskbank.me/" target="_blank" style="font-size: 40px; font-weight: 800; text-decoration: none;">
+    🚀 Launch Taskbank → https://taskbank.me/
   </a>
 </p>
 
@@ -23,7 +25,6 @@ In the digital age with tons of distractions and things to do, it is easy to get
 - **Smart Daily Planning**: Automatically generates optimized daily task lists when you first launch the app each day
 - **Customizable Workload**: Adjust the number of tasks in your daily list to match your capacity
 - **Time Tracking**: Add estimated effort and time required for each task
-- **Integration**: Sync with Google Tasks and export tasks to your calendar
 - **Gamification**: Track performance stats, completion streaks, and receive grades based on consistency
 
 ### Who Is This For?
@@ -59,14 +60,11 @@ We welcome contributions to Taskbank! Please read our [CONTRIBUTING.md](./CONTRI
 
 ## Building and Testing
 
-*To be updated once the project reaches this stage*
+Run these:
 
+- Build: `cd front-end && npm install && npm run build`
+- Tests: `cd back-end && npm install && npm test`
 
-## Documentation
-
-- [Product Backlog](https://github.com/orgs/agile-students-fall2025/projects/47/views/6)
-- [Sprint 0 Backlog](https://github.com/orgs/agile-students-fall2025/projects/47/views/7)
-- [Contributing Guidelines](./CONTRIBUTING.md)
 ## Project Scope
 
 ### What Makes This Feasible
@@ -75,7 +73,7 @@ Taskbank is designed with modularity in mind. The core todo list functionality s
 
 ### What Makes This Appropriately Challenging
 
-The intelligent task sorting algorithm, context-aware filtering, and integration with external services (Google Tasks, Calendar) require careful design and implementation. The user interface must balance functionality with simplicity, creating a smooth user experience that doesn't feel limiting. These challenges make the project substantial without being overwhelming.
+The intelligent task sorting algorithm and context-aware filtering require careful design and implementation. The user interface must balance functionality with simplicity, creating a smooth user experience that doesn't feel limiting. These challenges make the project substantial without being overwhelming.
 
 ## Technology Stack
 
@@ -95,12 +93,19 @@ The intelligent task sorting algorithm, context-aware filtering, and integration
 
 
 ## Additional Resources
-
-- [Sprint 0 Task Board](https://github.com/orgs/agile-students-fall2025/projects/47/views/8)
+- [Product Backlog](https://github.com/orgs/agile-students-fall2025/projects/47/views/6)
+- [Sprint 4 Task Board](https://github.com/orgs/agile-students-fall2025/projects/47/views/18)
 - [Issue Tracker](https://github.com/agile-students-fall2025/4-final-taskbank/issues)
 - [Initial Project Proposal](https://github.com/agile-students-fall2025/1-project-proposal-igor)
+- [Contributing Guidelines](./CONTRIBUTING.md)
+
+## Extra Credit Achievements
+
+- **Containerized deployment**: Everything ships in Docker with images published to GHCR.
+- **Continuous Integration**: GitHub Actions builds and tests on every push/PR.
+- **Continuous Deployment**: Main branch auto-deploys to our droplet after CI passes.
 
 ---
 
-**Last Updated**: December 8th 2025  
+**Last Updated**: December 10th 2025  
 **Project Status**: Sprint 4 - Deployment
