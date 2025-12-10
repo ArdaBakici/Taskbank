@@ -4,24 +4,30 @@ const passport = require("passport");
 const { User } = require("../mongo-schemas");
 const router = express.Router();
 
+// Settings routes for user preferences and account updates
+// Note: Settings here are stored in-memory for demo purposes
 // Apply authentication to all routes
 router.use(passport.authenticate("jwt", { session: false }));
 
+// Default in-memory settings for the application UI
 const settings = {
   theme: "light",
   notifications: true,
   timezone: "UTC",
 };
 
+// GET /api/settings - Return current default settings
 router.get("/", (_req, res) => {
   res.json(settings);
 });
 
+// PATCH /api/settings - Merge provided settings updates into current settings
 router.patch("/", (req, res) => {
   const updates = req.body || {};
   Object.assign(settings, updates);
   res.json({ message: "Settings updated", settings });
 });
+// PATCH /api/settings/change-password - Change the authenticated user's password
 router.patch(
   "/change-password",
   [
@@ -85,6 +91,7 @@ router.patch(
   }
 });
 
+// PATCH /api/settings/change-username - Change the authenticated user's username
 router.patch("/change-username", async (req, res) => {
   try {
     const userId = req.user.userId;   // from passport JWT

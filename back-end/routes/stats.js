@@ -4,6 +4,12 @@ const passport = require("passport");
 
 const router = express.Router();
 
+// Stats routes return aggregated metrics for the authenticated user.
+// The route below computes a small set of useful statistics for the dashboard UI:
+// - counts (total, active, completed)
+// - completion rate, on-time completion rate, average tasks per day
+// - distribution by status and priority
+
 // Apply authentication to all routes
 router.use(passport.authenticate("jwt", { session: false }));
 
@@ -11,6 +17,7 @@ router.get("/", async (req, res) => {
   try {
     const userId = req.user.userId;
     
+    // Fetch user's tasks and projects from DB
     const tasks = await Task.find({ userId });
     const projects = await Project.find({ userId });
 
@@ -19,12 +26,15 @@ router.get("/", async (req, res) => {
     const completedTasks = tasks.filter(t => t.status === "Completed").length;
     const activeTasks = totalTasks - completedTasks;
     
-    // Calculate completion rate
+    // Calculate completion rate as percentage of tasks with status 'Completed'
     const completionRate = totalTasks > 0 
       ? ((completedTasks / totalTasks) * 100).toFixed(1)
       : 0;
 
-    // ✨ IMPROVED: Calculate on-time completion using completedAt
+    // Calculate on-time completion
+    // Only consider tasks which have both a deadline and a completedAt timestamp.
+    // completedAt is used instead of relying on the updatedAt field to determine
+    // whether the task was completed before its deadline.
     const completedWithDeadline = tasks.filter(t => 
       t.status === "Completed" && t.deadline && t.completedAt // Must have all three
     );
@@ -39,14 +49,18 @@ router.get("/", async (req, res) => {
       ? ((completedOnTime / completedWithDeadline.length) * 100).toFixed(1)
       : 0;
 
-    // Calculate overdue tasks (active tasks past deadline)
+    // Calculate overdue tasks - active tasks with a deadline in the past
     const now = new Date();
     const overdueTasks = tasks.filter(t => {
       if (t.status === "Completed" || !t.deadline) return false;
       return new Date(t.deadline) < now;
     }).length;
 
-    // Average tasks completed per day
+    // Average tasks completed per day — computed using the time since the first task
+    // NOTE: This uses the first item in the `tasks` array; if tasks are not
+    // returned in creation order a more rigorous approach would sort by creation
+    // date and compute duration between earliest task and now. This implementation
+    // is intentionally simple for demo purposes.
     const daysSinceFirstTask = tasks.length > 0
       ? Math.max(
           Math.ceil((Date.now() - new Date(tasks[0].createdAt).getTime()) / (1000 * 60 * 60 * 24)),
@@ -55,13 +69,14 @@ router.get("/", async (req, res) => {
       : 1;
     const avgTasksPerDay = (completedTasks / daysSinceFirstTask).toFixed(1);
 
-    // Task distribution by priority
+    // Task distribution by priority — useful for visualizations and quick filters
     const tasksByPriority = tasks.reduce((acc, task) => {
       const priority = task.priority || 'medium';
       acc[priority] = (acc[priority] || 0) + 1;
       return acc;
     }, {});
 
+    // Build the response object with the aggregated metrics
     const stats = {
       totalTasks,
       totalProjects: projects.length,
