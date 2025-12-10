@@ -103,11 +103,11 @@ The intelligent task sorting algorithm and context-aware filtering require caref
 - Pull requests and branch pushes run the relevant builds/tests automatically when code paths that require them change like the back-end/ and front-end/ folders.
 - Any change to `main` (such as merging a feature branch) kicks off a full deploy of the frontend and backend to Digital Ocean and https://taskbank.me will be updated.
 
-## Extra Credit Achievements
-
+## Extra Credit Achievements 
+Completed all three extra credit assignments for Sprint 4. 
 - **Containerized deployment**: Everything ships in Docker with images published to GHCR.
 - **Continuous Integration**: GitHub Actions builds and tests on every push/PR.
-- **Continuous Deployment**: Main branch auto-deploys to our droplet after CI passes.
+- **Continuous Deployment**: Main branch auto-deploys to our container registry after pull requests are merged to the main branch. Github Actions then ssh's into the droplet, and the container images of the frontend and backend apps are then pulled inside the droplet. Docker images are rebuilt and started, and the website https://taskbank.me is then updated.
 
 ---
 
