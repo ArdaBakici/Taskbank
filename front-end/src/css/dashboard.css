@@ -165,10 +165,26 @@
 /* Overdue task styling */
 .task-overdue {
   background-color: #fee2e2 !important; /* light red background */
-  border-left: 4px solid #ef4444; /* red left border for emphasis */
+  border-left: 6px solid #ef4444 !important; /* red left border like due tomorrow */
+  border-radius: 6px !important;
 }
 
 .task-overdue:hover {
+  background-color: #fecaca !important; /* slightly darker red on hover */
+}
+
+/* Fix alignment for overdue task status icons */
+.task-overdue .task-status-icon {
+  margin-left: -4px; /* Compensate for the thick left border */
+}
+
+/* Due today task styling */
+.task-due-today {
+  background-color: #fee2e2 !important; /* light red background like overdue */
+  border-left: 4px solid #ef4444; /* red left border but thinner than overdue */
+}
+
+.task-due-today:hover {
   background-color: #fecaca !important; /* slightly darker red on hover */
 }
 
@@ -919,8 +935,6 @@
 
 .task-row.task-due-soon {
   background-color: #fff3cd !important;   /* light yellow */
-  border-left: 6px solid #ffcc00 !important;
-  border-radius: 6px !important;
 }
 .toggle-password-btn {
   margin-top: 5px;
