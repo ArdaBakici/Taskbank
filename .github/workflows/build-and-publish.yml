@@ -34,8 +34,8 @@ jobs:
         working-directory: front-end
         run: |
           docker buildx build --platform linux/amd64,linux/arm64 \
-            -t ghcr.io/ArdaBakici/Taskbank:front-end \
-            -t ghcr.io/ArdaBakici/Taskbank:front-end-latest \
+            -t ghcr.io/ardabakici/taskbank:front-end \
+            -t ghcr.io/ardabakici/taskbank:front-end-latest \
             --label "org.opencontainers.image.source=https://github.com/${{ github.repository }}" \
             --label "org.opencontainers.image.description=Taskbank Front-end" \
             --label "org.opencontainers.image.licenses=MIT" \
@@ -47,11 +47,11 @@ jobs:
           SHORT_SHA="${GITHUB_SHA::7}"
           BUILD_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
           BUILD_TIME="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          BUILD_IMAGE="ghcr.io/ArdaBakici/Taskbank:back-end@${GITHUB_SHA}"
+          BUILD_IMAGE="ghcr.io/ardabakici/taskbank:back-end@${GITHUB_SHA}"
 
           docker buildx build --platform linux/amd64,linux/arm64 \
-            -t ghcr.io/ArdaBakici/Taskbank:back-end \
-            -t ghcr.io/ArdaBakici/Taskbank:back-end-latest \
+            -t ghcr.io/ardabakici/taskbank:back-end \
+            -t ghcr.io/ardabakici/taskbank:back-end-latest \
             --label "org.opencontainers.image.source=https://github.com/${{ github.repository }}" \
             --label "org.opencontainers.image.description=Taskbank Back-end" \
             --label "org.opencontainers.image.licenses=MIT" \
