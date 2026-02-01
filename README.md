@@ -1,10 +1,10 @@
-[![Build](https://img.shields.io/github/actions/workflow/status/agile-students-fall2025/4-final-taskbank/build-only.yml?branch=main&label=Build)](https://github.com/agile-students-fall2025/4-final-taskbank/actions/workflows/build-only.yml)
-[![Tests](https://img.shields.io/github/actions/workflow/status/agile-students-fall2025/4-final-taskbank/backend-tests.yml?branch=main&label=Tests)](https://github.com/agile-students-fall2025/4-final-taskbank/actions/workflows/backend-tests.yml)
-[![Deploy](https://img.shields.io/github/actions/workflow/status/agile-students-fall2025/4-final-taskbank/build-and-deploy.yml?branch=main&label=Deploy)](https://github.com/agile-students-fall2025/4-final-taskbank/actions/workflows/build-and-deploy.yml)
+[![Build](https://img.shields.io/github/actions/workflow/status/ArdaBakici/Taskbank/build-only.yml?branch=main&label=Build)](https://github.com/ArdaBakici/Taskbank/actions/workflows/build-only.yml)
+[![Tests](https://img.shields.io/github/actions/workflow/status/ArdaBakici/Taskbank/backend-tests.yml?branch=main&label=Tests)](https://github.com/ArdaBakici/Taskbank/actions/workflows/backend-tests.yml)
+[![Publish](https://img.shields.io/github/actions/workflow/status/ArdaBakici/Taskbank/build-and-publish.yml?branch=main&label=Publish)](https://github.com/ArdaBakici/Taskbank/actions/workflows/build-and-deploy.yml)
 # Taskbank - Smart Task Planner
 
 
-## 🚀 Launch Taskbank → https://taskbank.me/
+## Test Taskbank at → https://tasks.ardabakici.com/
 
 
 ## Product Vision Statement
@@ -48,30 +48,12 @@ Taskbank was conceived from the observation that many people struggle with tradi
 
 Our team recognized that the problem isn't tracking tasks - it's prioritizing and organizing them effectively. By combining GTD principles with intelligent automation, Taskbank aims to solve the core problem: helping users maintain sustainable, productive task management habits without feeling overwhelmed.
 
-## Contributing
-
-We welcome contributions to Taskbank! Please read our [CONTRIBUTING.md](./CONTRIBUTING.md) file for details on:
-- Our code of conduct and team norms
-- The development workflow and Git practices
-- How to set up your local development environment
-- How to submit changes and create pull requests
-
 ## Building and Testing
 
 Run these:
 
 - Build: `cd front-end && npm install && npm run build`
 - Tests: `cd back-end && npm install && npm test`
-
-## Project Scope
-
-### What Makes This Feasible
-
-Taskbank is designed with modularity in mind. The core todo list functionality serves as a foundation upon which additional features can be built incrementally. Features can be added, modified, or removed without disrupting the entire system, making the project manageable within our timeline.
-
-### What Makes This Appropriately Challenging
-
-The intelligent task sorting algorithm and context-aware filtering require careful design and implementation. The user interface must balance functionality with simplicity, creating a smooth user experience that doesn't feel limiting. These challenges make the project substantial without being overwhelming.
 
 ## Technology Stack
 
@@ -84,28 +66,20 @@ The intelligent task sorting algorithm and context-aware filtering require caref
 ### Development Tools
 - **Version Control**: Git & GitHub
 - **Package Manager**: npm
-- **Development Environment**: Visual Studio Code (recommended)
-- **Hosting**: DigitalOcean Droplet with Nginx
+- **Development Environment**: Visual Studio Code
+- **Hosting**: Nginx
 - **Containers & Registry**: Docker for containerization with images published to GHCR
-- **Domain & SSL**: Namecheap student free domain with Cloudflare-provided free SSL certificates
 
 
 ## Additional Resources
 - [Product Backlog](https://github.com/orgs/agile-students-fall2025/projects/47/views/6)
 - [Sprint 4 Task Board](https://github.com/orgs/agile-students-fall2025/projects/47/views/18)
-- [Issue Tracker](https://github.com/agile-students-fall2025/4-final-taskbank/issues)
+- [Issue Tracker](https://github.com/orgs/agile-students-fall2025/issues)
 - [Initial Project Proposal](https://github.com/agile-students-fall2025/1-project-proposal-igor)
-- [Contributing Guidelines](./CONTRIBUTING.md)
 
 ## CI/CD Automation
 - Pull requests and branch pushes run the relevant builds/tests automatically when code paths that require them change like the back-end/ and front-end/ folders.
 - Any change to `main` (such as merging a feature branch) kicks off a full deploy of the frontend and backend to Digital Ocean and https://taskbank.me will be updated.
-
-## Extra Credit Achievements 
-Completed all three extra credit assignments for Sprint 4. 
-- **Containerized deployment**: Everything ships in Docker with images published to GHCR.
-- **Continuous Integration**: GitHub Actions builds and tests on every push/PR.
-- **Continuous Deployment**: Main branch auto-deploys to our container registry after pull requests are merged to the main branch. Github Actions then ssh's into the droplet, and the container images of the frontend and backend apps are then pulled inside the droplet. Docker images are rebuilt and started, and the website https://taskbank.me is then updated.
 
 ---
 
