@@ -1,21 +1,58 @@
 services:
-  front-end-server:
-    build:
-      context: ./front-end
-      dockerfile: Dockerfile
-    environment:
-      NODE_ENV: production
-    ports:
-      - "3000:80"          # host:container (Nginx serving React)
+  mongodb:
+    image: mongo:7.0
+    container_name: taskbank-mongodb
     restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    env_file:
+      - .env
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - taskbank-network
 
   back-end-server:
     build:
       context: ./back-end
       dockerfile: Dockerfile
+    container_name: taskbank-backend
     environment:
       NODE_ENV: production
-    env_file: ./back-end/.env
+      MONGODB_URI: mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWO RD}@mongodb:27017/taskbank?authSource=admin
+      PORT: 4000
+    env_file: 
+      - .env
+      - ./back-end/.env
     ports:
       - "4000:4000"        # host:container (Node/Express on 4000)
+    depends_on:
+      - mongodb
     restart: unless-stopped
+    networks:
+      - taskbank-network
+
+  front-end-server:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    container_name: taskbank-frontend
+    environment:
+      NODE_ENV: production
+    ports:
+      - "3000:3000"          # host:container (Nginx serving React)
+    depends_on:
+      - back-end-server
+    restart: unless-stopped
+    networks:
+      - taskbank-network
+
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
